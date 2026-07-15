@@ -3,6 +3,8 @@ export const ROUTES = {
 
   LOGIN: '/login',
   REGISTER: '/register',
+  VERIFY_OTP: '/verify-otp',
+
   FORGOT_PASSWORD: '/forgot-password',
   RESET_PASSWORD: '/reset-password',
 
@@ -24,6 +26,7 @@ export type AppRoute = (typeof ROUTES)[keyof typeof ROUTES];
 export const GUEST_ROUTES: AppRoute[] = [
   ROUTES.LOGIN,
   ROUTES.REGISTER,
+  ROUTES.VERIFY_OTP,
   ROUTES.FORGOT_PASSWORD,
   ROUTES.RESET_PASSWORD,
 ];

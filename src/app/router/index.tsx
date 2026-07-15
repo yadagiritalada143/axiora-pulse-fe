@@ -30,6 +30,10 @@ export const router = createBrowserRouter([
           { path: ROUTES.LOGIN, element: lazyPage(() => import('@pages/LoginPage')) },
           { path: ROUTES.REGISTER, element: lazyPage(() => import('@pages/RegisterPage')) },
           {
+            path: ROUTES.VERIFY_OTP,
+            element: lazyPage(() => import('@pages/VerifyOtpPage')),
+          },
+          {
             path: ROUTES.FORGOT_PASSWORD,
             element: lazyPage(() => import('@pages/ForgotPasswordPage')),
           },

@@ -5,41 +5,68 @@ import type { User } from '@/types/api.types';
 import { STORAGE_KEYS } from '@constants/storage';
 import { tokenManager } from '@services/api/tokenManager';
 
+export interface MFAData {
+  userid: number;
+  username: string;
+  mfaVerified: boolean;
+  flow: 'register' | 'login';
+}
+
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
+  mfaData: MFAData | null;
 }
 
 interface AuthActions {
-  setSession: (session: { user: User; accessToken: string; refreshToken: string }) => void;
+  setMfaData: (data: MFAData) => void;
+  setAuthenticated: (jwt: string) => void;
   updateUser: (user: User) => void;
   clearSession: () => void;
 }
 
-/**
- * Reactive mirror of the auth session for UI reads. Raw tokens are owned by
- * `tokenManager` (read directly by the axios interceptors, which run outside
- * React) - this store only persists the `user`/`isAuthenticated` shape so the
- * UI can hydrate instantly on reload without re-fetching `/auth/me`.
- */
 export const useAuthStore = create<AuthState & AuthActions>()(
   persist(
     (set) => ({
       user: null,
+
       isAuthenticated: false,
 
-      setSession: ({ user, accessToken, refreshToken }) => {
-        tokenManager.setTokens(accessToken, refreshToken);
-        set({ user, isAuthenticated: true });
+      mfaData: null,
+
+      setMfaData: (data) => {
+        set({
+          mfaData: data,
+        });
       },
 
-      updateUser: (user) => set({ user }),
+      setAuthenticated: (jwt) => {
+        tokenManager.setTokens(jwt);
+
+        set({
+          isAuthenticated: true,
+          mfaData: null,
+        });
+      },
+
+      updateUser: (user) => {
+        set({
+          user,
+        });
+      },
 
       clearSession: () => {
         tokenManager.clearTokens();
-        set({ user: null, isAuthenticated: false });
+
+        set({
+          user: null,
+          isAuthenticated: false,
+          mfaData: null,
+        });
       },
     }),
-    { name: STORAGE_KEYS.AUTH_SESSION },
+    {
+      name: STORAGE_KEYS.AUTH_SESSION,
+    },
   ),
 );

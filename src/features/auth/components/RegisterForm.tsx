@@ -21,24 +21,32 @@ export function RegisterForm() {
   const register = useRegister();
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { name: '', email: '', password: '', confirmPassword: '' },
+    defaultValues: {
+      username: '',
+      password: '',
+    },
   });
 
-  const onSubmit = (values: RegisterFormValues) => register.mutate(values);
+  const onSubmit = (values: RegisterFormValues) => {
+    register.mutate({
+      username: values.username,
+      password: values.password,
+    });
+  };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="mt-5 space-y-6" noValidate>
         <FormField
           control={form.control}
-          name="email"
+          name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email/Mobile Number</FormLabel>
+              <FormLabel>Email / Mobile Number</FormLabel>
               <FormControl>
                 <Input
-                  type="email"
-                  autoComplete="email"
+                  type="text"
+                  autoComplete="username"
                   placeholder="Enter Email ID / Mobile Number"
                   className="placeholder:text-sm"
                   {...field}
@@ -69,7 +77,7 @@ export function RegisterForm() {
         />
 
         <Button type="submit" className="w-full text-white" disabled={register.isPending}>
-          {register.isPending ? <ButtonLoader className="mr-2" /> : null}
+          {register.isPending && <ButtonLoader className="mr-2" />}
           Create account
         </Button>
 

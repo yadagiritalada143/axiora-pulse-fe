@@ -2,11 +2,13 @@ import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { isApiError } from '@/types/error.types';
-import { authService, type ForgotPasswordPayload } from '@services/auth';
+import { authService } from '@services/auth';
+
+import type { ForgotPasswordRequest } from '../types';
 
 export function useForgotPassword() {
   return useMutation({
-    mutationFn: (payload: ForgotPasswordPayload) => authService.forgotPassword(payload),
+    mutationFn: (payload: ForgotPasswordRequest) => authService.forgotPassword(payload),
     onSuccess: () => {
       toast.success('If an account exists for that email, a reset link is on its way.');
     },

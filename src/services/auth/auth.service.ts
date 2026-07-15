@@ -1,59 +1,70 @@
-import type { AuthSession, User } from '@/types/api.types';
-import type { ApiResponse } from '@/types/response.types';
+import type {
+  LoginRequest,
+  RegisterRequest,
+  VerifyOtpRequest,
+  ResendOtpRequest,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+  LoginResponse,
+  RegisterResponse,
+  VerifyOtpResponse,
+  ResendOtpResponse,
+} from '@/features/auth/types';
+import type { User } from '@/types/api.types';
 import { API_ENDPOINTS } from '@constants/api';
 import { apiClient } from '@services/api';
 
-export interface LoginPayload {
-  email: string;
-  password: string;
-}
-
-export interface RegisterPayload {
-  name: string;
-  email: string;
-  password: string;
-}
-
-export interface ForgotPasswordPayload {
-  email: string;
-}
-
-export interface ResetPasswordPayload {
-  token: string;
-  password: string;
-}
-
 export const authService = {
-  async login(payload: LoginPayload): Promise<AuthSession> {
-    const { data } = await apiClient.post<ApiResponse<AuthSession>>(
-      API_ENDPOINTS.AUTH.LOGIN,
-      payload,
-    );
-    return data.data;
+  async login(payload: LoginRequest): Promise<LoginResponse> {
+    const { data } = await apiClient.post<LoginResponse>(API_ENDPOINTS.AUTH.LOGIN, payload, {
+      withCredentials: true,
+    });
+    return data;
   },
 
-  async register(payload: RegisterPayload): Promise<AuthSession> {
-    const { data } = await apiClient.post<ApiResponse<AuthSession>>(
-      API_ENDPOINTS.AUTH.REGISTER,
+  async register(payload: RegisterRequest): Promise<RegisterResponse> {
+    const { data } = await apiClient.post<RegisterResponse>(API_ENDPOINTS.AUTH.REGISTER, payload);
+    return data;
+  },
+
+  async verifyOTP(payload: VerifyOtpRequest): Promise<VerifyOtpResponse> {
+    const { data } = await apiClient.post<VerifyOtpResponse>(
+      API_ENDPOINTS.AUTH.VERIFY_OTP,
       payload,
     );
-    return data.data;
+    return data;
+  },
+
+  async resendOTP(payload: ResendOtpRequest): Promise<ResendOtpResponse> {
+    const { data } = await apiClient.post<ResendOtpResponse>(
+      API_ENDPOINTS.AUTH.RESEND_OTP,
+      payload,
+    );
+    return data;
   },
 
   async logout(): Promise<void> {
-    await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT);
+    await apiClient.post(
+      API_ENDPOINTS.AUTH.LOGOUT,
+      {},
+      {
+        withCredentials: true,
+      },
+    );
   },
 
-  async forgotPassword(payload: ForgotPasswordPayload): Promise<void> {
+  async forgotPassword(payload: ForgotPasswordRequest): Promise<void> {
     await apiClient.post(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, payload);
   },
 
-  async resetPassword(payload: ResetPasswordPayload): Promise<void> {
+  async resetPassword(payload: ResetPasswordRequest): Promise<void> {
     await apiClient.post(API_ENDPOINTS.AUTH.RESET_PASSWORD, payload);
   },
 
   async getCurrentUser(): Promise<User> {
-    const { data } = await apiClient.get<ApiResponse<User>>(API_ENDPOINTS.AUTH.ME);
-    return data.data;
+    const { data } = await apiClient.get<User>(API_ENDPOINTS.AUTH.ME, {
+      withCredentials: true,
+    });
+    return data;
   },
 };

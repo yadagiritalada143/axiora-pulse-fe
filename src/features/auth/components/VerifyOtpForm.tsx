@@ -1,0 +1,127 @@
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+
+import { ButtonLoader } from '@/components/common/Loader';
+import { Button } from '@components/ui/button';
+import { OtpInput } from '@components/ui/otp-input';
+import { ROUTES } from '@constants/routes';
+import { useAuthStore } from '@store/auth.store';
+
+import { useResendOtp } from '../hooks/useResendOtp';
+import { useVerifyOtp } from '../hooks/useVerifyOtp';
+
+export function VerifyOtpForm() {
+  const navigate = useNavigate();
+  const verifyOtp = useVerifyOtp();
+  const resendOtp = useResendOtp();
+  const mfaData = useAuthStore((state) => state.mfaData);
+  const [otp, setOtp] = useState('');
+  const [seconds, setSeconds] = useState(60);
+  const isRegisterFlow = mfaData?.flow === 'register';
+
+  useEffect(() => {
+    if (!mfaData) {
+      toast.error('Verification session expired.');
+      void navigate(ROUTES.LOGIN);
+    }
+  }, [mfaData, navigate]);
+
+  useEffect(() => {
+    if (seconds <= 0) return;
+
+    const timer = setInterval(() => {
+      setSeconds((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [seconds]);
+
+  const handleResend = () => {
+    if (seconds > 0 || resendOtp.isPending) {
+      return;
+    }
+    resendOtp.mutate();
+    setSeconds(60);
+  };
+
+  if (!mfaData) {
+    return null;
+  }
+
+  const handleVerify = () => {
+    if (!mfaData || verifyOtp.isPending) {
+      return;
+    }
+    if (otp.length !== 6) {
+      toast.error('Please enter a valid 6-digit OTP.');
+      return;
+    }
+    verifyOtp.mutate({ id: mfaData.userid, otp: Number(otp), flow: mfaData.flow });
+  };
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">
+          {isRegisterFlow ? 'Verify Registration OTP' : 'Verify Login OTP'}
+        </h1>
+
+        <p className="text-muted-foreground mt-2 text-sm">
+          {isRegisterFlow
+            ? 'Enter the 6-digit OTP sent to complete your account registration.'
+            : 'Enter the 6-digit OTP sent to complete your sign in.'}
+        </p>
+
+        <div className="mt-6 border-b" />
+      </div>
+
+      <div className="space-y-3">
+        <label className="block text-sm font-medium">
+          {isRegisterFlow ? 'Registration OTP' : 'Login OTP'}
+        </label>
+        <OtpInput
+          value={otp}
+          onChange={(value) => {
+            setOtp(value);
+
+            if (value.length === 6 && mfaData && !verifyOtp.isPending) {
+              verifyOtp.mutate({
+                id: mfaData.userid,
+                otp: Number(value),
+                flow: mfaData.flow,
+              });
+            }
+          }}
+        />
+      </div>
+
+      <Button
+        className="w-full"
+        onClick={handleVerify}
+        disabled={verifyOtp.isPending || otp.length !== 6}
+      >
+        {verifyOtp.isPending && <ButtonLoader className="mr-2" />}
+        Verify OTP
+      </Button>
+
+      <div className="text-center text-sm">
+        {seconds > 0 ? (
+          <p className="text-muted-foreground">
+            You can resend OTP in{' '}
+            <span className="font-semibold">00:{String(seconds).padStart(2, '0')}</span>
+          </p>
+        ) : (
+          <Button
+            variant="link"
+            className="h-auto p-0"
+            onClick={handleResend}
+            disabled={resendOtp.isPending}
+          >
+            {resendOtp.isPending ? 'Sending...' : 'Resend OTP'}
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}

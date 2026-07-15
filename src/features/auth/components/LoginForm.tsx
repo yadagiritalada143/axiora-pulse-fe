@@ -21,7 +21,7 @@ export function LoginForm() {
   const login = useLogin();
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '', remember: false },
+    defaultValues: { username: '', password: '', remember: false },
   });
 
   const onSubmit = (values: LoginFormValues) => login.mutate(values);
@@ -31,14 +31,14 @@ export function LoginForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" noValidate>
         <FormField
           control={form.control}
-          name="email"
+          name="username"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Email/Mobile Number</FormLabel>
               <FormControl>
                 <Input
-                  type="email"
-                  autoComplete="email"
+                  type="text"
+                  autoComplete="username"
                   placeholder="Enter Email ID / Mobile Number"
                   className="placeholder:text-sm"
                   {...field}
