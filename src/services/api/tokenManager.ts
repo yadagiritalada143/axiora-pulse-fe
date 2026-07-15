@@ -16,7 +16,11 @@ export const tokenManager = {
   },
   setTokens(accessToken: string, refreshToken?: string): void {
     storage.set(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-    if (refreshToken) storage.set(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+    if (refreshToken) {
+      storage.set(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+    } else {
+      storage.remove(STORAGE_KEYS.REFRESH_TOKEN);
+    }
   },
   clearTokens(): void {
     storage.remove(STORAGE_KEYS.ACCESS_TOKEN);

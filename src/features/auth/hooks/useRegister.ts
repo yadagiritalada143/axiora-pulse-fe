@@ -1,32 +1,147 @@
-import { useMutation } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { Link } from 'react-router-dom';
 
-import { isApiError } from '@/types/error.types';
+import { ButtonLoader } from '@components/common/Loader';
+import { Button } from '@components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@components/ui/form';
+import { Input } from '@components/ui/input';
 import { ROUTES } from '@constants/routes';
-import { authService } from '@services/auth';
-import { useAuthStore } from '@store/auth.store';
+import { useForgotPassword } from '@features/auth/hooks';
+import {
+  forgotPasswordSchema,
+  type ForgotPasswordFormValues,
+} from '@schemas/auth.schema';
 
-import type { RegisterRequest } from '../types';
 
-export function useRegister() {
-  const navigate = useNavigate();
-  const setMfaData = useAuthStore((state) => state.setMfaData);
+export function ForgotPasswordForm() {
 
-  return useMutation({
-    mutationFn: (payload: RegisterRequest) => authService.register(payload),
-    onSuccess: (response) => {
-      setMfaData({
-        userid: response.userid,
-        username: response.username,
-        mfaVerified: response.registerMFA,
-        flow: 'register',
-      });
+  const forgotPassword = useForgotPassword();
 
-      void navigate(ROUTES.VERIFY_OTP);
-    },
-    onError: (error) => {
-      toast.error(isApiError(error) ? error.message : 'Unable to create account.');
+
+  const form = useForm<ForgotPasswordFormValues>({
+    resolver: zodResolver(forgotPasswordSchema),
+
+    defaultValues: {
+      emailOrMobile: '',
     },
   });
+
+
+
+  const onSubmit = (
+    values: ForgotPasswordFormValues,
+  ) => {
+
+    forgotPassword.mutate(values);
+
+  };
+
+
+
+  return (
+
+    <Form {...form}>
+
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-5"
+        noValidate
+      >
+
+        <FormField
+
+          control={form.control}
+
+          name="emailOrMobile"
+
+          render={({ field }) => (
+
+            <FormItem>
+
+              <FormLabel>
+                Email/Mobile Number
+              </FormLabel>
+
+
+              <FormControl>
+
+                <Input
+
+                  type="text"
+
+                  autoComplete="username"
+
+                  placeholder="Enter Email ID / Mobile Number"
+
+                  className="placeholder:text-sm"
+
+                  {...field}
+
+                />
+
+              </FormControl>
+
+
+              <FormMessage />
+
+            </FormItem>
+
+          )}
+
+        />
+
+
+
+        <Button
+
+          type="submit"
+
+          className="w-full text-white"
+
+          disabled={forgotPassword.isPending}
+
+        >
+
+          {
+            forgotPassword.isPending
+              ? <ButtonLoader className="mr-2" />
+              : null
+          }
+
+          Get Code
+
+        </Button>
+
+
+
+        <p className="text-muted-foreground text-center text-sm">
+
+          <Link
+
+            to={ROUTES.LOGIN}
+
+            className="text-primary font-medium hover:underline"
+
+          >
+
+            Back to sign in
+
+          </Link>
+
+        </p>
+
+
+      </form>
+
+    </Form>
+
+  );
 }

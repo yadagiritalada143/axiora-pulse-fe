@@ -6,11 +6,16 @@ export const API_ENDPOINTS = {
     VERIFY_OTP: '/v1/auth/verifyOTP',
     RESEND_OTP: '/v1/auth/resendOTP',
 
+    VERIFY_LOGIN: '/v1/auth/verify-login',
+
+    FORGOT_PASSWORD_REQUEST: '/v1/auth/forgot-password/request',
+    FORGOT_PASSWORD_VERIFY: '/v1/auth/forgot-password/verify',
+    FORGOT_PASSWORD_RESET: '/v1/auth/forgot-password/reset',
+
+    CHANGE_PASSWORD: '/v1/auth/change-password',
+
     LOGOUT: '/v1/auth/logout',
     REFRESH: '/v1/auth/refresh',
-
-    FORGOT_PASSWORD: '/v1/auth/forgot-password',
-    RESET_PASSWORD: '/v1/auth/reset-password',
 
     ME: '/auth/me',
   },

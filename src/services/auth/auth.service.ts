@@ -2,23 +2,39 @@ import type {
   LoginRequest,
   RegisterRequest,
   VerifyOtpRequest,
+  VerifyLoginRequest,
   ResendOtpRequest,
   ForgotPasswordRequest,
+  VerifyForgotPasswordRequest,
   ResetPasswordRequest,
+  ChangePasswordRequest,
   LoginResponse,
   RegisterResponse,
   VerifyOtpResponse,
+  VerifyLoginResponse,
   ResendOtpResponse,
+  ForgotPasswordResponse,
+  VerifyForgotPasswordResponse,
+  ResetPasswordResponse,
+  ChangePasswordResponse,
 } from '@/features/auth/types';
 import type { User } from '@/types/api.types';
 import { API_ENDPOINTS } from '@constants/api';
 import { apiClient } from '@services/api';
+import { tokenManager } from '@services/api/tokenManager';
 
 export const authService = {
   async login(payload: LoginRequest): Promise<LoginResponse> {
-    const { data } = await apiClient.post<LoginResponse>(API_ENDPOINTS.AUTH.LOGIN, payload, {
-      withCredentials: true,
-    });
+    const { data } = await apiClient.post<LoginResponse>(API_ENDPOINTS.AUTH.LOGIN, payload);
+    return data;
+  },
+  async verifyLogin(payload: VerifyLoginRequest): Promise<VerifyLoginResponse> {
+    const { data } = await apiClient.post<VerifyLoginResponse>(
+      API_ENDPOINTS.AUTH.VERIFY_LOGIN,
+      payload,
+    );
+    tokenManager.setTokens(data.access_token, data.refresh_token);
+
     return data;
   },
 
@@ -43,6 +59,43 @@ export const authService = {
     return data;
   },
 
+  async forgotPassword(payload: ForgotPasswordRequest): Promise<ForgotPasswordResponse> {
+    const { data } = await apiClient.post<ForgotPasswordResponse>(
+      API_ENDPOINTS.AUTH.FORGOT_PASSWORD_REQUEST,
+      payload,
+    );
+    return data;
+  },
+
+  async verifyForgotPassword(
+    payload: VerifyForgotPasswordRequest,
+  ): Promise<VerifyForgotPasswordResponse> {
+    const { data } = await apiClient.post<VerifyForgotPasswordResponse>(
+      API_ENDPOINTS.AUTH.FORGOT_PASSWORD_VERIFY,
+      payload,
+    );
+    return data;
+  },
+
+  async resetPassword(payload: ResetPasswordRequest): Promise<ResetPasswordResponse> {
+    const { data } = await apiClient.post<ResetPasswordResponse>(
+      API_ENDPOINTS.AUTH.FORGOT_PASSWORD_RESET,
+      payload,
+    );
+    return data;
+  },
+
+  async changePassword(payload: ChangePasswordRequest): Promise<ChangePasswordResponse> {
+    const { data } = await apiClient.post<ChangePasswordResponse>(
+      API_ENDPOINTS.AUTH.CHANGE_PASSWORD,
+      payload,
+      {
+        withCredentials: true,
+      },
+    );
+    return data;
+  },
+
   async logout(): Promise<void> {
     await apiClient.post(
       API_ENDPOINTS.AUTH.LOGOUT,
@@ -51,14 +104,7 @@ export const authService = {
         withCredentials: true,
       },
     );
-  },
-
-  async forgotPassword(payload: ForgotPasswordRequest): Promise<void> {
-    await apiClient.post(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, payload);
-  },
-
-  async resetPassword(payload: ResetPasswordRequest): Promise<void> {
-    await apiClient.post(API_ENDPOINTS.AUTH.RESET_PASSWORD, payload);
+    tokenManager.clearTokens();
   },
 
   async getCurrentUser(): Promise<User> {

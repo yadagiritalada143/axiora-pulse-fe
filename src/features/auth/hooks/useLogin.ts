@@ -15,15 +15,16 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: (payload: LoginRequest) => authService.login(payload),
-    onSuccess: (response) => {
+    onSuccess: (_response, variables) => {
       setMfaData({
-        userid: response.userid,
-        username: response.username,
-        mfaVerified: response.loginMFA,
+        userid: 0,
+        username: variables.username,
+        identifier: variables.username,
+        mfaVerified: false,
         flow: 'login',
       });
       toast.success('OTP sent successfully.');
-      void navigate(ROUTES.VERIFY_OTP);
+      void navigate(ROUTES.VERIFY_LOGIN);
     },
     onError: (error) => {
       toast.error(isApiError(error) ? error.message : 'Unable to sign in. Please try again.');

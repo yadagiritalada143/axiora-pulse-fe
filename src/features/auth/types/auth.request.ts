@@ -11,19 +11,34 @@ export interface RegisterRequest {
 export interface VerifyOtpRequest {
   id: number;
   otp: number;
-  flow: 'register' | 'login';
+  flow: 'register';
 }
 
 export interface ResendOtpRequest {
   id: number;
-  flow: 'register' | 'login';
+  flow: 'register';
+}
+
+export interface VerifyLoginRequest {
+  emailOrMobile: string;
+  otp: number;
 }
 
 export interface ForgotPasswordRequest {
-  email: string;
+  emailOrMobile: string;
+}
+
+export interface VerifyForgotPasswordRequest {
+  emailOrMobile: string;
+  code: number;
 }
 
 export interface ResetPasswordRequest {
-  token: string;
-  password: string;
+  reset_token: string;
+  new_password: string;
+}
+
+export interface ChangePasswordRequest {
+  current_password: string;
+  new_password: string;
 }
