@@ -37,6 +37,9 @@ export const API_ENDPOINTS = {
     PROFILE: '/users/me',
     UPDATE_PROFILE: '/users/me',
   },
+  ORCHESTRATION: {
+    RUN: '/v1/orchestration/run',
+  },
 } as const;
 
 export const HTTP_STATUS = {
