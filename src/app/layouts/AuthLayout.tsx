@@ -68,13 +68,13 @@ export function AuthLayout() {
         </div>
       </div>
 
-      <div className="relative z-10 -mt-6 flex flex-1 flex-col rounded-t-3xl bg-white px-6 pt-8 pb-8 text-black lg:mt-0 lg:flex-1 lg:items-center lg:justify-center lg:rounded-none lg:p-10">
+      <div className="bg-background text-foreground relative z-10 -mt-6 flex flex-1 flex-col rounded-t-3xl px-6 pt-8 pb-8 lg:mt-0 lg:flex-1 lg:items-center lg:justify-center lg:rounded-none lg:p-10">
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col lg:flex-none">
           <div className="mb-6 hidden lg:flex">
-            <div className="flex size-14 items-center justify-center rounded-full bg-blue-500/5">
-              <div className="flex size-11 items-center justify-center rounded-full bg-blue-500/10">
-                <div className="flex size-9 items-center justify-center rounded-full bg-blue-500/15">
-                  <div className="size-4 rounded-full bg-blue-500 shadow-[0_0_12px_3px_rgba(59,130,246,0.45)]" />
+            <div className="bg-primary/5 flex size-14 items-center justify-center rounded-full">
+              <div className="bg-primary/10 flex size-11 items-center justify-center rounded-full">
+                <div className="bg-primary/15 flex size-9 items-center justify-center rounded-full">
+                  <div className="bg-primary size-4 rounded-full shadow-[0_0_12px_3px_var(--primary)]" />
                 </div>
               </div>
             </div>
@@ -83,7 +83,7 @@ export function AuthLayout() {
           <Outlet />
 
           {/* No dedicated policy pages yet - plain text until those routes exist. */}
-          <div className="mt-auto flex justify-center gap-6 pt-10 text-xs text-gray-600 lg:absolute lg:right-10 lg:bottom-10 lg:mt-0 lg:justify-end lg:pt-0">
+          <div className="text-muted-foreground mt-auto flex justify-center gap-6 pt-10 text-xs lg:absolute lg:right-10 lg:bottom-10 lg:mt-0 lg:justify-end lg:pt-0">
             <span>Privacy policy</span>
             <span>Legal terms</span>
           </div>

@@ -10,6 +10,7 @@ import { useAuthStore } from '@store/auth.store';
 
 export function useVerifyOtp() {
   const setAuthenticated = useAuthStore((state) => state.setAuthenticated);
+  const setOnboardingPending = useAuthStore((state) => state.setOnboardingPending);
   const navigate = useNavigate();
 
   return useMutation({
@@ -18,6 +19,7 @@ export function useVerifyOtp() {
     onSuccess: (response) => {
       if (response.status === 'success' && response.jwt) {
         setAuthenticated(response.jwt);
+        setOnboardingPending(true);
         void navigate(ROUTES.DASHBOARD);
         return;
       }

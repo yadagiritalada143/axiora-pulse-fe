@@ -8,13 +8,16 @@ import { OtpInput } from '@components/ui/otp-input';
 import { ROUTES } from '@constants/routes';
 import { useAuthStore } from '@store/auth.store';
 
+import { useResendOtp } from '../hooks/useResendOtp';
 import { useVerifyLogin } from '../hooks/useVerifyLogin';
 
 export function VerifyLoginForm() {
   const navigate = useNavigate();
   const verifyLogin = useVerifyLogin();
+  const resendOtp = useResendOtp();
   const mfaData = useAuthStore((state) => state.mfaData);
   const [otp, setOtp] = useState('');
+  const [seconds, setSeconds] = useState(60);
 
   useEffect(() => {
     if (mfaData?.flow !== 'login') {
@@ -22,6 +25,16 @@ export function VerifyLoginForm() {
       void navigate(ROUTES.LOGIN);
     }
   }, [mfaData, navigate]);
+
+  useEffect(() => {
+    if (seconds <= 0) return;
+
+    const timer = setInterval(() => {
+      setSeconds((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [seconds]);
 
   if (!mfaData) {
     return null;
@@ -42,6 +55,15 @@ export function VerifyLoginForm() {
       emailOrMobile: identifier,
       otp: Number(otp),
     });
+  };
+
+  const handleResend = () => {
+    if (seconds > 0 || resendOtp.isPending) {
+      return;
+    }
+
+    resendOtp.mutate();
+    setSeconds(60);
   };
 
   return (
@@ -85,6 +107,24 @@ export function VerifyLoginForm() {
         {verifyLogin.isPending && <ButtonLoader className="mr-2" />}
         Verify Login
       </Button>
+
+      <div className="text-center text-sm">
+        {seconds > 0 ? (
+          <p className="text-muted-foreground">
+            Resend OTP in{' '}
+            <span className="font-semibold">00:{String(seconds).padStart(2, '0')}</span>
+          </p>
+        ) : (
+          <Button
+            variant="link"
+            className="h-auto p-0"
+            onClick={handleResend}
+            disabled={resendOtp.isPending}
+          >
+            {resendOtp.isPending ? 'Sending...' : 'Resend OTP'}
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

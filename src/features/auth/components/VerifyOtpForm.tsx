@@ -11,7 +11,7 @@ import { useAuthStore } from '@store/auth.store';
 import { useResendOtp } from '../hooks/useResendOtp';
 import { useVerifyOtp } from '../hooks/useVerifyOtp';
 
-export function VerifyOtpForm() {
+export function VerifyOtpForm({ heading, description }: { heading: string; description: string }) {
   const navigate = useNavigate();
   const verifyOtp = useVerifyOtp();
   const resendOtp = useResendOtp();
@@ -66,15 +66,14 @@ export function VerifyOtpForm() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">Verify Registration OTP</h1>
+        <h1 className="text-3xl font-bold">{heading}</h1>
 
-        <p className="text-muted-foreground mt-2 text-sm">
-          Enter the 6-digit OTP sent to complete your account registration.
-        </p>
+        <p className="text-muted-foreground mt-2 text-sm">{description}</p>
       </div>
+      <hr className="mb-8" />
 
       <div className="space-y-3">
-        <p className="block text-sm font-medium">Registration OTP</p>
+        <p className="block text-sm font-medium">Enter Code</p>
         <OtpInput
           value={otp}
           onChange={(value) => {

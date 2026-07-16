@@ -5,10 +5,10 @@ function Slot(props: SlotProps) {
   return (
     <div
       className={`flex h-14 w-14 items-center justify-center rounded-lg border text-lg font-semibold transition-all ${
-        props.isActive ? 'border-orange-500 ring-2 ring-orange-200' : 'border-gray-300'
+        props.isActive ? 'border-primary ring-primary/30 ring-2' : 'border-input'
       }`}
     >
-      {props.char ?? <span className="text-gray-300">-</span>}
+      {props.char ?? <span className="text-muted-foreground/50">-</span>}
     </div>
   );
 }

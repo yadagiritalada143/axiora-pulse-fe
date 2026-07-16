@@ -11,15 +11,12 @@ export function useResendOtp() {
   return useMutation({
     mutationFn: async () => {
       if (!mfaData) {
-        throw new Error('OTP session has expired. Please register again.');
-      }
-      if (mfaData.flow !== 'register') {
-        throw new Error('Login OTP resend is not supported.');
+        throw new Error('OTP session has expired. Please sign in again.');
       }
 
       return authService.resendOTP({
-        id: Number(mfaData.identifier),
-        flow: 'register',
+        id: mfaData.userid,
+        flow: mfaData.flow,
       });
     },
 

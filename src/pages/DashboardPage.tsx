@@ -5,6 +5,7 @@ import { PageHeader } from '@components/common/PageHeader';
 import { Button } from '@components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@components/ui/card';
 import { ROUTES } from '@constants/routes';
+import { OnboardingFlow } from '@features/onboarding/components';
 import { useAuthStore } from '@store/auth.store';
 
 const OVERVIEW_CARDS = [
@@ -15,9 +16,11 @@ const OVERVIEW_CARDS = [
 
 export default function DashboardPage() {
   const user = useAuthStore((state) => state.user);
+  const onboardingPending = useAuthStore((state) => state.onboardingPending);
 
   return (
     <div className="space-y-6">
+      {onboardingPending && <OnboardingFlow />}
       <PageHeader
         title={`Welcome back${user?.name ? `, ${user.name}` : ''}`}
         description="Here's a snapshot of your workspace."

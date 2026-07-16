@@ -4,10 +4,10 @@ export default function LoginPage() {
   return (
     <div className="font-display">
       <div className="mb-4 space-y-1">
-        <h1 className="text-3xl font-semibold text-black">Welcome back</h1>
+        <h1 className="text-foreground text-3xl font-semibold">Welcome back</h1>
         <p className="text-muted-foreground text-sm">Sign in to continue to your workspace.</p>
       </div>
-      <hr className="mb-8 border-gray-300" />
+      <hr className="mb-8" />
       <LoginForm />
     </div>
   );

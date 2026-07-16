@@ -83,16 +83,16 @@ export function LoginForm() {
                       type="checkbox"
                       checked={field.value}
                       onChange={(e) => field.onChange(e.target.checked)}
-                      className="peer h-4 w-4 appearance-none rounded border border-gray-300 bg-white"
+                      className="border-input bg-background peer h-4 w-4 appearance-none rounded border"
                     />
 
-                    <span className="pointer-events-none absolute inset-0 hidden items-center justify-center text-xs font-bold text-orange-600 peer-checked:flex">
+                    <span className="text-primary pointer-events-none absolute inset-0 hidden items-center justify-center text-xs font-bold peer-checked:flex">
                       ✓
                     </span>
                   </div>
                 </FormControl>
 
-                <FormLabel htmlFor="remember" className="cursor-pointer text-gray-500">
+                <FormLabel htmlFor="remember" className="text-muted-foreground cursor-pointer">
                   Remember me
                 </FormLabel>
               </FormItem>
