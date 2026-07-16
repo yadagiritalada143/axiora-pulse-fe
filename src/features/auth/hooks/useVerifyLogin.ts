@@ -11,13 +11,17 @@ import { useAuthStore } from '@store/auth.store';
 export function useVerifyLogin() {
   const navigate = useNavigate();
   const setAuthenticated = useAuthStore((state) => state.setAuthenticated);
+  const setHasActivePlan = useAuthStore((state) => state.setHasActivePlan);
+
   return useMutation({
     mutationFn: (payload: VerifyLoginRequest) => authService.verifyLogin(payload),
     onSuccess: (response) => {
       if (response.status === 'success') {
         setAuthenticated(response.access_token, response.refresh_token);
+        const hasActivePlan = response.hasActivePlan ?? false;
+        setHasActivePlan(hasActivePlan);
         toast.success(response.message || 'Login successful.');
-        void navigate(ROUTES.DASHBOARD);
+        void navigate(hasActivePlan ? ROUTES.DASHBOARD : ROUTES.PRICING);
         return;
       }
       toast.error(response.message);

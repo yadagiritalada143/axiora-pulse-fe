@@ -10,9 +10,12 @@ export interface RegisterResponse {
 }
 
 export interface VerifyOtpResponse {
+  hasActivePlan?: boolean;
   status: 'success' | 'failed';
   message: string;
   jwt?: string;
+  access_token?: string;
+  referesh_token?: string;
 }
 
 export interface VerifyLoginResponse {
@@ -22,6 +25,8 @@ export interface VerifyLoginResponse {
   refresh_token: string;
   token_type: string;
   expires_in_minutes: number;
+  /** Present once the backend starts sending it. Defaults to false when absent. */
+  hasActivePlan?: boolean;
 }
 
 export interface ResendOtpResponse {

@@ -3,6 +3,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import { AuthLayout } from '@app/layouts/AuthLayout';
 import { DashboardLayout } from '@app/layouts/DashboardLayout';
 import { ErrorLayout } from '@app/layouts/ErrorLayout';
+import { PricingLayout } from '@app/layouts/PricingLayout';
 import { PublicLayout } from '@app/layouts/PublicLayout';
 import { ROUTES } from '@constants/routes';
 
@@ -19,10 +20,6 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <HomeRedirect />,
-      },
-      {
-        path: ROUTES.PRICING,
-        element: lazyPage(() => import('@pages/PricingPage')),
       },
     ],
   },
@@ -65,6 +62,15 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute />,
     errorElement: <ErrorLayout />,
     children: [
+      {
+        element: <PricingLayout />,
+        children: [
+          {
+            path: ROUTES.PRICING,
+            element: lazyPage(() => import('@pages/PricingPage')),
+          },
+        ],
+      },
       {
         element: <DashboardLayout />,
         children: [

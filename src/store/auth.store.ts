@@ -19,8 +19,8 @@ interface AuthState {
   mfaData: MFAData | null;
   resetEmailOrMobile: string | null;
   resetToken: string | null;
-  /** True between a successful registration and the user finishing the welcome onboarding. */
   onboardingPending: boolean;
+  hasActivePlan: boolean;
 }
 
 interface AuthActions {
@@ -32,6 +32,7 @@ interface AuthActions {
   setResetToken: (token: string) => void;
   clearResetData: () => void;
   setOnboardingPending: (pending: boolean) => void;
+  setHasActivePlan: (hasActivePlan: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState & AuthActions>()(
@@ -47,6 +48,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       resetToken: null,
 
       onboardingPending: false,
+
+      hasActivePlan: false,
 
       setMfaData: (data) => {
         set({
@@ -81,7 +84,12 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           resetToken: null,
 
           onboardingPending: false,
+          hasActivePlan: false,
         });
+      },
+
+      setHasActivePlan: (hasActivePlan) => {
+        set({ hasActivePlan });
       },
 
       setOnboardingPending: (pending) => {
