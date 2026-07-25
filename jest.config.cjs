@@ -3,7 +3,7 @@ module.exports = {
   rootDir: '.',
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/tests/setup.ts'],
-  testMatch: ['<rootDir>/src/tests/**/*.test.{ts,tsx}'],
+  testMatch: ['<rootDir>/src/tests/**/*.{test,spec}.{ts,tsx}'],
   moduleNameMapper: {
     '\\.(css|less|scss)$': 'identity-obj-proxy',
     '^@app/(.*)$': '<rootDir>/src/app/$1',
