@@ -5,7 +5,6 @@ import {
   LayoutGrid,
   LogOut,
   Menu,
-  Search,
   Settings,
   ShieldCheck,
   Sparkles,
@@ -112,21 +111,7 @@ export function MentorShell({ children }: { children: ReactNode }) {
               <Menu className="size-4" />
             </button>
 
-            <div className="border-border text-muted-foreground hidden h-10 max-w-xs flex-1 items-center gap-2 rounded-lg border px-3 text-sm sm:flex">
-              <Search className="size-4 shrink-0" aria-hidden />
-              <span>Search anything.</span>
-            </div>
-
             <div className="flex flex-1 items-center justify-end gap-1.5 sm:gap-3">
-              <button
-                type="button"
-                aria-label="Survey"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sm font-medium transition-colors sm:px-4"
-              >
-                <span aria-hidden>+</span>
-                <span className="hidden sm:inline">Survey</span>
-              </button>
-
               <button
                 type="button"
                 aria-label="Notifications"
