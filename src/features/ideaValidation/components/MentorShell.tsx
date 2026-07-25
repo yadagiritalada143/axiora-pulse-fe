@@ -1,10 +1,12 @@
 import {
   Bell,
+  Building2,
   FileText,
   Info,
   LayoutGrid,
   LogOut,
   Menu,
+  MessageSquare,
   Settings,
   ShieldCheck,
   Sparkles,
@@ -15,37 +17,63 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 
 import { Avatar, AvatarFallback } from '@components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@components/ui/dropdown-menu';
+import { ROUTES } from '@constants/routes';
 import { cn } from '@lib/utils';
+import { useAuthStore } from '@store/auth.store';
 
 interface MentorNavItem {
   label: string;
   icon: LucideIcon;
-  active?: boolean;
+  href?: string;
+  onClick?: () => void;
+  end?: boolean;
+  disabled?: boolean;
 }
 
+const OVERVIEW_ITEM: MentorNavItem = {
+  label: 'Overview',
+  icon: LayoutGrid,
+  href: ROUTES.DASHBOARD,
+  end: true,
+};
+
 const WORKSPACE_NAV_ITEMS: MentorNavItem[] = [
-  { label: 'AI Mentor', icon: Sparkles, active: true },
-  { label: 'Founder Intelligence', icon: Users },
-  { label: 'Startup Intelligence', icon: TrendingUp },
-  { label: 'Documents & reports', icon: FileText },
-  { label: 'Risk Management', icon: ShieldCheck },
+  { label: 'Workspace', icon: Building2, href: ROUTES.WORKSPACE },
+  { label: 'AI Chat', icon: MessageSquare, href: ROUTES.AI_CHAT },
+  { label: 'Founder Intelligence', icon: Users, disabled: true },
+  { label: 'Startup Intelligence', icon: TrendingUp, disabled: true },
+  { label: 'Documents & reports', icon: FileText, disabled: true },
+  { label: 'Risk Management', icon: ShieldCheck, disabled: true },
 ];
 
-const FOOTER_NAV_ITEMS: MentorNavItem[] = [
-  { label: 'Integrations', icon: Sparkles },
-  { label: 'Settings', icon: Settings },
-  { label: 'Logout', icon: LogOut },
-];
-
-/**
- * Static app shell matching the AI Mentor design reference. Navigation,
- * search, and the survey/notification affordances are presentational only —
- * this screen is the one interactive piece (idea intake -> validation report).
- */
 export function MentorShell({ children }: { children: ReactNode }) {
   const [isNavOpen, setIsNavOpen] = useState(false);
+  const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
+  const clearSession = useAuthStore((state) => state.clearSession);
+
+  const closeNav = () => setIsNavOpen(false);
+
+  const handleLogout = () => {
+    clearSession();
+    void navigate(ROUTES.LOGIN, { replace: true });
+  };
+
+  const footerItems: MentorNavItem[] = [
+    { label: 'Integrations', icon: Sparkles, disabled: true },
+    { label: 'Settings', icon: Settings, href: ROUTES.SETTINGS },
+    { label: 'Logout', icon: LogOut, onClick: handleLogout },
+  ];
 
   return (
     <div className="bg-muted flex h-dvh w-full items-stretch justify-center overflow-hidden sm:p-3">
@@ -54,7 +82,7 @@ export function MentorShell({ children }: { children: ReactNode }) {
           <div
             className="fixed inset-0 z-40 bg-black/40 lg:hidden"
             aria-hidden
-            onClick={() => setIsNavOpen(false)}
+            onClick={closeNav}
           />
         ) : null}
 
@@ -73,7 +101,7 @@ export function MentorShell({ children }: { children: ReactNode }) {
             <button
               type="button"
               aria-label="Close menu"
-              onClick={() => setIsNavOpen(false)}
+              onClick={closeNav}
               className="text-muted-foreground hover:bg-accent flex size-8 items-center justify-center rounded-full transition-colors lg:hidden"
             >
               <X className="size-4" />
@@ -81,21 +109,18 @@ export function MentorShell({ children }: { children: ReactNode }) {
           </div>
 
           <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-2" aria-label="Primary">
-            <MentorNavButton
-              item={{ label: 'Overview', icon: LayoutGrid }}
-              onClick={() => setIsNavOpen(false)}
-            />
+            <MentorNavButton item={OVERVIEW_ITEM} onNavigate={closeNav} />
 
             <p className="text-muted-foreground px-3 pt-4 pb-1 text-xs font-medium">Workspace</p>
 
             {WORKSPACE_NAV_ITEMS.map((item) => (
-              <MentorNavButton key={item.label} item={item} onClick={() => setIsNavOpen(false)} />
+              <MentorNavButton key={item.label} item={item} onNavigate={closeNav} />
             ))}
           </nav>
 
           <div className="border-border space-y-1 border-t px-3 py-3">
-            {FOOTER_NAV_ITEMS.map((item) => (
-              <MentorNavButton key={item.label} item={item} onClick={() => setIsNavOpen(false)} />
+            {footerItems.map((item) => (
+              <MentorNavButton key={item.label} item={item} onNavigate={closeNav} />
             ))}
           </div>
         </aside>
@@ -128,13 +153,40 @@ export function MentorShell({ children }: { children: ReactNode }) {
                 <Info className="size-4" />
               </button>
 
-              <div className="flex items-center gap-2 pl-1">
-                <Avatar className="size-8">
-                  <AvatarFallback>
-                    <User2Icon className="size-4" />
-                  </AvatarFallback>
-                </Avatar>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Account menu"
+                    className="hover:bg-accent flex items-center gap-2 rounded-full py-1 pr-2 pl-1 transition-colors"
+                  >
+                    <Avatar className="size-8">
+                      <AvatarFallback>
+                        {user?.name ? (
+                          user.name.charAt(0).toUpperCase()
+                        ) : (
+                          <User2Icon className="size-4" />
+                        )}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="hidden text-sm font-medium sm:inline">
+                      {user?.name ?? 'Account'}
+                    </span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link to={ROUTES.PROFILE}>Profile</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to={ROUTES.SETTINGS}>Settings</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem variant="destructive" onSelect={handleLogout}>
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </header>
 
@@ -145,19 +197,50 @@ export function MentorShell({ children }: { children: ReactNode }) {
   );
 }
 
-function MentorNavButton({ item, onClick }: { item: MentorNavItem; onClick?: () => void }) {
+function MentorNavButton({ item, onNavigate }: { item: MentorNavItem; onNavigate?: () => void }) {
   const Icon = item.icon;
+
+  const baseClasses =
+    'flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium transition-colors';
+  const idleClasses = 'text-muted-foreground hover:bg-accent hover:text-accent-foreground';
+  const activeClasses = 'bg-primary/10 text-primary';
+
+  if (item.href) {
+    return (
+      <NavLink
+        to={item.href}
+        end={item.end}
+        onClick={onNavigate}
+        className={({ isActive }) => cn(baseClasses, isActive ? activeClasses : idleClasses)}
+      >
+        <Icon className="size-4 shrink-0" aria-hidden />
+        <span className="truncate">{item.label}</span>
+      </NavLink>
+    );
+  }
+
+  if (item.disabled) {
+    return (
+      <button
+        type="button"
+        disabled
+        title="Coming soon"
+        className={cn(baseClasses, 'text-muted-foreground/50 cursor-not-allowed')}
+      >
+        <Icon className="size-4 shrink-0" aria-hidden />
+        <span className="truncate">{item.label}</span>
+      </button>
+    );
+  }
 
   return (
     <button
       type="button"
-      onClick={onClick}
-      className={cn(
-        'flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium transition-colors',
-        item.active
-          ? 'bg-primary/10 text-primary'
-          : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-      )}
+      onClick={() => {
+        item.onClick?.();
+        onNavigate?.();
+      }}
+      className={cn(baseClasses, idleClasses)}
     >
       <Icon className="size-4 shrink-0" aria-hidden />
       <span className="truncate">{item.label}</span>

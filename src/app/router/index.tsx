@@ -72,12 +72,12 @@ export const router = createBrowserRouter([
         ],
       },
       {
-        path: ROUTES.DASHBOARD,
-        element: lazyPage(() => import('@pages/DashboardPage')),
-      },
-      {
         element: <DashboardLayout />,
         children: [
+          {
+            path: ROUTES.DASHBOARD,
+            element: lazyPage(() => import('@pages/DashboardPage')),
+          },
           {
             path: ROUTES.WORKSPACE,
             element: lazyPage(() => import('@pages/WorkspacePage')),

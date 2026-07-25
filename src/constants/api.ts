@@ -25,10 +25,14 @@ export const API_ENDPOINTS = {
     MESSAGES: (conversationId: string) => `/chat/conversations/${conversationId}/messages`,
     STREAM: (conversationId: string) => `/chat/conversations/${conversationId}/stream`,
   },
+
   WORKSPACE: {
-    LIST: '/workspaces',
-    DETAIL: (id: string) => `/workspaces/${id}`,
+    LIST: '/v1/workspaces',
+    CREATE: '/v1/workspaces',
+    DETAIL: (workspaceId: number) => `/v1/workspaces/${workspaceId}`,
+    DELETE: (workspaceId: number) => `/v1/workspaces/${workspaceId}`,
   },
+
   BILLING: {
     PLANS: '/billing/plans',
     SUBSCRIBE: '/billing/subscribe',

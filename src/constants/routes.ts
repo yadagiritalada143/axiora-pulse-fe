@@ -23,7 +23,6 @@ export const ROUTES = {
 
 export type AppRoute = (typeof ROUTES)[keyof typeof ROUTES];
 
-/** Routes only reachable when the user is NOT authenticated. */
 export const GUEST_ROUTES: AppRoute[] = [
   ROUTES.LOGIN,
   ROUTES.REGISTER,
@@ -33,7 +32,6 @@ export const GUEST_ROUTES: AppRoute[] = [
   ROUTES.RESET_PASSWORD,
 ];
 
-/** Routes that require an authenticated session. */
 export const PROTECTED_ROUTES: AppRoute[] = [
   ROUTES.DASHBOARD,
   ROUTES.WORKSPACE,
