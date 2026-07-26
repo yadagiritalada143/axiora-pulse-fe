@@ -191,7 +191,6 @@ export function InteractiveQuestionsFlow({ questions }: InteractiveQuestionsFlow
                     onChange={handleAnswerChange}
                     onBack={handleBack}
                     onNext={handleNext}
-                    onClose={() => setDismissed(true)}
                   />
                 </motion.div>
               </AnimatePresence>
@@ -200,9 +199,7 @@ export function InteractiveQuestionsFlow({ questions }: InteractiveQuestionsFlow
         </div>
       ) : (
         <div className="bg-muted fixed inset-0 z-50 flex flex-col px-4 pt-2 pb-4 sm:px-6 sm:pb-6">
-          <p className="text-muted-foreground py-2 text-xs font-medium">Get to know you</p>
-
-          <div className="bg-background relative mx-auto flex w-full max-w-lg flex-1 flex-col justify-center overflow-hidden rounded-lg shadow-sm">
+          <div className="bg-background relative mx-auto flex w-full flex-1 flex-col justify-center overflow-hidden rounded-lg shadow-sm">
             {phase === 'intro' && <IntroView onContinue={() => setPhase('questions')} />}
 
             {phase === 'complete' && (
@@ -225,13 +222,18 @@ export function InteractiveQuestionsFlow({ questions }: InteractiveQuestionsFlow
     document.body,
   );
 }
-
 function PulseWordmark() {
   return (
-    <span className="font-display text-foreground flex w-fit items-center text-lg font-semibold">
-      Pulse
-      <span className="bg-primary ml-0.5 size-1.5 rounded-full" aria-hidden />
-    </span>
+    <div className="w-24">
+      <p className="font-display text-foreground text-xs font-semibold">AXIORA</p>
+
+      <div className="flex justify-end">
+        <span className="font-display text-foreground flex items-center text-2xl font-semibold">
+          Pulse
+          <span className="bg-primary ml-0.5 size-1.5 rounded-full" />
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -266,7 +268,6 @@ function QuestionView({
   onChange,
   onBack,
   onNext,
-  onClose,
 }: {
   question: InteractiveQuestion;
   stepIndex: number;
@@ -276,7 +277,6 @@ function QuestionView({
   onChange: (value: string[]) => void;
   onBack: () => void;
   onNext: () => void;
-  onClose: () => void;
 }) {
   return (
     <div className="flex flex-col px-6 py-8">
@@ -299,13 +299,22 @@ function QuestionView({
       </div>
 
       <div className="flex items-start justify-between">
-        <p className="text-muted-foreground text-xs font-medium">Question {stepIndex + 1}</p>
+        <p className="text-muted-foreground text-xs font-medium">
+          Question {stepIndex + 1} &nbsp;
+          {question.optional ? (
+            <span className="text-muted-foreground text-xs font-normal">(Optional)</span>
+          ) : (
+            <span className="text-destructive text-sm" aria-hidden>
+              *
+            </span>
+          )}
+        </p>
 
         {question.optional && (
           <button
             type="button"
             aria-label="Close"
-            onClick={onClose}
+            onClick={onNext}
             className="text-muted-foreground hover:text-foreground -mt-1 -mr-1 rounded-full p-1 transition-colors"
           >
             <X className="size-4" />
@@ -315,13 +324,6 @@ function QuestionView({
 
       <div className="mt-1 mb-6 flex items-baseline gap-1.5">
         <h2 className="text-xl font-semibold">{question.question}</h2>
-        {question.optional ? (
-          <span className="text-muted-foreground text-xs font-normal">(Optional)</span>
-        ) : (
-          <span className="text-destructive text-sm" aria-hidden>
-            *
-          </span>
-        )}
       </div>
 
       <QuestionRenderer question={question} value={value} onChange={onChange} />
