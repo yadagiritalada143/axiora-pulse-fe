@@ -22,4 +22,21 @@ describe('useDebouncedValue', () => {
 
     expect(result.current).toBe('b');
   });
+
+  it('defaults to a 300ms delay when none is provided', () => {
+    const { result, rerender } = renderHook(({ value }) => useDebouncedValue(value), {
+      initialProps: { value: 'a' },
+    });
+
+    rerender({ value: 'b' });
+    act(() => {
+      jest.advanceTimersByTime(299);
+    });
+    expect(result.current).toBe('a');
+
+    act(() => {
+      jest.advanceTimersByTime(1);
+    });
+    expect(result.current).toBe('b');
+  });
 });

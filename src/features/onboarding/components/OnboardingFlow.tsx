@@ -82,42 +82,39 @@ function WelcomeStep({ onContinue }: { onContinue: () => void }) {
 
 function GuideStep({ onChoosePlan }: { onChoosePlan: () => void }) {
   return (
-    <div className="flex h-full flex-col items-center gap-6 overflow-y-auto px-6 py-8 text-center sm:py-12">
+    <div className="flex h-full flex-col items-center gap-4 overflow-y-auto px-4 py-6 text-center sm:gap-6 sm:px-6 sm:py-12">
       <GlowDot />
 
-      <div className="space-y-3">
-        <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+      <div className="space-y-1.5 sm:space-y-3">
+        <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl">
           Welcome to Axiora Pulse
         </h1>
 
         <Tagline />
       </div>
 
-      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col">
-        <div className="bg-muted flex-1 overflow-hidden rounded-2xl border shadow-lg">
-          <video
-            className="h-full w-full rounded-2xl bg-black object-contain"
-            controls
-            preload="metadata"
-            playsInline
-          >
-            <source
-              src="https://axiora-assets.s3.ap-south-1.amazonaws.com/Assets/Axiora-guide.mp4"
-              type="video/mp4"
-            />
-            <track
-              kind="captions"
-              src="/captions/axiora-guide.vtt"
-              srcLang="en"
-              label="English"
-              default
-            />
-            Your browser does not support the video tag.
-          </video>
+      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col justify-center">
+        <div className="bg-muted overflow-hidden rounded-xl border p-1.5 shadow-lg sm:rounded-2xl sm:p-3">
+          <div className="aspect-video max-h-[45vh] w-full overflow-hidden rounded-lg bg-black sm:max-h-none sm:rounded-xl">
+            <video className="h-full w-full object-contain" controls preload="metadata" playsInline>
+              <source
+                src="https://axiora-assets.s3.ap-south-1.amazonaws.com/Assets/Axiora-guide.mp4"
+                type="video/mp4"
+              />
+              <track
+                kind="captions"
+                src="/captions/axiora-guide.vtt"
+                srcLang="en"
+                label="English"
+                default
+              />
+              Your browser does not support the video tag.
+            </video>
+          </div>
         </div>
 
-        <div className="mt-6 flex justify-end">
-          <Button className="text-white" onClick={onChoosePlan}>
+        <div className="mt-4 flex justify-center sm:mt-6 sm:justify-end">
+          <Button className="w-full text-white sm:w-auto" onClick={onChoosePlan}>
             Choose Plan
             <ArrowRight className="size-4" />
           </Button>

@@ -102,4 +102,20 @@ export default tseslint.config(
       'jsx-a11y/anchor-has-content': 'off',
     },
   },
+  {
+    // jest.mock() factories and mocked object methods don't type-check cleanly against
+    // rules meant for production code (there's no eslint-plugin-jest here to teach the
+    // type-checker that `expect(obj.method).toHaveBeenCalledWith(...)` is safe), and
+    // jsdom API polyfills are intentionally empty stubs.
+    files: ['src/tests/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/unbound-method': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-empty-function': 'off',
+    },
+  },
 );
