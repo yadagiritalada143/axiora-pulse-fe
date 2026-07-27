@@ -1,12 +1,15 @@
-import { Download } from 'lucide-react';
+import { Download, Loader2 } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { toast } from 'sonner';
 
 import type { OrchestrationRunResponse } from '@/types/orchestration.types';
 import { Badge } from '@components/ui/badge';
 import { Button } from '@components/ui/button';
+import { useExportWorkspaceReport } from '@features/workspace/hooks/useWorkspaceMentor';
 import { cn } from '@lib/utils';
 
 interface IdeaValidationReportProps {
+  workspaceId: number;
   ideaTitle: string;
   response: OrchestrationRunResponse;
   onRetake: () => void;
@@ -18,19 +21,43 @@ const VERDICT_STYLES: Record<string, string> = {
   kill: 'bg-destructive/10 text-destructive',
 };
 
-export function IdeaValidationReport({ ideaTitle, response, onRetake }: IdeaValidationReportProps) {
+export function IdeaValidationReport({
+  workspaceId,
+  ideaTitle,
+  response,
+  onRetake,
+}: IdeaValidationReportProps) {
   const { result } = response;
   const agentResult = result ? Object.values(result.agent_results)[0] : undefined;
   const verdictStyle = result
     ? (VERDICT_STYLES[result.verdict.toLowerCase()] ?? 'bg-primary/10 text-primary')
     : '';
 
+  const exportReport = useExportWorkspaceReport(workspaceId);
+
+  function handleExport() {
+    exportReport.mutate(
+      { agent_name: 'full', format: 'pdf' },
+      {
+        onError: () => toast.error('Failed to export the report. Please try again.'),
+      },
+    );
+  }
+
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-foreground text-lg font-semibold sm:text-xl">Idea Validation Report</h1>
-        <Button className="gap-2 text-white">
-          <Download className="size-4" aria-hidden />
+        <Button
+          className="gap-2 text-white"
+          onClick={handleExport}
+          disabled={exportReport.isPending}
+        >
+          {exportReport.isPending ? (
+            <Loader2 className="size-4 animate-spin" aria-hidden />
+          ) : (
+            <Download className="size-4" aria-hidden />
+          )}
           Export
         </Button>
       </div>

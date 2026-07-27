@@ -25,10 +25,8 @@ export function ChatBubble({ align, avatarLabel, timestamp, children }: ChatBubb
       <div className={cn('flex max-w-[75%] flex-col gap-1', isRight && 'items-end')}>
         <div
           className={cn(
-            'rounded-2xl px-4 py-2.5',
-            isRight
-              ? 'bg-primary text-primary-foreground rounded-tr-sm'
-              : 'bg-muted text-foreground rounded-tl-sm',
+            'bg-muted text-foreground rounded-2xl px-4 py-2.5',
+            isRight ? 'rounded-tr-sm' : 'rounded-tl-sm',
           )}
         >
           {children}

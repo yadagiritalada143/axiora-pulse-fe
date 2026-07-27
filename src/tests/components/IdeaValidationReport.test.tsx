@@ -3,6 +3,13 @@ import userEvent from '@testing-library/user-event';
 
 import type { OrchestrationRunResponse } from '@/types/orchestration.types';
 import { IdeaValidationReport } from '@features/ideaValidation/components/IdeaValidationReport';
+import { useExportWorkspaceReport } from '@features/workspace/hooks/useWorkspaceMentor';
+
+jest.mock('@features/workspace/hooks/useWorkspaceMentor', () => ({
+  useExportWorkspaceReport: jest.fn(),
+}));
+
+const mockedUseExportWorkspaceReport = useExportWorkspaceReport as jest.Mock;
 
 const RESPONSE: OrchestrationRunResponse = {
   run_id: 'run-1',
@@ -50,9 +57,22 @@ const RESPONSE: OrchestrationRunResponse = {
 };
 
 describe('IdeaValidationReport', () => {
+  beforeEach(() => {
+    mockedUseExportWorkspaceReport.mockReturnValue({ mutate: jest.fn(), isPending: false });
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('renders the validation score, verdict, and report sections from the response', () => {
     render(
-      <IdeaValidationReport ideaTitle="Inventory AI" response={RESPONSE} onRetake={jest.fn()} />,
+      <IdeaValidationReport
+        workspaceId={1}
+        ideaTitle="Inventory AI"
+        response={RESPONSE}
+        onRetake={jest.fn()}
+      />,
     );
 
     expect(screen.getByText('82')).toBeInTheDocument();
@@ -75,11 +95,38 @@ describe('IdeaValidationReport', () => {
     ).toBeInTheDocument();
   });
 
+  it('exports the full report as a PDF when the Export button is clicked', async () => {
+    const mutate = jest.fn();
+    mockedUseExportWorkspaceReport.mockReturnValue({ mutate, isPending: false });
+    const user = userEvent.setup();
+
+    render(
+      <IdeaValidationReport
+        workspaceId={1}
+        ideaTitle="Inventory AI"
+        response={RESPONSE}
+        onRetake={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /export/i }));
+
+    expect(mutate).toHaveBeenCalledWith(
+      { agent_name: 'full', format: 'pdf' },
+      expect.objectContaining({ onError: expect.any(Function) as unknown }),
+    );
+  });
+
   it('calls onRetake when the Retake button is clicked', async () => {
     const onRetake = jest.fn();
     const user = userEvent.setup();
     render(
-      <IdeaValidationReport ideaTitle="Inventory AI" response={RESPONSE} onRetake={onRetake} />,
+      <IdeaValidationReport
+        workspaceId={1}
+        ideaTitle="Inventory AI"
+        response={RESPONSE}
+        onRetake={onRetake}
+      />,
     );
 
     await user.click(screen.getByRole('button', { name: 'Retake' }));
@@ -97,6 +144,7 @@ describe('IdeaValidationReport', () => {
 
     render(
       <IdeaValidationReport
+        workspaceId={1}
         ideaTitle="Inventory AI"
         response={failedResponse}
         onRetake={jest.fn()}

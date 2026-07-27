@@ -10,6 +10,17 @@ import {
 import type { Workspace } from '@features/workspace/types';
 import WorkspacePage from '@pages/WorkspacePage';
 
+// `react-markdown`/`remark-gfm` are ESM-only and aren't transformable under the shared Jest
+// config (out of scope here). They're only reachable because `@features/workspace/components`
+// is a barrel that also re-exports `WorkspaceMentorChat` (which renders markdown) - stub them
+// out so requiring the barrel doesn't blow up, matching the pattern used by chat component tests.
+jest.mock('remark-gfm', () => () => null);
+jest.mock('react-markdown', () => {
+  return function ReactMarkdown({ children }: { children: string }) {
+    return <p>{children}</p>;
+  };
+});
+
 jest.mock('@features/workspace/hooks/useWorkspaces', () => ({
   useWorkspaces: jest.fn(),
   useDeleteWorkspace: jest.fn(),

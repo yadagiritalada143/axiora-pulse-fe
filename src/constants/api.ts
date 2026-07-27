@@ -32,6 +32,12 @@ export const API_ENDPOINTS = {
     DETAIL: (workspaceId: number) => `/v1/workspaces/${workspaceId}`,
     UPDATE: (workspaceId: number) => `/v1/workspaces/${workspaceId}`,
     DELETE: (workspaceId: number) => `/v1/workspaces/${workspaceId}`,
+    CHAT: (workspaceId: number) => `/v1/workspaces/${workspaceId}/chat`,
+    STATE: (workspaceId: number) => `/v1/workspaces/${workspaceId}/state`,
+    RESET: (workspaceId: number) => `/v1/workspaces/${workspaceId}/reset`,
+    REPORT: (workspaceId: number, agentName: string) =>
+      `/v1/workspaces/${workspaceId}/reports/${agentName}`,
+    REPORT_EXPORT: (workspaceId: number) => `/v1/workspaces/${workspaceId}/reports/export`,
   },
 
   BILLING: {

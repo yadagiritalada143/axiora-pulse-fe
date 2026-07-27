@@ -1,14 +1,9 @@
-import { ArrowLeft, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { Bot, FileText, Loader2, ShieldCheck, TrendingUp, Users } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 
-import type { OrchestrationRunResponse } from '@/types/orchestration.types';
-import { ROUTES } from '@constants/routes';
-import {
-  IdeaInputForm,
-  IdeaValidationReport,
-  MentorShell,
-} from '@features/ideaValidation/components';
+import { ROUTES, buildWorkspaceRoute } from '@constants/routes';
+import { MentorShell, type MentorNavItem } from '@features/ideaValidation/components';
+import { WorkspaceMentorChat } from '@features/workspace/components';
 import { useWorkspace } from '@features/workspace/hooks/useWorkspaces';
 
 export default function WorkspaceDetailPage() {
@@ -16,11 +11,21 @@ export default function WorkspaceDetailPage() {
   const numericId = Number(workspaceId);
   const { data: workspace, isLoading, isError } = useWorkspace(numericId);
 
-  const [submittedTitle, setSubmittedTitle] = useState('');
-  const [validation, setValidation] = useState<OrchestrationRunResponse | null>(null);
+  const navItems: MentorNavItem[] = [
+    {
+      label: 'AI Mentor',
+      icon: Bot,
+      href: workspaceId ? buildWorkspaceRoute(workspaceId) : ROUTES.DASHBOARD,
+      end: true,
+    },
+    { label: 'Founder Intelligence', icon: Users, disabled: true },
+    { label: 'Startup Intelligence', icon: TrendingUp, disabled: true },
+    { label: 'Documents & reports', icon: FileText, disabled: true },
+    { label: 'Risk Management', icon: ShieldCheck, disabled: true },
+  ];
 
   return (
-    <MentorShell>
+    <MentorShell navItems={navItems} navSectionLabel={workspace?.name ?? 'Workspace'}>
       {isLoading ? (
         <div className="flex h-[60vh] items-center justify-center">
           <Loader2 className="text-muted-foreground size-6 animate-spin" aria-hidden />
@@ -31,53 +36,12 @@ export default function WorkspaceDetailPage() {
           <p className="text-muted-foreground text-sm">
             This workspace doesn&apos;t exist or you don&apos;t have access to it.
           </p>
-          <Link to={ROUTES.WORKSPACE} className="text-primary text-sm font-medium hover:underline">
+          <Link to={ROUTES.DASHBOARD} className="text-primary text-sm font-medium hover:underline">
             Back to workspaces
           </Link>
         </div>
       ) : (
-        <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-          <div className="border-border flex flex-col gap-3 border-b pb-3">
-            <Link
-              to={ROUTES.WORKSPACE}
-              className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs font-medium transition-colors"
-            >
-              <ArrowLeft className="size-3.5" aria-hidden />
-              Workspaces
-            </Link>
-
-            <div>
-              <h1 className="text-foreground text-xl font-semibold tracking-tight sm:text-2xl">
-                {workspace.name}
-              </h1>
-              {workspace.description ? (
-                <p className="text-muted-foreground mt-1 text-sm">{workspace.description}</p>
-              ) : null}
-            </div>
-
-            <div className="flex items-center gap-6 text-sm">
-              <span className="text-primary border-primary -mb-px border-b-2 pb-2 font-medium">
-                AI Mentor
-              </span>
-            </div>
-          </div>
-
-          {validation ? (
-            <IdeaValidationReport
-              ideaTitle={submittedTitle}
-              response={validation}
-              onRetake={() => setValidation(null)}
-            />
-          ) : (
-            <IdeaInputForm
-              workspaceId={String(workspace.id)}
-              onValidated={(response, title) => {
-                setSubmittedTitle(title);
-                setValidation(response);
-              }}
-            />
-          )}
-        </div>
+        <WorkspaceMentorChat workspaceId={workspace.id} />
       )}
     </MentorShell>
   );
