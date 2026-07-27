@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { LayoutGrid, ListChecks } from 'lucide-react';
 import { MemoryRouter } from 'react-router-dom';
 
 import { MentorShell } from '@features/ideaValidation/components/MentorShell';
@@ -52,5 +53,37 @@ describe('MentorShell', () => {
     await user.click(overlay);
 
     expect(nav.className).toContain('-translate-x-full');
+  });
+
+  it('renders custom nav items and section label when provided', () => {
+    render(
+      <MemoryRouter>
+        <MentorShell
+          overviewItem={{
+            label: 'Overview',
+            icon: LayoutGrid,
+            href: '/admin/dashboard',
+            end: true,
+          }}
+          navItems={[
+            {
+              label: 'Interactive Questions',
+              icon: ListChecks,
+              href: '/admin/interactive-questions',
+            },
+          ]}
+          navSectionLabel="Admin"
+        >
+          <p>Admin content</p>
+        </MentorShell>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText('Admin')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Interactive Questions' })).toHaveAttribute(
+      'href',
+      '/admin/interactive-questions',
+    );
+    expect(screen.queryByText('Workspace')).not.toBeInTheDocument();
   });
 });

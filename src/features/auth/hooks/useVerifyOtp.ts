@@ -17,8 +17,8 @@ export function useVerifyOtp() {
     mutationFn: (payload: VerifyOtpRequest) => authService.verifyOTP(payload),
 
     onSuccess: (response) => {
-      if (response.status === 'success' && response.jwt) {
-        setAuthenticated(response.jwt);
+      if (response.status === 'success') {
+        setAuthenticated(response.access_token, response.refresh_token);
         setOnboardingPending(true);
         void navigate(ROUTES.DASHBOARD);
         return;

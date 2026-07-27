@@ -12,15 +12,23 @@ export function useVerifyLogin() {
   const navigate = useNavigate();
   const setAuthenticated = useAuthStore((state) => state.setAuthenticated);
   const setHasActivePlan = useAuthStore((state) => state.setHasActivePlan);
+  const setRole = useAuthStore((state) => state.setRole);
 
   return useMutation({
     mutationFn: (payload: VerifyLoginRequest) => authService.verifyLogin(payload),
     onSuccess: (response) => {
       if (response.status === 'success') {
         setAuthenticated(response.access_token, response.refresh_token);
+        setRole(response.role);
+        toast.success(response.message || 'Login successful.');
+
+        if (response.role === 'admin') {
+          void navigate(ROUTES.ADMIN_DASHBOARD);
+          return;
+        }
+
         const hasActivePlan = response.hasActivePlan ?? false;
         setHasActivePlan(hasActivePlan);
-        toast.success(response.message || 'Login successful.');
         void navigate(hasActivePlan ? ROUTES.DASHBOARD : ROUTES.PRICING);
         return;
       }

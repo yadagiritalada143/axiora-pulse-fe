@@ -133,8 +133,15 @@ describe('useRegister', () => {
 });
 
 describe('useVerifyOtp', () => {
-  it('authenticates and navigates to the dashboard on a jwt response', async () => {
-    verifyOTP.mockResolvedValue({ status: 'success', jwt: 'jwt-token', message: '' });
+  it('authenticates and navigates to the dashboard on a successful response', async () => {
+    verifyOTP.mockResolvedValue({
+      status: 'success',
+      message: '',
+      access_token: 'access-token',
+      refresh_token: 'refresh-token',
+      token_type: 'bearer',
+      expires_in_minutes: 60,
+    });
     const { result } = renderHook(() => useVerifyOtp(), { wrapper: createWrapper() });
 
     await result.current.mutateAsync({ id: 1, otp: 111111, flow: 'register' });
@@ -173,6 +180,7 @@ describe('useVerifyLogin', () => {
       access_token: 'a',
       refresh_token: 'r',
       message: 'Welcome',
+      role: 'user',
       hasActivePlan: true,
     });
     const { result } = renderHook(() => useVerifyLogin(), { wrapper: createWrapper() });
@@ -181,6 +189,7 @@ describe('useVerifyLogin', () => {
 
     expect(useAuthStore.getState().isAuthenticated).toBe(true);
     expect(useAuthStore.getState().hasActivePlan).toBe(true);
+    expect(useAuthStore.getState().role).toBe('user');
     expect(mockNavigate).toHaveBeenCalledWith(ROUTES.DASHBOARD);
   });
 
@@ -190,6 +199,7 @@ describe('useVerifyLogin', () => {
       access_token: 'a',
       refresh_token: 'r',
       message: '',
+      role: 'user',
     });
     const { result } = renderHook(() => useVerifyLogin(), { wrapper: createWrapper() });
 

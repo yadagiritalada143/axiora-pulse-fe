@@ -34,6 +34,7 @@ const mockedToastSuccess = jest.mocked(toast.success);
 const mockedToastError = jest.mocked(toast.error);
 const setAuthenticated = jest.fn();
 const setHasActivePlan = jest.fn();
+const setRole = jest.fn();
 
 function createWrapper() {
   const queryClient = new QueryClient({
@@ -56,6 +57,7 @@ describe('useVerifyLogin', () => {
         resetToken: null,
         onboardingPending: false,
         hasActivePlan: false,
+        role: null,
         setMfaData: jest.fn(),
         setAuthenticated,
         updateUser: jest.fn(),
@@ -65,6 +67,7 @@ describe('useVerifyLogin', () => {
         clearResetData: jest.fn(),
         setOnboardingPending: jest.fn(),
         setHasActivePlan,
+        setRole,
       }),
     );
   });
@@ -77,6 +80,7 @@ describe('useVerifyLogin', () => {
       refresh_token: 'refresh-token',
       token_type: 'Bearer',
       expires_in_minutes: 60,
+      role: 'user',
       hasActivePlan: true,
     });
 
@@ -91,6 +95,7 @@ describe('useVerifyLogin', () => {
       otp: 123456,
     });
     expect(setAuthenticated).toHaveBeenCalledWith('access-token', 'refresh-token');
+    expect(setRole).toHaveBeenCalledWith('user');
     expect(setHasActivePlan).toHaveBeenCalledWith(true);
     expect(mockedToastSuccess).toHaveBeenCalledWith('Login successful.');
     expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
@@ -104,6 +109,7 @@ describe('useVerifyLogin', () => {
       refresh_token: 'refresh-token',
       token_type: 'Bearer',
       expires_in_minutes: 60,
+      role: 'user',
       hasActivePlan: false,
     });
 
@@ -125,6 +131,7 @@ describe('useVerifyLogin', () => {
       refresh_token: 'refresh-token',
       token_type: 'Bearer',
       expires_in_minutes: 60,
+      role: 'user',
     });
 
     const { result } = renderHook(() => useVerifyLogin(), { wrapper: createWrapper() });
@@ -135,6 +142,29 @@ describe('useVerifyLogin', () => {
 
     expect(setHasActivePlan).toHaveBeenCalledWith(false);
     expect(mockNavigate).toHaveBeenCalledWith('/pricing');
+  });
+
+  it('bypasses plan selection and navigates admins to the admin dashboard', async () => {
+    mockedAuthService.verifyLogin.mockResolvedValue({
+      status: 'success',
+      message: 'Login successful.',
+      access_token: 'access-token',
+      refresh_token: 'refresh-token',
+      token_type: 'Bearer',
+      expires_in_minutes: 60,
+      role: 'admin',
+    });
+
+    const { result } = renderHook(() => useVerifyLogin(), { wrapper: createWrapper() });
+
+    result.current.mutate({ emailOrMobile: 'admin@example.com', otp: 123456 });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(setAuthenticated).toHaveBeenCalledWith('access-token', 'refresh-token');
+    expect(setRole).toHaveBeenCalledWith('admin');
+    expect(setHasActivePlan).not.toHaveBeenCalled();
+    expect(mockNavigate).toHaveBeenCalledWith('/admin/dashboard');
   });
 
   it('shows an error toast and does not authenticate when verification fails', async () => {

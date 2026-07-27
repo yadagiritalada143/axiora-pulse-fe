@@ -8,3 +8,6 @@ export interface Timestamps {
 }
 
 export type AsyncStatus = 'idle' | 'loading' | 'success' | 'error';
+
+/** Account-level role returned by auth endpoints. Only 'user' and 'admin' exist for now. */
+export type AccountRole = 'user' | 'admin';

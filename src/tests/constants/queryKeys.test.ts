@@ -26,4 +26,8 @@ describe('queryKeys', () => {
       'interactiveQuestions',
     ]);
   });
+
+  it('builds admin keys', () => {
+    expect(queryKeys.admin.interactiveQuestions()).toEqual(['admin', 'interactiveQuestions']);
+  });
 });

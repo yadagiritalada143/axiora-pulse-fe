@@ -55,6 +55,7 @@ describe('useVerifyOtp', () => {
         resetToken: null,
         onboardingPending: false,
         hasActivePlan: false,
+        role: null,
         setMfaData: jest.fn(),
         setAuthenticated,
         updateUser: jest.fn(),
@@ -64,6 +65,7 @@ describe('useVerifyOtp', () => {
         clearResetData: jest.fn(),
         setOnboardingPending,
         setHasActivePlan: jest.fn(),
+        setRole: jest.fn(),
       }),
     );
   });
@@ -72,7 +74,10 @@ describe('useVerifyOtp', () => {
     mockedAuthService.verifyOTP.mockResolvedValue({
       status: 'success',
       message: 'Verified.',
-      jwt: 'jwt-token',
+      access_token: 'access-token',
+      refresh_token: 'refresh-token',
+      token_type: 'bearer',
+      expires_in_minutes: 60,
     });
 
     const { result } = renderHook(() => useVerifyOtp(), { wrapper: createWrapper() });
@@ -86,7 +91,7 @@ describe('useVerifyOtp', () => {
       otp: 123456,
       flow: 'register',
     });
-    expect(setAuthenticated).toHaveBeenCalledWith('jwt-token');
+    expect(setAuthenticated).toHaveBeenCalledWith('access-token', 'refresh-token');
     expect(setOnboardingPending).toHaveBeenCalledWith(true);
     expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
   });
@@ -95,7 +100,7 @@ describe('useVerifyOtp', () => {
     mockedAuthService.verifyOTP.mockResolvedValue({
       status: 'failed',
       message: 'The code you entered is incorrect.',
-    });
+    } as Awaited<ReturnType<typeof authService.verifyOTP>>);
 
     const { result } = renderHook(() => useVerifyOtp(), { wrapper: createWrapper() });
 
@@ -107,22 +112,6 @@ describe('useVerifyOtp', () => {
     expect(setAuthenticated).not.toHaveBeenCalled();
     expect(setOnboardingPending).not.toHaveBeenCalled();
     expect(mockNavigate).not.toHaveBeenCalled();
-  });
-
-  it('shows the response message when status is success but no jwt is returned', async () => {
-    mockedAuthService.verifyOTP.mockResolvedValue({
-      status: 'success',
-      message: 'Missing token.',
-    });
-
-    const { result } = renderHook(() => useVerifyOtp(), { wrapper: createWrapper() });
-
-    result.current.mutate({ id: 42, otp: 111111, flow: 'register' });
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-
-    expect(mockedToastError).toHaveBeenCalledWith('Missing token.');
-    expect(setAuthenticated).not.toHaveBeenCalled();
   });
 
   it('shows an error toast when verification rejects', async () => {

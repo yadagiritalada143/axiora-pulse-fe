@@ -15,3 +15,10 @@ export interface InteractiveAnswerPayload {
 }
 
 export type InteractiveAnswerDraft = Record<number, string[]>;
+
+export interface CreateInteractiveQuestionPayload {
+  question: string;
+  question_type: InteractiveQuestionType;
+  optional: boolean;
+  answers?: string[];
+}

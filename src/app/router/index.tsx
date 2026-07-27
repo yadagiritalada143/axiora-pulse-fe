@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 
+import { AdminDashboardLayout } from '@app/layouts/AdminDashboardLayout';
 import { AuthLayout } from '@app/layouts/AuthLayout';
 import { DashboardLayout } from '@app/layouts/DashboardLayout';
 import { ErrorLayout } from '@app/layouts/ErrorLayout';
@@ -7,6 +8,7 @@ import { PricingLayout } from '@app/layouts/PricingLayout';
 import { PublicLayout } from '@app/layouts/PublicLayout';
 import { ROUTES } from '@constants/routes';
 
+import { AdminRoute } from './AdminRoute';
 import { GuestRoute } from './GuestRoute';
 import { HomeRedirect } from './HomeRedirect';
 import { lazyPage } from './lazyPage';
@@ -97,6 +99,24 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.PROFILE,
             element: lazyPage(() => import('@pages/ProfilePage')),
+          },
+        ],
+      },
+      {
+        element: <AdminRoute />,
+        children: [
+          {
+            element: <AdminDashboardLayout />,
+            children: [
+              {
+                path: ROUTES.ADMIN_DASHBOARD,
+                element: lazyPage(() => import('@pages/AdminDashboardPage')),
+              },
+              {
+                path: ROUTES.ADMIN_INTERACTIVE_QUESTIONS,
+                element: lazyPage(() => import('@pages/AdminInteractiveQuestionsPage')),
+              },
+            ],
           },
         ],
       },

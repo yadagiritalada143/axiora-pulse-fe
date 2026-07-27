@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 import type { User } from '@/types/api.types';
+import type { AccountRole } from '@/types/common.types';
 import { STORAGE_KEYS } from '@constants/storage';
 import { tokenManager } from '@services/api/tokenManager';
 
@@ -21,6 +22,7 @@ interface AuthState {
   resetToken: string | null;
   onboardingPending: boolean;
   hasActivePlan: boolean;
+  role: AccountRole | null;
 }
 
 interface AuthActions {
@@ -33,6 +35,7 @@ interface AuthActions {
   clearResetData: () => void;
   setOnboardingPending: (pending: boolean) => void;
   setHasActivePlan: (hasActivePlan: boolean) => void;
+  setRole: (role: AccountRole) => void;
 }
 
 export const useAuthStore = create<AuthState & AuthActions>()(
@@ -50,6 +53,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       onboardingPending: false,
 
       hasActivePlan: false,
+
+      role: null,
 
       setMfaData: (data) => {
         set({
@@ -85,11 +90,16 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
           onboardingPending: false,
           hasActivePlan: false,
+          role: null,
         });
       },
 
       setHasActivePlan: (hasActivePlan) => {
         set({ hasActivePlan });
+      },
+
+      setRole: (role) => {
+        set({ role });
       },
 
       setOnboardingPending: (pending) => {

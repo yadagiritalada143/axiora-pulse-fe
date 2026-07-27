@@ -41,6 +41,7 @@ function mockResetToken(resetToken: string | null) {
       resetToken,
       onboardingPending: false,
       hasActivePlan: false,
+      role: null,
       setMfaData: jest.fn(),
       setAuthenticated: jest.fn(),
       updateUser: jest.fn(),
@@ -50,6 +51,7 @@ function mockResetToken(resetToken: string | null) {
       clearResetData: jest.fn(),
       setOnboardingPending: jest.fn(),
       setHasActivePlan: jest.fn(),
+      setRole: jest.fn(),
     }),
   );
 }

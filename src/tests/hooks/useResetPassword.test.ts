@@ -55,6 +55,7 @@ describe('useResetPassword', () => {
         resetToken: 'reset-token',
         onboardingPending: false,
         hasActivePlan: false,
+        role: null,
         setMfaData: jest.fn(),
         setAuthenticated: jest.fn(),
         updateUser: jest.fn(),
@@ -64,6 +65,7 @@ describe('useResetPassword', () => {
         clearResetData,
         setOnboardingPending: jest.fn(),
         setHasActivePlan: jest.fn(),
+        setRole: jest.fn(),
       }),
     );
   });

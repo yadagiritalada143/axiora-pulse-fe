@@ -31,4 +31,8 @@ export const queryKeys = {
   onboarding: {
     interactiveQuestions: () => ['onboarding', 'interactiveQuestions'] as const,
   },
+
+  admin: {
+    interactiveQuestions: () => ['admin', 'interactiveQuestions'] as const,
+  },
 } as const;

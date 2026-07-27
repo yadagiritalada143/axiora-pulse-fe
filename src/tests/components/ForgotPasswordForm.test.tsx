@@ -84,6 +84,7 @@ function mockAuthStore() {
       resetToken: 'reset-token-abc',
       onboardingPending: false,
       hasActivePlan: false,
+      role: null,
       setMfaData: jest.fn(),
       setAuthenticated: jest.fn(),
       updateUser: jest.fn(),
@@ -93,6 +94,7 @@ function mockAuthStore() {
       clearResetData: jest.fn(),
       setOnboardingPending: jest.fn(),
       setHasActivePlan: jest.fn(),
+      setRole: jest.fn(),
     }),
   );
 }
@@ -281,6 +283,7 @@ describe('ForgotPasswordForm', () => {
         resetToken: null,
         onboardingPending: false,
         hasActivePlan: false,
+        role: null,
         setMfaData: jest.fn(),
         setAuthenticated: jest.fn(),
         updateUser: jest.fn(),
@@ -290,6 +293,7 @@ describe('ForgotPasswordForm', () => {
         clearResetData: jest.fn(),
         setOnboardingPending: jest.fn(),
         setHasActivePlan: jest.fn(),
+        setRole: jest.fn(),
       }),
     );
     const user = userEvent.setup();
@@ -331,6 +335,7 @@ describe('ForgotPasswordForm', () => {
         resetToken: null,
         onboardingPending: false,
         hasActivePlan: false,
+        role: null,
         setMfaData: jest.fn(),
         setAuthenticated: jest.fn(),
         updateUser: jest.fn(),
@@ -340,6 +345,7 @@ describe('ForgotPasswordForm', () => {
         clearResetData: jest.fn(),
         setOnboardingPending: jest.fn(),
         setHasActivePlan: jest.fn(),
+        setRole: jest.fn(),
       }),
     );
     const user = userEvent.setup();

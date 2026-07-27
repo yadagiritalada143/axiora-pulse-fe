@@ -31,7 +31,7 @@ import { ROUTES } from '@constants/routes';
 import { cn } from '@lib/utils';
 import { useAuthStore } from '@store/auth.store';
 
-interface MentorNavItem {
+export interface MentorNavItem {
   label: string;
   icon: LucideIcon;
   href?: string;
@@ -56,7 +56,19 @@ const WORKSPACE_NAV_ITEMS: MentorNavItem[] = [
   { label: 'Risk Management', icon: ShieldCheck, disabled: true },
 ];
 
-export function MentorShell({ children }: { children: ReactNode }) {
+interface MentorShellProps {
+  children: ReactNode;
+  overviewItem?: MentorNavItem;
+  navItems?: MentorNavItem[];
+  navSectionLabel?: string;
+}
+
+export function MentorShell({
+  children,
+  overviewItem = OVERVIEW_ITEM,
+  navItems = WORKSPACE_NAV_ITEMS,
+  navSectionLabel = 'Workspace',
+}: MentorShellProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
@@ -109,11 +121,13 @@ export function MentorShell({ children }: { children: ReactNode }) {
           </div>
 
           <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-2" aria-label="Primary">
-            <MentorNavButton item={OVERVIEW_ITEM} onNavigate={closeNav} />
+            <MentorNavButton item={overviewItem} onNavigate={closeNav} />
 
-            <p className="text-muted-foreground px-3 pt-4 pb-1 text-xs font-medium">Workspace</p>
+            <p className="text-muted-foreground px-3 pt-4 pb-1 text-xs font-medium">
+              {navSectionLabel}
+            </p>
 
-            {WORKSPACE_NAV_ITEMS.map((item) => (
+            {navItems.map((item) => (
               <MentorNavButton key={item.label} item={item} onNavigate={closeNav} />
             ))}
           </nav>

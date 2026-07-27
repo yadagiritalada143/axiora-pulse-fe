@@ -68,6 +68,7 @@ describe('authService', () => {
       refresh_token: 'refresh-1',
       token_type: 'bearer',
       expires_in_minutes: 30,
+      role: 'user',
     };
     mockedApiClient.post.mockResolvedValue({ data: responseBody });
 
@@ -95,7 +96,14 @@ describe('authService', () => {
   });
 
   it('verifyOTP posts the payload and returns the response body', async () => {
-    const responseBody: VerifyOtpResponse = { status: 'success', message: 'Verified' };
+    const responseBody: VerifyOtpResponse = {
+      status: 'success',
+      message: 'Verified',
+      access_token: 'access-token',
+      refresh_token: 'refresh-token',
+      token_type: 'bearer',
+      expires_in_minutes: 60,
+    };
     mockedApiClient.post.mockResolvedValue({ data: responseBody });
 
     const result = await authService.verifyOTP({ id: 1, otp: 123456, flow: 'register' });
