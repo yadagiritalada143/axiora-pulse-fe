@@ -1,4 +1,4 @@
-import { Building2, ChevronRight, Clock, MoreHorizontal, Trash2 } from 'lucide-react';
+import { Building2, ChevronRight, Clock, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import type { KeyboardEvent } from 'react';
 
 import { Button } from '@components/ui/button';
@@ -18,9 +18,10 @@ interface WorkspaceCardProps {
   workspace: Workspace;
   onClick: (workspaceId: number) => void;
   onDelete: (workspaceId: number) => void;
+  onEdit: (workspaceId: number) => void;
 }
 
-export function WorkspaceCard({ workspace, onClick, onDelete }: WorkspaceCardProps) {
+export function WorkspaceCard({ workspace, onClick, onDelete, onEdit }: WorkspaceCardProps) {
   const updatedLabel = formatRelativeTime(workspace.updated_at || workspace.created_at);
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
@@ -34,7 +35,9 @@ export function WorkspaceCard({ workspace, onClick, onDelete }: WorkspaceCardPro
     <Card
       role="button"
       tabIndex={0}
-      onClick={() => onClick(workspace.id)}
+      onClick={() => {
+        onClick(workspace.id);
+      }}
       onKeyDown={handleKeyDown}
       className={cn(
         'group focus-visible:ring-ring relative cursor-pointer gap-0 overflow-hidden py-0',
@@ -79,6 +82,15 @@ export function WorkspaceCard({ workspace, onClick, onDelete }: WorkspaceCardPro
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
+            <DropdownMenuItem
+              onClick={(event) => {
+                event.stopPropagation();
+                onEdit(workspace.id);
+              }}
+            >
+              <Pencil className="size-4" />
+              Edit
+            </DropdownMenuItem>
             <DropdownMenuItem
               variant="destructive"
               onClick={(event) => {

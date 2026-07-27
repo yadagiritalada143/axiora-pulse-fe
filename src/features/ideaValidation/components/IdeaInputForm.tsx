@@ -34,10 +34,11 @@ const EXAMPLE_IDEAS = [
 ];
 
 interface IdeaInputFormProps {
+  workspaceId: string;
   onValidated: (response: OrchestrationRunResponse, title: string) => void;
 }
 
-export function IdeaInputForm({ onValidated }: IdeaInputFormProps) {
+export function IdeaInputForm({ workspaceId, onValidated }: IdeaInputFormProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const { mutate, isPending, error } = useRunOrchestration();
@@ -48,7 +49,7 @@ export function IdeaInputForm({ onValidated }: IdeaInputFormProps) {
     if (!canSubmit) return;
 
     const payload: OrchestrationRunRequest = {
-      workspace_id: '1',
+      workspace_id: workspaceId,
       idea_id: '1',
       workflow_type: 'idea_validation',
       idea: {

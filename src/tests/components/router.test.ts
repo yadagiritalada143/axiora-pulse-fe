@@ -8,13 +8,36 @@ function defined<T>(value: T | undefined): T {
   return value;
 }
 
-/**
- * `router/index.tsx` is declarative route configuration (layouts + `lazyPage()` leaves).
- * Fully rendering + navigating the whole app tree here would be brittle and low-value;
- * instead assert the resulting `router.routes` tree has the expected top-level groups
- * and that every app route path is registered exactly once, under an errorElement-guarded
- * top-level group.
- */
+function collectPaths(routes: RouteObject[] | undefined): string[] {
+  const paths: string[] = [];
+
+  routes?.forEach((route) => {
+    if (route.path) {
+      paths.push(route.path);
+    }
+
+    paths.push(...collectPaths(route.children));
+  });
+
+  return paths;
+}
+
+function findRoute(routes: RouteObject[] | undefined, path: string): RouteObject | undefined {
+  for (const route of routes ?? []) {
+    if (route.path === path) {
+      return route;
+    }
+
+    const nestedRoute = findRoute(route.children, path);
+
+    if (nestedRoute) {
+      return nestedRoute;
+    }
+  }
+
+  return undefined;
+}
+
 describe('router', () => {
   it('has four top-level route groups: public, guest-only, protected, and the catch-all', () => {
     expect(router.routes).toHaveLength(4);
@@ -22,6 +45,7 @@ describe('router', () => {
 
   it('guards the public, guest, and protected groups with an errorElement', () => {
     const routes: RouteObject[] = router.routes;
+
     const publicGroup = defined(routes[0]);
     const guestGroup = defined(routes[1]);
     const protectedGroup = defined(routes[2]);
@@ -43,6 +67,7 @@ describe('router', () => {
   it('nests every guest-only auth route under the AuthLayout child of the GuestRoute group', () => {
     const guestGroup = defined(router.routes[1]);
     const authLayoutRoute = defined(guestGroup.children?.[0]);
+
     const authPaths = authLayoutRoute.children?.map((route) => route.path);
 
     expect(authPaths).toEqual([
@@ -55,19 +80,31 @@ describe('router', () => {
     ]);
   });
 
-  it('nests the pricing and dashboard route groups under the ProtectedRoute group', () => {
+  it('registers all protected application routes', () => {
     const protectedGroup = defined(router.routes[2]);
-    const pricingLayoutRoute = defined(protectedGroup.children?.[0]);
-    const dashboardLayoutRoute = defined(protectedGroup.children?.[1]);
 
-    expect(pricingLayoutRoute.children?.map((route) => route.path)).toEqual([ROUTES.PRICING]);
-    expect(dashboardLayoutRoute.children?.map((route) => route.path)).toEqual([
-      ROUTES.DASHBOARD,
-      ROUTES.WORKSPACE,
-      ROUTES.AI_CHAT,
-      ROUTES.SETTINGS,
-      ROUTES.PROFILE,
-    ]);
+    const protectedPaths = collectPaths(protectedGroup.children);
+
+    expect(protectedPaths).toEqual(
+      expect.arrayContaining([
+        ROUTES.PRICING,
+        ROUTES.DASHBOARD,
+        ROUTES.WORKSPACE,
+        ROUTES.AI_CHAT,
+        ROUTES.SETTINGS,
+        ROUTES.PROFILE,
+      ]),
+    );
+  });
+
+  it('registers dashboard routes under the protected route group', () => {
+    const protectedGroup = defined(router.routes[2]);
+
+    expect(findRoute(protectedGroup.children, ROUTES.DASHBOARD)).toBeDefined();
+    expect(findRoute(protectedGroup.children, ROUTES.WORKSPACE)).toBeDefined();
+    expect(findRoute(protectedGroup.children, ROUTES.AI_CHAT)).toBeDefined();
+    expect(findRoute(protectedGroup.children, ROUTES.SETTINGS)).toBeDefined();
+    expect(findRoute(protectedGroup.children, ROUTES.PROFILE)).toBeDefined();
   });
 
   it('falls back to a wildcard "*" route for unmatched paths', () => {

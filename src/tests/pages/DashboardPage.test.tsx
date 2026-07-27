@@ -1,88 +1,102 @@
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 
-import type { OrchestrationRunResponse } from '@/types/orchestration.types';
 import DashboardPage from '@pages/DashboardPage';
 import { useAuthStore } from '@store/auth.store';
 
 jest.mock('@features/onboarding/components', () => ({
   OnboardingFlow: () => null,
-  InteractiveQuestionsFlow: () => null,
-}));
-jest.mock('@features/onboarding/hooks', () => ({
-  useInteractiveQuestions: () => ({ data: [] }),
 }));
 
 jest.mock('@features/ideaValidation/components', () => ({
-  IdeaInputForm: ({ onValidated }: { onValidated: (response: unknown, title: string) => void }) => (
-    <div>
-      <span>Idea input form</span>
-      <button type="button" onClick={() => onValidated({ run_id: 'run-1' }, 'My idea')}>
-        Fake submit
-      </button>
-    </div>
-  ),
-  IdeaValidationReport: ({
-    ideaTitle,
-    onRetake,
-  }: {
-    ideaTitle: string;
-    response: OrchestrationRunResponse;
-    onRetake: () => void;
-  }) => (
-    <div>
-      <span>Validation report for {ideaTitle}</span>
-      <button type="button" onClick={onRetake}>
-        Fake retake
-      </button>
-    </div>
+  MentorShell: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="mentor-shell">{children}</div>
   ),
 }));
 
-function setAuthState(overrides: { onboardingPending?: boolean; hasActivePlan?: boolean } = {}) {
+function renderDashboard() {
+  return render(
+    <MemoryRouter>
+      <DashboardPage />
+    </MemoryRouter>,
+  );
+}
+
+function setAuthState(overrides: Partial<ReturnType<typeof useAuthStore.getState>> = {}) {
   useAuthStore.setState({
-    onboardingPending: overrides.onboardingPending ?? false,
-    hasActivePlan: overrides.hasActivePlan ?? true,
+    onboardingPending: false,
+    hasActivePlan: true,
+    user: null,
+    ...overrides,
   });
 }
 
 describe('DashboardPage', () => {
   afterEach(() => {
-    useAuthStore.setState({ onboardingPending: false, hasActivePlan: false });
+    useAuthStore.setState({
+      onboardingPending: false,
+      hasActivePlan: false,
+      user: null,
+    });
   });
 
-  it('renders the idea input form when no validation has been submitted yet', () => {
+  it('renders the dashboard content', () => {
     setAuthState();
 
-    render(<DashboardPage />);
+    renderDashboard();
 
-    expect(screen.getByText('Idea input form')).toBeInTheDocument();
-    expect(screen.queryByText(/Validation report for/)).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', {
+        name: /welcome back/i,
+      }),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByRole('link', {
+        name: /go to workspaces/i,
+      }),
+    ).toBeInTheDocument();
+
+    expect(screen.getByText(/start with a workspace/i)).toBeInTheDocument();
+
+    expect(screen.getByText('Workspaces', { exact: true })).toBeInTheDocument();
+
+    expect(screen.getByText('AI Mentor', { exact: true })).toBeInTheDocument();
+
+    expect(screen.getByText('AI Chat', { exact: true })).toBeInTheDocument();
+
+    expect(screen.getByTestId('mentor-shell')).toBeInTheDocument();
   });
 
-  it('switches to the validation report once the idea form reports a successful run', async () => {
-    setAuthState();
-    const user = userEvent.setup();
+  it('greets the user by name when user exists', () => {
+    setAuthState({
+      user: {
+        id: 'user-1',
+        email: 'john@example.com',
+        name: 'John',
+        avatarUrl: '',
+        role: undefined as never,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    });
 
-    render(<DashboardPage />);
+    renderDashboard();
 
-    await user.click(screen.getByRole('button', { name: 'Fake submit' }));
-
-    expect(screen.getByText('Validation report for My idea')).toBeInTheDocument();
-    expect(screen.queryByText('Idea input form')).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', {
+        name: /welcome back, john\./i,
+      }),
+    ).toBeInTheDocument();
   });
 
-  it('returns to the idea input form when the report requests a retake', async () => {
-    setAuthState();
-    const user = userEvent.setup();
+  it('renders the dashboard when onboarding is pending', () => {
+    setAuthState({
+      onboardingPending: true,
+    });
 
-    render(<DashboardPage />);
-    await user.click(screen.getByRole('button', { name: 'Fake submit' }));
-    expect(screen.getByText('Validation report for My idea')).toBeInTheDocument();
+    renderDashboard();
 
-    await user.click(screen.getByRole('button', { name: 'Fake retake' }));
-
-    expect(screen.getByText('Idea input form')).toBeInTheDocument();
-    expect(screen.queryByText(/Validation report for/)).not.toBeInTheDocument();
+    expect(screen.getByTestId('mentor-shell')).toBeInTheDocument();
   });
 });

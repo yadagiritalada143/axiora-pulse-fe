@@ -13,6 +13,7 @@ export const ROUTES = {
 
   DASHBOARD: '/dashboard',
   WORKSPACE: '/workspace',
+  WORKSPACE_DETAIL: '/workspace/:workspaceId',
   AI_CHAT: '/workspace/ai-chat',
   AI_CHAT_CONVERSATION: '/workspace/ai-chat/:conversationId',
   SETTINGS: '/settings',
@@ -42,4 +43,8 @@ export const PROTECTED_ROUTES: AppRoute[] = [
 
 export function buildConversationRoute(conversationId: string): string {
   return ROUTES.AI_CHAT_CONVERSATION.replace(':conversationId', conversationId);
+}
+
+export function buildWorkspaceRoute(workspaceId: number | string): string {
+  return ROUTES.WORKSPACE_DETAIL.replace(':workspaceId', String(workspaceId));
 }

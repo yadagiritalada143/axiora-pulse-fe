@@ -3,6 +3,7 @@ export interface Workspace {
   user_id: number;
   name: string;
   description: string;
+  state?: string;
   created_at: string;
   updated_at: string;
 }
@@ -15,6 +16,11 @@ export interface GetWorkspacesResponse {
 export interface CreateWorkspaceRequest {
   name: string;
   description?: string;
+}
+
+export interface UpdateWorkspaceRequest {
+  name: string;
+  description: string;
 }
 
 export interface DeleteWorkspaceResponse {

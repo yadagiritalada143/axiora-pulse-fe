@@ -30,6 +30,7 @@ export const API_ENDPOINTS = {
     LIST: '/v1/workspaces',
     CREATE: '/v1/workspaces',
     DETAIL: (workspaceId: number) => `/v1/workspaces/${workspaceId}`,
+    UPDATE: (workspaceId: number) => `/v1/workspaces/${workspaceId}`,
     DELETE: (workspaceId: number) => `/v1/workspaces/${workspaceId}`,
   },
 

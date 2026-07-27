@@ -3,3 +3,4 @@ export * from './CreateWorkspaceDialog';
 export * from './WorkspaceCard';
 export * from './DeleteWorkspaceDialog';
 export * from './WorkspaceGrid';
+export * from './EditWorkspaceDialog';

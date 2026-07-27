@@ -45,6 +45,7 @@ describe('WorkspaceGrid', () => {
         workspaces={workspaces}
         onWorkspaceClick={jest.fn()}
         onWorkspaceDelete={jest.fn()}
+        onWorkspaceEdit={jest.fn()}
       />,
     );
 
@@ -55,7 +56,12 @@ describe('WorkspaceGrid', () => {
 
   it('renders nothing when the workspace list is empty', () => {
     const { container } = render(
-      <WorkspaceGrid workspaces={[]} onWorkspaceClick={jest.fn()} onWorkspaceDelete={jest.fn()} />,
+      <WorkspaceGrid
+        workspaces={[]}
+        onWorkspaceClick={jest.fn()}
+        onWorkspaceDelete={jest.fn()}
+        onWorkspaceEdit={jest.fn()}
+      />,
     );
 
     expect(container.querySelectorAll('button')).toHaveLength(0);
@@ -71,6 +77,7 @@ describe('WorkspaceGrid', () => {
         workspaces={workspaces}
         onWorkspaceClick={onWorkspaceClick}
         onWorkspaceDelete={jest.fn()}
+        onWorkspaceEdit={jest.fn()}
       />,
     );
 
@@ -89,6 +96,7 @@ describe('WorkspaceGrid', () => {
         workspaces={[workspace]}
         onWorkspaceClick={jest.fn()}
         onWorkspaceDelete={onWorkspaceDelete}
+        onWorkspaceEdit={jest.fn()}
       />,
     );
 

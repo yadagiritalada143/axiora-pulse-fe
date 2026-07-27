@@ -15,7 +15,14 @@ const workspace: Workspace = {
 
 describe('WorkspaceCard', () => {
   it('renders the workspace name and description', () => {
-    render(<WorkspaceCard workspace={workspace} onClick={jest.fn()} onDelete={jest.fn()} />);
+    render(
+      <WorkspaceCard
+        workspace={workspace}
+        onClick={jest.fn()}
+        onDelete={jest.fn()}
+        onEdit={jest.fn()}
+      />,
+    );
 
     expect(screen.getByText('Rocket Idea')).toBeInTheDocument();
     expect(screen.getByText('A workspace for the rocket idea')).toBeInTheDocument();
@@ -27,6 +34,7 @@ describe('WorkspaceCard', () => {
         workspace={{ ...workspace, description: '' }}
         onClick={jest.fn()}
         onDelete={jest.fn()}
+        onEdit={jest.fn()}
       />,
     );
 
@@ -37,7 +45,14 @@ describe('WorkspaceCard', () => {
     const user = userEvent.setup();
     const onClick = jest.fn();
 
-    render(<WorkspaceCard workspace={workspace} onClick={onClick} onDelete={jest.fn()} />);
+    render(
+      <WorkspaceCard
+        workspace={workspace}
+        onClick={onClick}
+        onDelete={jest.fn()}
+        onEdit={jest.fn()}
+      />,
+    );
 
     await user.click(screen.getByText('Rocket Idea'));
 
@@ -47,7 +62,14 @@ describe('WorkspaceCard', () => {
   it('calls onClick when Enter is pressed on the card', () => {
     const onClick = jest.fn();
 
-    render(<WorkspaceCard workspace={workspace} onClick={onClick} onDelete={jest.fn()} />);
+    render(
+      <WorkspaceCard
+        workspace={workspace}
+        onClick={onClick}
+        onDelete={jest.fn()}
+        onEdit={jest.fn()}
+      />,
+    );
 
     const card = screen.getByText('Rocket Idea').closest('[role="button"]');
     expect(card).not.toBeNull();
@@ -63,7 +85,14 @@ describe('WorkspaceCard', () => {
     const user = userEvent.setup();
     const onDelete = jest.fn();
 
-    render(<WorkspaceCard workspace={workspace} onClick={jest.fn()} onDelete={onDelete} />);
+    render(
+      <WorkspaceCard
+        workspace={workspace}
+        onClick={jest.fn()}
+        onDelete={onDelete}
+        onEdit={jest.fn()}
+      />,
+    );
 
     await user.click(screen.getByRole('button', { name: 'Workspace actions' }));
     await user.click(await screen.findByText('Delete'));
@@ -75,7 +104,14 @@ describe('WorkspaceCard', () => {
     const user = userEvent.setup();
     const onClick = jest.fn();
 
-    render(<WorkspaceCard workspace={workspace} onClick={onClick} onDelete={jest.fn()} />);
+    render(
+      <WorkspaceCard
+        workspace={workspace}
+        onClick={onClick}
+        onDelete={jest.fn()}
+        onEdit={jest.fn()}
+      />,
+    );
 
     await user.click(screen.getByRole('button', { name: 'Workspace actions' }));
 

@@ -5,6 +5,7 @@ import type {
   CreateWorkspaceRequest,
   DeleteWorkspaceResponse,
   GetWorkspacesResponse,
+  UpdateWorkspaceRequest,
   Workspace,
 } from '../types';
 
@@ -23,6 +24,18 @@ export const workspaceService = {
 
   createWorkspace: async (payload: CreateWorkspaceRequest): Promise<Workspace> => {
     const { data } = await apiClient.post<Workspace>(API_ENDPOINTS.WORKSPACE.CREATE, payload);
+
+    return data;
+  },
+
+  updateWorkspace: async ({
+    id,
+    payload,
+  }: {
+    id: number;
+    payload: UpdateWorkspaceRequest;
+  }): Promise<Workspace> => {
+    const { data } = await apiClient.put<Workspace>(API_ENDPOINTS.WORKSPACE.UPDATE(id), payload);
 
     return data;
   },

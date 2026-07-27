@@ -1,10 +1,13 @@
 import { Loader, Plus } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
+import { buildWorkspaceRoute } from '@/constants/routes';
 import { Button } from '@components/ui/button';
 import {
   CreateWorkspaceDialog,
   DeleteWorkspaceDialog,
+  EditWorkspaceDialog,
   WorkspaceEmpty,
   WorkspaceGrid,
 } from '@features/workspace/components';
@@ -17,6 +20,8 @@ export default function WorkspacePage() {
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Workspace | null>(null);
+  const [editTarget, setEditTarget] = useState<Workspace | null>(null);
+  const navigate = useNavigate();
 
   if (isLoading) {
     return (
@@ -68,10 +73,11 @@ export default function WorkspacePage() {
       ) : (
         <WorkspaceGrid
           workspaces={workspaces}
-          onWorkspaceClick={() => {
-            /* Workspace detail route is not built yet. */
+          onWorkspaceClick={(workspaceId) => {
+            void navigate(buildWorkspaceRoute(workspaceId));
           }}
           onWorkspaceDelete={(workspace) => setDeleteTarget(workspace)}
+          onWorkspaceEdit={(workspace) => setEditTarget(workspace)}
         />
       )}
 
@@ -86,6 +92,19 @@ export default function WorkspacePage() {
         }}
         onConfirm={handleConfirmDelete}
       />
+
+      {editTarget && (
+        <EditWorkspaceDialog
+          key={editTarget.id}
+          open={true}
+          workspace={editTarget}
+          onOpenChange={(open) => {
+            if (!open) {
+              setEditTarget(null);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
