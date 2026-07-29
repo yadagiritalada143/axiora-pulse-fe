@@ -27,10 +27,12 @@ jest.mock('sonner', () => ({
 const FIXTURE_QUESTIONS: InteractiveQuestion[] = [
   {
     id: 1,
-    questionId: 101,
     question: 'What should I call you?',
-    question_type: 'text',
+    answer_type: 'textarea',
     optional: false,
+    answers: [],
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-01-01T00:00:00Z',
   },
 ];
 
@@ -83,13 +85,26 @@ describe('useSubmitInteractiveAnswers', () => {
       wrapper: createWrapper(),
     });
 
-    result.current.mutate([{ interactive_question_ID: 101, answer: ['Farhan'] }]);
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(onboardingService.submitInteractiveAnswers).toHaveBeenCalledWith([
-      { interactive_question_ID: 101, answer: ['Farhan'] },
+    result.current.mutate([
+      {
+        questionnaire_id: 1,
+        user_answers: ['Farhan'],
+      },
     ]);
-    expect(toast.success).toHaveBeenCalledWith(expect.any(String));
+
+    await waitFor(() => {
+      expect(onboardingService.submitInteractiveAnswers).toHaveBeenCalledWith(
+        [
+          {
+            questionnaire_id: 1,
+            user_answers: ['Farhan'],
+          },
+        ],
+        expect.anything(),
+      );
+
+      expect(toast.success).toHaveBeenCalledWith(expect.any(String));
+    });
   });
 
   it('shows an error toast when the submission fails', async () => {

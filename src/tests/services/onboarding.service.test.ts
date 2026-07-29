@@ -1,119 +1,100 @@
-import { STORAGE_KEYS } from '@constants/storage';
-import { MOCK_INTERACTIVE_QUESTIONS } from '@services/onboarding/onboarding.mock';
+import { API_ENDPOINTS } from '@/constants/api';
+import type { InteractiveQuestion } from '@/types/onboarding.types';
+import { apiClient } from '@services/api';
 import { onboardingService } from '@services/onboarding/onboarding.service';
-import { storage } from '@utils/storage';
 
-jest.mock('@utils/storage', () => ({
-  storage: {
+jest.mock('@services/api', () => ({
+  apiClient: {
     get: jest.fn(),
-    set: jest.fn(),
-    remove: jest.fn(),
+    post: jest.fn(),
+    delete: jest.fn(),
   },
 }));
 
-describe('onboardingService', () => {
-  const SEED_QUESTIONS = MOCK_INTERACTIVE_QUESTIONS.map((question) => ({ ...question }));
+const mockedGet = apiClient.get as jest.Mock;
+const mockedPost = apiClient.post as jest.Mock;
+const mockedDelete = apiClient.delete as jest.Mock;
 
+const QUESTION: InteractiveQuestion = {
+  id: 1,
+  question: 'What should I call you?',
+  answer_type: 'textarea',
+  optional: false,
+  answers: [],
+  created_at: '2026-01-01T00:00:00.000Z',
+  updated_at: '2026-01-01T00:00:00.000Z',
+};
+
+describe('onboardingService', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
     jest.clearAllMocks();
   });
 
-  afterEach(() => {
-    jest.useRealTimers();
-    MOCK_INTERACTIVE_QUESTIONS.length = 0;
-    MOCK_INTERACTIVE_QUESTIONS.push(...SEED_QUESTIONS.map((question) => ({ ...question })));
-  });
-
   describe('getInteractiveQuestions', () => {
-    it('returns the mock questions when the user has not submitted yet', async () => {
-      (storage.get as jest.Mock).mockReturnValue(false);
+    it('requests the questionnaire endpoint and returns the data', async () => {
+      mockedGet.mockResolvedValue({ data: [QUESTION] });
 
-      const promise = onboardingService.getInteractiveQuestions();
-      jest.advanceTimersByTime(400);
-      const result = await promise;
+      const result = await onboardingService.getInteractiveQuestions();
 
-      expect(storage.get).toHaveBeenCalledWith(STORAGE_KEYS.INTERACTIVE_QUESTIONS_SUBMITTED);
-      expect(result).toEqual(MOCK_INTERACTIVE_QUESTIONS);
-    });
-
-    it('returns an empty array once the user has already submitted', async () => {
-      (storage.get as jest.Mock).mockReturnValue(true);
-
-      const promise = onboardingService.getInteractiveQuestions();
-      jest.advanceTimersByTime(400);
-      const result = await promise;
-
-      expect(result).toEqual([]);
+      expect(mockedGet).toHaveBeenCalledWith(API_ENDPOINTS.ONBOARDING.QUESTIONS);
+      expect(result).toEqual([QUESTION]);
     });
   });
 
   describe('submitInteractiveAnswers', () => {
-    it('marks the submission flag and clears the local draft', async () => {
-      const payload = [{ interactive_question_ID: 101, answer: ['Farhan'] }];
+    it('posts the answers payload to the submit endpoint', async () => {
+      const payload = [{ questionnaire_id: 101, user_answers: ['Farhan'] }];
+      mockedPost.mockResolvedValue({ data: { message: 'saved' } });
 
-      const promise = onboardingService.submitInteractiveAnswers(payload);
-      jest.advanceTimersByTime(400);
-      await promise;
+      const result = await onboardingService.submitInteractiveAnswers(payload);
 
-      expect(storage.set).toHaveBeenCalledWith(STORAGE_KEYS.INTERACTIVE_QUESTIONS_SUBMITTED, true);
-      expect(storage.remove).toHaveBeenCalledWith(STORAGE_KEYS.INTERACTIVE_QUESTIONS_DRAFT);
+      expect(mockedPost).toHaveBeenCalledWith(API_ENDPOINTS.ONBOARDING.SUBMIT, payload);
+      expect(result).toEqual({ message: 'saved' });
     });
   });
 
   describe('listAllInteractiveQuestions', () => {
-    it('returns every question regardless of submission state', async () => {
-      const promise = onboardingService.listAllInteractiveQuestions();
-      jest.advanceTimersByTime(400);
-      const result = await promise;
+    it('requests the admin questions endpoint and returns the data', async () => {
+      mockedGet.mockResolvedValue({ data: [QUESTION] });
 
-      expect(result).toEqual(SEED_QUESTIONS);
-      expect(storage.get).not.toHaveBeenCalled();
+      const result = await onboardingService.listAllInteractiveQuestions();
+
+      expect(mockedGet).toHaveBeenCalledWith(API_ENDPOINTS.ONBOARDING.ADMIN.QUESTIONS);
+      expect(result).toEqual([QUESTION]);
     });
   });
 
   describe('createInteractiveQuestion', () => {
-    it('appends a new question with an incrementing id and returns it', async () => {
-      const promise = onboardingService.createInteractiveQuestion({
+    it('posts the new question to the admin create endpoint', async () => {
+      const payload = {
         question: 'What is your favorite color?',
-        question_type: 'radio',
+        answer_type: 'radiobuttons' as const,
         optional: false,
         answers: ['Red', 'Blue'],
-      });
-      jest.advanceTimersByTime(400);
-      const created = await promise;
+      };
+      const created: InteractiveQuestion = {
+        id: 7,
+        ...payload,
+        created_at: '2026-01-01T00:00:00.000Z',
+        updated_at: '2026-01-01T00:00:00.000Z',
+      };
+      mockedPost.mockResolvedValue({ data: created });
 
-      const maxSeedId = Math.max(...SEED_QUESTIONS.map((question) => question.id));
-      expect(created).toEqual({
-        id: maxSeedId + 1,
-        questionId: maxSeedId + 1,
-        question: 'What is your favorite color?',
-        question_type: 'radio',
-        optional: false,
-        answers: ['Red', 'Blue'],
-      });
-      expect(MOCK_INTERACTIVE_QUESTIONS).toContainEqual(created);
+      const result = await onboardingService.createInteractiveQuestion(payload);
+
+      expect(mockedPost).toHaveBeenCalledWith(API_ENDPOINTS.ONBOARDING.ADMIN.CREATE, payload);
+      expect(result).toEqual(created);
     });
   });
 
   describe('deleteInteractiveQuestion', () => {
-    it('removes the question with the matching id from the shared pool', async () => {
-      const firstQuestionId = SEED_QUESTIONS[0]?.id ?? 0;
+    it('sends a delete request for the matching id', async () => {
+      mockedDelete.mockResolvedValue({ data: { message: 'deleted' } });
 
-      const promise = onboardingService.deleteInteractiveQuestion(firstQuestionId);
-      jest.advanceTimersByTime(400);
-      await promise;
+      const result = await onboardingService.deleteInteractiveQuestion(3);
 
-      expect(MOCK_INTERACTIVE_QUESTIONS.find((q) => q.id === firstQuestionId)).toBeUndefined();
-      expect(MOCK_INTERACTIVE_QUESTIONS).toHaveLength(SEED_QUESTIONS.length - 1);
-    });
-
-    it('does nothing when the id does not exist', async () => {
-      const promise = onboardingService.deleteInteractiveQuestion(999999);
-      jest.advanceTimersByTime(400);
-      await promise;
-
-      expect(MOCK_INTERACTIVE_QUESTIONS).toHaveLength(SEED_QUESTIONS.length);
+      expect(mockedDelete).toHaveBeenCalledWith(API_ENDPOINTS.ONBOARDING.ADMIN.DELETE(3));
+      expect(result).toEqual({ message: 'deleted' });
     });
   });
 });

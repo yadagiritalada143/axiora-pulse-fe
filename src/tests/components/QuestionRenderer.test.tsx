@@ -8,10 +8,12 @@ import { QuestionRenderer } from '@features/onboarding/components/QuestionRender
 function makeQuestion(overrides: Partial<InteractiveQuestion> = {}): InteractiveQuestion {
   return {
     id: 1,
-    questionId: 101,
     question: 'Sample question?',
-    question_type: 'text',
+    answer_type: 'textarea',
     optional: false,
+    answers: [],
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-01-01T00:00:00Z',
     ...overrides,
   };
 }
@@ -29,7 +31,7 @@ function ControlledRenderer({
 
 describe('QuestionRenderer', () => {
   describe('text', () => {
-    const question = makeQuestion({ question_type: 'text' });
+    const question = makeQuestion({ answer_type: 'textarea' });
 
     it('accumulates the typed value', async () => {
       const user = userEvent.setup();
@@ -54,7 +56,7 @@ describe('QuestionRenderer', () => {
 
   describe('radio', () => {
     const question = makeQuestion({
-      question_type: 'radio',
+      answer_type: 'radiobuttons',
       answers: ['Founder', 'Engineer'],
     });
 
@@ -110,7 +112,7 @@ describe('QuestionRenderer', () => {
     it('falls back to no options when the question has none', () => {
       render(
         <QuestionRenderer
-          question={makeQuestion({ question_type: 'radio' })}
+          question={makeQuestion({ answer_type: 'radiobuttons' })}
           value={[]}
           onChange={jest.fn()}
         />,
@@ -123,7 +125,7 @@ describe('QuestionRenderer', () => {
 
   describe('multi_select', () => {
     const question = makeQuestion({
-      question_type: 'multi_select',
+      answer_type: 'checkboxes',
       answers: ['Validate my idea', 'Find co-founders'],
     });
 
@@ -187,7 +189,7 @@ describe('QuestionRenderer', () => {
     it('falls back to no options when the question has none', () => {
       render(
         <QuestionRenderer
-          question={makeQuestion({ question_type: 'multi_select' })}
+          question={makeQuestion({ answer_type: 'checkboxes' })}
           value={[]}
           onChange={jest.fn()}
         />,
@@ -199,7 +201,7 @@ describe('QuestionRenderer', () => {
 
   describe('dropdown', () => {
     const question = makeQuestion({
-      question_type: 'dropdown',
+      answer_type: 'dropdown',
       answers: ['SaaS', 'Fintech'],
     });
 
@@ -239,7 +241,7 @@ describe('QuestionRenderer', () => {
       const user = userEvent.setup();
       render(
         <QuestionRenderer
-          question={makeQuestion({ question_type: 'dropdown' })}
+          question={makeQuestion({ answer_type: 'dropdown' })}
           value={[]}
           onChange={jest.fn()}
         />,
@@ -254,7 +256,7 @@ describe('QuestionRenderer', () => {
 
   it('renders nothing for an unrecognized question type', () => {
     const question = makeQuestion({
-      question_type: 'unsupported' as unknown as InteractiveQuestionType,
+      answer_type: 'unsupported' as unknown as InteractiveQuestionType,
     });
     const { container } = render(
       <QuestionRenderer question={question} value={[]} onChange={jest.fn()} />,

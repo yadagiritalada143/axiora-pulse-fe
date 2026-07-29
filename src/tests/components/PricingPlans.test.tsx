@@ -28,12 +28,22 @@ const mockedUseAuthStore = useAuthStore as unknown as jest.Mock;
 describe('PricingPlans', () => {
   const navigate = jest.fn();
   const setHasActivePlan = jest.fn();
+  const setShowQuestionnaireIntro = jest.fn();
 
   beforeEach(() => {
     mockedUseNavigate.mockReturnValue(navigate);
+
     mockedUseAuthStore.mockImplementation(
-      (selector: (state: { setHasActivePlan: typeof setHasActivePlan }) => unknown) =>
-        selector({ setHasActivePlan }),
+      (
+        selector: (state: {
+          setHasActivePlan: typeof setHasActivePlan;
+          setShowQuestionnaireIntro: typeof setShowQuestionnaireIntro;
+        }) => unknown,
+      ) =>
+        selector({
+          setHasActivePlan,
+          setShowQuestionnaireIntro,
+        }),
     );
   });
 
@@ -61,7 +71,7 @@ describe('PricingPlans', () => {
     expect(screen.getAllByText(/₹7,990/).length).toBeGreaterThan(0);
   });
 
-  it('marks the user as having an active plan and navigates to the dashboard on select', async () => {
+  it('marks the user as having an active plan, shows questionnaire intro, and navigates to questionnaire intro on select', async () => {
     const user = userEvent.setup();
     render(<PricingPlans />);
 
@@ -76,14 +86,17 @@ describe('PricingPlans', () => {
     const starterCard = within(desktopGrid as HTMLElement)
       .getByText('Starter Plan')
       .closest('.rounded-2xl');
+
     expect(starterCard).not.toBeNull();
 
     const chooseButton = within(starterCard as HTMLElement).getByRole('button', {
       name: 'Choose plan',
     });
+
     await user.click(chooseButton);
 
     expect(setHasActivePlan).toHaveBeenCalledWith(true);
-    expect(navigate).toHaveBeenCalledWith(ROUTES.DASHBOARD);
+    expect(setShowQuestionnaireIntro).toHaveBeenCalledWith(true);
+    expect(navigate).toHaveBeenCalledWith(ROUTES.QUESTIONNAIRE_INTRO);
   });
 });

@@ -55,9 +55,13 @@ describe('useVerifyLogin', () => {
         mfaData: null,
         resetEmailOrMobile: null,
         resetToken: null,
-        onboardingPending: false,
         hasActivePlan: false,
         role: null,
+
+        // Include these only if they exist in your current AuthState
+        hasCompletedQuestionnaire: false,
+        showQuestionnaireIntro: false,
+
         setMfaData: jest.fn(),
         setAuthenticated,
         updateUser: jest.fn(),
@@ -65,9 +69,12 @@ describe('useVerifyLogin', () => {
         setResetEmailOrMobile: jest.fn(),
         setResetToken: jest.fn(),
         clearResetData: jest.fn(),
-        setOnboardingPending: jest.fn(),
         setHasActivePlan,
         setRole,
+
+        // Include these only if they exist in your current AuthActions
+        setHasCompletedQuestionnaire: jest.fn(),
+        setShowQuestionnaireIntro: jest.fn(),
       }),
     );
   });

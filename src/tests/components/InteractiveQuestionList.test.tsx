@@ -19,13 +19,23 @@ jest.mock('@services/onboarding', () => ({
 
 const mockedOnboardingService = jest.mocked(onboardingService);
 
+const questionDates = {
+  created_at: '2026-01-01T00:00:00.000Z',
+  updated_at: '2026-01-01T00:00:00.000Z',
+};
+
 function renderList() {
   const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
   });
+
   function Wrapper({ children }: { children: ReactNode }) {
     return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
   }
+
   return render(<InteractiveQuestionList />, { wrapper: Wrapper });
 }
 
@@ -36,6 +46,7 @@ describe('InteractiveQuestionList', () => {
 
   it('shows an empty state when there are no questions', async () => {
     mockedOnboardingService.listAllInteractiveQuestions.mockResolvedValue([]);
+
     renderList();
 
     expect(await screen.findByText('No questions have been added yet.')).toBeInTheDocument();
@@ -45,26 +56,30 @@ describe('InteractiveQuestionList', () => {
     mockedOnboardingService.listAllInteractiveQuestions.mockResolvedValue([
       {
         id: 1,
-        questionId: 1,
         question: 'What best describes your role?',
-        question_type: 'radio',
+        answer_type: 'radiobuttons',
         optional: false,
         answers: ['Founder', 'Engineer'],
+        ...questionDates,
       },
       {
         id: 2,
-        questionId: 2,
         question: 'What should I call you?',
-        question_type: 'text',
+        answer_type: 'textarea',
         optional: true,
+        answers: [],
+        ...questionDates,
       },
     ]);
+
     renderList();
 
     expect(await screen.findByText('What best describes your role?')).toBeInTheDocument();
+
     expect(screen.getByText('Single choice')).toBeInTheDocument();
     expect(screen.getByText('Required')).toBeInTheDocument();
     expect(screen.getByText('Founder')).toBeInTheDocument();
+
     expect(screen.getByText('What should I call you?')).toBeInTheDocument();
     expect(screen.getByText('Optional')).toBeInTheDocument();
   });
@@ -73,18 +88,29 @@ describe('InteractiveQuestionList', () => {
     mockedOnboardingService.listAllInteractiveQuestions.mockResolvedValue([
       {
         id: 1,
-        questionId: 1,
         question: 'What should I call you?',
-        question_type: 'text',
+        answer_type: 'textarea',
         optional: false,
+        answers: [],
+        ...questionDates,
       },
     ]);
-    mockedOnboardingService.deleteInteractiveQuestion.mockResolvedValue(undefined);
+
+    mockedOnboardingService.deleteInteractiveQuestion.mockResolvedValue({
+      message: 'Deleted successfully',
+    });
+
     const user = userEvent.setup();
+
     renderList();
 
     await screen.findByText('What should I call you?');
-    await user.click(screen.getByRole('button', { name: 'Delete "What should I call you?"' }));
+
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Delete "What should I call you?"',
+      }),
+    );
 
     expect(screen.getByText('Delete this question?')).toBeInTheDocument();
 
@@ -99,20 +125,30 @@ describe('InteractiveQuestionList', () => {
     mockedOnboardingService.listAllInteractiveQuestions.mockResolvedValue([
       {
         id: 1,
-        questionId: 1,
         question: 'What should I call you?',
-        question_type: 'text',
+        answer_type: 'textarea',
         optional: false,
+        answers: [],
+        ...questionDates,
       },
     ]);
+
     const user = userEvent.setup();
+
     renderList();
 
     await screen.findByText('What should I call you?');
-    await user.click(screen.getByRole('button', { name: 'Delete "What should I call you?"' }));
+
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Delete "What should I call you?"',
+      }),
+    );
+
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
 
     expect(screen.queryByText('Delete this question?')).not.toBeInTheDocument();
+
     expect(mockedOnboardingService.deleteInteractiveQuestion).not.toHaveBeenCalled();
   });
 });

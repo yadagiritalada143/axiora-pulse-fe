@@ -297,11 +297,13 @@ export function PricingPlans() {
   const navigate = useNavigate();
   const setHasActivePlan = useAuthStore((state) => state.setHasActivePlan);
 
+  const setShowQuestionnaireIntro = useAuthStore((state) => state.setShowQuestionnaireIntro);
+
   const handleSelect = (_planId: string) => {
-    // Mark the user as having an active plan and navigate to the dashboard.
-    // TODO: wire up checkout / subscription API when available.
     setHasActivePlan(true);
-    void navigate(ROUTES.DASHBOARD);
+    setShowQuestionnaireIntro(true);
+
+    void navigate(ROUTES.QUESTIONNAIRE_INTRO);
   };
 
   return (

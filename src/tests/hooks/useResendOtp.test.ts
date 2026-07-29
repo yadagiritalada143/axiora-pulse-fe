@@ -31,9 +31,9 @@ function mockStoreWithMfaData(mfaData: MFAData | null) {
       mfaData,
       resetEmailOrMobile: null,
       resetToken: null,
-      onboardingPending: false,
       hasActivePlan: false,
       role: null,
+
       setMfaData: jest.fn(),
       setAuthenticated: jest.fn(),
       updateUser: jest.fn(),
@@ -41,9 +41,13 @@ function mockStoreWithMfaData(mfaData: MFAData | null) {
       setResetEmailOrMobile: jest.fn(),
       setResetToken: jest.fn(),
       clearResetData: jest.fn(),
-      setOnboardingPending: jest.fn(),
       setHasActivePlan: jest.fn(),
       setRole: jest.fn(),
+
+      hasCompletedQuestionnaire: false,
+      showQuestionnaireIntro: false,
+      setHasCompletedQuestionnaire: jest.fn(),
+      setShowQuestionnaireIntro: jest.fn(),
     }),
   );
 }

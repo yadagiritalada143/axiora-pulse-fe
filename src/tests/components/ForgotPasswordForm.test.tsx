@@ -82,9 +82,13 @@ function mockAuthStore() {
       mfaData: null,
       resetEmailOrMobile: 'jane@example.com',
       resetToken: 'reset-token-abc',
-      onboardingPending: false,
+
       hasActivePlan: false,
       role: null,
+
+      hasCompletedQuestionnaire: false,
+      showQuestionnaireIntro: false,
+
       setMfaData: jest.fn(),
       setAuthenticated: jest.fn(),
       updateUser: jest.fn(),
@@ -92,9 +96,10 @@ function mockAuthStore() {
       setResetEmailOrMobile: jest.fn(),
       setResetToken: jest.fn(),
       clearResetData: jest.fn(),
-      setOnboardingPending: jest.fn(),
       setHasActivePlan: jest.fn(),
       setRole: jest.fn(),
+      setHasCompletedQuestionnaire: jest.fn(),
+      setShowQuestionnaireIntro: jest.fn(),
     }),
   );
 }
@@ -281,9 +286,13 @@ describe('ForgotPasswordForm', () => {
         mfaData: null,
         resetEmailOrMobile: null,
         resetToken: null,
-        onboardingPending: false,
+
         hasActivePlan: false,
         role: null,
+
+        hasCompletedQuestionnaire: false,
+        showQuestionnaireIntro: false,
+
         setMfaData: jest.fn(),
         setAuthenticated: jest.fn(),
         updateUser: jest.fn(),
@@ -291,16 +300,20 @@ describe('ForgotPasswordForm', () => {
         setResetEmailOrMobile: jest.fn(),
         setResetToken: jest.fn(),
         clearResetData: jest.fn(),
-        setOnboardingPending: jest.fn(),
         setHasActivePlan: jest.fn(),
         setRole: jest.fn(),
+        setHasCompletedQuestionnaire: jest.fn(),
+        setShowQuestionnaireIntro: jest.fn(),
       }),
     );
+
     const user = userEvent.setup();
     const { container } = renderForm();
 
     await user.type(screen.getByLabelText('Email / Mobile Number'), 'jane@example.com');
+
     await user.click(screen.getByRole('button', { name: /send reset code/i }));
+
     expect(await screen.findByText('Check your inbox')).toBeInTheDocument();
 
     await user.type(getOtpInput(container), '123456');
@@ -308,7 +321,6 @@ describe('ForgotPasswordForm', () => {
     expect(await screen.findByText('Forgot password?')).toBeInTheDocument();
     expect(verifyForgotPasswordMutate).not.toHaveBeenCalled();
   });
-
   it('retries verification via the Verify Code button after a failed attempt', async () => {
     verifyForgotPasswordMutate.mockImplementation(() => undefined); // no onSuccess: simulates a pending failure
     const user = userEvent.setup();
@@ -333,9 +345,13 @@ describe('ForgotPasswordForm', () => {
         mfaData: null,
         resetEmailOrMobile: 'jane@example.com',
         resetToken: null,
-        onboardingPending: false,
+
         hasActivePlan: false,
         role: null,
+
+        hasCompletedQuestionnaire: false,
+        showQuestionnaireIntro: false,
+
         setMfaData: jest.fn(),
         setAuthenticated: jest.fn(),
         updateUser: jest.fn(),
@@ -343,9 +359,10 @@ describe('ForgotPasswordForm', () => {
         setResetEmailOrMobile: jest.fn(),
         setResetToken: jest.fn(),
         clearResetData: jest.fn(),
-        setOnboardingPending: jest.fn(),
         setHasActivePlan: jest.fn(),
         setRole: jest.fn(),
+        setHasCompletedQuestionnaire: jest.fn(),
+        setShowQuestionnaireIntro: jest.fn(),
       }),
     );
     const user = userEvent.setup();

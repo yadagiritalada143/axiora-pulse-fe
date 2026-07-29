@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, Check, X } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -22,11 +22,12 @@ import { Button } from '@components/ui/button';
 import { STORAGE_KEYS } from '@constants/storage';
 import { useSubmitInteractiveAnswers } from '@features/onboarding/hooks';
 import { cn } from '@lib/utils';
+import { useAuthStore } from '@store/auth.store';
 import { storage } from '@utils/storage';
 
 import { QuestionRenderer } from './QuestionRenderer';
 
-type Phase = 'intro' | 'questions' | 'complete';
+type Phase = 'questions' | 'complete';
 
 interface QuestionsDraft {
   stepIndex: number;
@@ -70,11 +71,15 @@ const questionCardVariants = {
 
 interface InteractiveQuestionsFlowProps {
   questions: InteractiveQuestion[];
+  onCompleted?: () => void;
 }
 
-export function InteractiveQuestionsFlow({ questions }: InteractiveQuestionsFlowProps) {
+export function InteractiveQuestionsFlow({
+  questions,
+  onCompleted,
+}: InteractiveQuestionsFlowProps) {
   const [dismissed, setDismissed] = useState(false);
-  const [phase, setPhase] = useState<Phase>(() => (loadDraft() ? 'questions' : 'intro'));
+  const [phase, setPhase] = useState<Phase>('questions');
   const [stepIndex, setStepIndex] = useState(() => loadDraft()?.stepIndex ?? 0);
   const [answers, setAnswers] = useState<InteractiveAnswerDraft>(() => loadDraft()?.answers ?? {});
   const [showRetakeConfirm, setShowRetakeConfirm] = useState(false);
@@ -82,17 +87,19 @@ export function InteractiveQuestionsFlow({ questions }: InteractiveQuestionsFlow
 
   const submitAnswers = useSubmitInteractiveAnswers();
 
+  const setHasCompletedQuestionnaire = useAuthStore((state) => state.setHasCompletedQuestionnaire);
+
   const currentQuestion = questions[Math.min(stepIndex, questions.length - 1)];
 
   if (dismissed || questions.length === 0 || !currentQuestion) return null;
 
   const total = questions.length;
-  const currentValue = answers[currentQuestion.questionId] ?? [];
+  const currentValue = answers[currentQuestion.id] ?? [];
   const canGoNext = currentQuestion.optional || isAnswered(currentValue);
   const upcomingQuestions = questions.slice(stepIndex + 1, stepIndex + 1 + SHEET_DEPTHS.length);
 
   const handleAnswerChange = (value: string[]) => {
-    setAnswers((prev) => ({ ...prev, [currentQuestion.questionId]: value }));
+    setAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
   };
 
   const handleNext = () => {
@@ -126,14 +133,22 @@ export function InteractiveQuestionsFlow({ questions }: InteractiveQuestionsFlow
 
   const handleSubmit = () => {
     const payload: InteractiveAnswerPayload[] = questions
-      .filter((question) => isAnswered(answers[question.questionId]))
+      .filter((question) => isAnswered(answers[question.id]))
       .map((question) => ({
-        interactive_question_ID: question.questionId,
-        answer: answers[question.questionId] ?? [],
+        questionnaire_id: question.id,
+        user_answers: answers[question.id] ?? [],
       }));
 
     submitAnswers.mutate(payload, {
-      onSuccess: () => setDismissed(true),
+      onSuccess: () => {
+        storage.remove(STORAGE_KEYS.INTERACTIVE_QUESTIONS_DRAFT);
+        setHasCompletedQuestionnaire(true);
+        setDismissed(true);
+
+        if (onCompleted) {
+          onCompleted();
+        }
+      },
     });
   };
 
@@ -157,7 +172,7 @@ export function InteractiveQuestionsFlow({ questions }: InteractiveQuestionsFlow
                   const sheet = SHEET_DEPTHS[depth];
                   return (
                     <motion.div
-                      key={question.questionId}
+                      key={question.id}
                       aria-hidden
                       className="bg-card border-border absolute inset-0 rounded-lg border shadow-sm"
                       style={{ zIndex: 10 - depth }}
@@ -172,7 +187,7 @@ export function InteractiveQuestionsFlow({ questions }: InteractiveQuestionsFlow
 
               <AnimatePresence mode="popLayout" initial={false} custom={direction}>
                 <motion.div
-                  key={currentQuestion.questionId}
+                  key={currentQuestion.id}
                   custom={direction}
                   variants={questionCardVariants}
                   initial="enter"
@@ -200,15 +215,11 @@ export function InteractiveQuestionsFlow({ questions }: InteractiveQuestionsFlow
       ) : (
         <div className="bg-muted fixed inset-0 z-50 flex flex-col px-4 pt-2 pb-4 sm:px-6 sm:pb-6">
           <div className="bg-background relative mx-auto flex w-full flex-1 flex-col justify-center overflow-hidden rounded-lg shadow-sm">
-            {phase === 'intro' && <IntroView onContinue={() => setPhase('questions')} />}
-
-            {phase === 'complete' && (
-              <CompleteView
-                submitting={submitAnswers.isPending}
-                onRetake={() => setShowRetakeConfirm(true)}
-                onSubmit={handleSubmit}
-              />
-            )}
+            <CompleteView
+              submitting={submitAnswers.isPending}
+              onRetake={() => setShowRetakeConfirm(true)}
+              onSubmit={handleSubmit}
+            />
           </div>
         </div>
       )}
@@ -233,28 +244,6 @@ function PulseWordmark() {
           <span className="bg-primary ml-0.5 size-1.5 rounded-full" />
         </span>
       </div>
-    </div>
-  );
-}
-
-function IntroView({ onContinue }: { onContinue: () => void }) {
-  return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 py-10 text-center">
-      <div className="space-y-2">
-        <h2 className="font-display text-2xl font-bold tracking-tight">
-          Help AI Mentor Understand Your Idea
-        </h2>
-        <p className="text-muted-foreground mx-auto max-w-sm text-sm">
-          Answer a few questions for a deeper understanding of your idea. Your responses will help
-          AI Mentor deliver more accurate analysis.
-        </p>
-        <p className="text-sm font-medium">Estimated time: 2-3 minutes</p>
-      </div>
-
-      <Button className="w-full max-w-xs text-white" onClick={onContinue}>
-        Continue
-        <ArrowRight className="size-4" />
-      </Button>
     </div>
   );
 }

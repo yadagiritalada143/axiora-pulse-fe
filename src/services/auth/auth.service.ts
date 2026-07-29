@@ -17,6 +17,8 @@ import type {
   VerifyForgotPasswordResponse,
   ResetPasswordResponse,
   ChangePasswordResponse,
+  AdminLoginRequest,
+  AdminLoginResponse,
 } from '@/features/auth/types';
 import type { User } from '@/types/api.types';
 import { API_ENDPOINTS } from '@constants/api';
@@ -33,6 +35,17 @@ export const authService = {
       API_ENDPOINTS.AUTH.VERIFY_LOGIN,
       payload,
     );
+    tokenManager.setTokens(data.access_token, data.refresh_token);
+
+    return data;
+  },
+
+  async adminLogin(payload: AdminLoginRequest): Promise<AdminLoginResponse> {
+    const { data } = await apiClient.post<AdminLoginResponse>(
+      API_ENDPOINTS.AUTH.ADMIN_LOGIN,
+      payload,
+    );
+
     tokenManager.setTokens(data.access_token, data.refresh_token);
 
     return data;

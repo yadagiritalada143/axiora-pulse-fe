@@ -7,11 +7,15 @@ import { useAuthStore } from '@store/auth.store';
 export function HomeRedirect() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const hasActivePlan = useAuthStore((state) => state.hasActivePlan);
-  const onboardingPending = useAuthStore((state) => state.onboardingPending);
   const role = useAuthStore((state) => state.role);
 
-  if (!isAuthenticated) return <Navigate to={ROUTES.LOGIN} replace />;
-  if (role === 'admin') return <Navigate to={ROUTES.ADMIN_DASHBOARD} replace />;
-  if (onboardingPending) return <Navigate to={ROUTES.DASHBOARD} replace />;
+  if (!isAuthenticated) {
+    return <Navigate to={ROUTES.LOGIN} replace />;
+  }
+
+  if (role === 'admin') {
+    return <Navigate to={ROUTES.ADMIN_DASHBOARD} replace />;
+  }
+
   return <Navigate to={hasActivePlan ? ROUTES.DASHBOARD : ROUTES.PRICING} replace />;
 }

@@ -20,9 +20,12 @@ interface AuthState {
   mfaData: MFAData | null;
   resetEmailOrMobile: string | null;
   resetToken: string | null;
-  onboardingPending: boolean;
+
   hasActivePlan: boolean;
   role: AccountRole | null;
+
+  hasCompletedQuestionnaire: boolean;
+  showQuestionnaireIntro: boolean;
 }
 
 interface AuthActions {
@@ -30,12 +33,16 @@ interface AuthActions {
   setAuthenticated: (accessToken: string, refreshToken?: string) => void;
   updateUser: (user: User) => void;
   clearSession: () => void;
+
   setResetEmailOrMobile: (emailOrMobile: string) => void;
   setResetToken: (token: string) => void;
   clearResetData: () => void;
-  setOnboardingPending: (pending: boolean) => void;
+
   setHasActivePlan: (hasActivePlan: boolean) => void;
   setRole: (role: AccountRole) => void;
+
+  setHasCompletedQuestionnaire: (value: boolean) => void;
+  setShowQuestionnaireIntro: (value: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState & AuthActions>()(
@@ -50,11 +57,12 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       resetEmailOrMobile: null,
       resetToken: null,
 
-      onboardingPending: false,
-
       hasActivePlan: false,
 
       role: null,
+
+      hasCompletedQuestionnaire: false,
+      showQuestionnaireIntro: false,
 
       setMfaData: (data) => {
         set({
@@ -88,9 +96,11 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           resetEmailOrMobile: null,
           resetToken: null,
 
-          onboardingPending: false,
           hasActivePlan: false,
           role: null,
+
+          hasCompletedQuestionnaire: false,
+          showQuestionnaireIntro: false,
         });
       },
 
@@ -100,12 +110,6 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
       setRole: (role) => {
         set({ role });
-      },
-
-      setOnboardingPending: (pending) => {
-        set({
-          onboardingPending: pending,
-        });
       },
 
       setResetEmailOrMobile: (emailOrMobile) => {
@@ -126,7 +130,19 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           resetToken: null,
         });
       },
+
+      setHasCompletedQuestionnaire: (value) =>
+        set({
+          hasCompletedQuestionnaire: value,
+        }),
+
+      setShowQuestionnaireIntro: (value) => {
+        set({
+          showQuestionnaireIntro: value,
+        });
+      },
     }),
+
     {
       name: STORAGE_KEYS.AUTH_SESSION,
     },

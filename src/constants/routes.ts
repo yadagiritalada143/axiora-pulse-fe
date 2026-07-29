@@ -11,6 +11,7 @@ export const ROUTES = {
 
   PRICING: '/pricing',
 
+  ONBOARDING: '/onboarding',
   DASHBOARD: '/dashboard',
   WORKSPACE: '/workspace',
   WORKSPACE_DETAIL: '/workspace/:workspaceId',
@@ -19,6 +20,10 @@ export const ROUTES = {
   SETTINGS: '/settings',
   PROFILE: '/profile',
 
+  QUESTIONNAIRE_INTRO: '/questionnaire-intro',
+  INTERACTIVE_QUESTIONS: '/interactive-questions',
+
+  ADMIN_LOGIN: '/admin/login',
   ADMIN_DASHBOARD: '/admin/dashboard',
   ADMIN_INTERACTIVE_QUESTIONS: '/admin/interactive-questions',
 
@@ -29,6 +34,7 @@ export type AppRoute = (typeof ROUTES)[keyof typeof ROUTES];
 
 export const GUEST_ROUTES: AppRoute[] = [
   ROUTES.LOGIN,
+  ROUTES.ADMIN_LOGIN,
   ROUTES.REGISTER,
   ROUTES.VERIFY_OTP,
   ROUTES.VERIFY_LOGIN,
@@ -37,11 +43,17 @@ export const GUEST_ROUTES: AppRoute[] = [
 ];
 
 export const PROTECTED_ROUTES: AppRoute[] = [
+  ROUTES.ONBOARDING,
+  ROUTES.PRICING,
+  ROUTES.QUESTIONNAIRE_INTRO,
+  ROUTES.INTERACTIVE_QUESTIONS,
+
   ROUTES.DASHBOARD,
   ROUTES.WORKSPACE,
   ROUTES.AI_CHAT,
   ROUTES.SETTINGS,
   ROUTES.PROFILE,
+
   ROUTES.ADMIN_DASHBOARD,
   ROUTES.ADMIN_INTERACTIVE_QUESTIONS,
 ];

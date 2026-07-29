@@ -5,20 +5,10 @@ import { ROUTES } from '@constants/routes';
 import { OnboardingFlow } from '@features/onboarding/components/OnboardingFlow';
 
 const mockNavigate = jest.fn();
-const mockSetOnboardingPending = jest.fn();
 
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useNavigate: () => mockNavigate,
-}));
-
-interface MockAuthState {
-  setOnboardingPending: typeof mockSetOnboardingPending;
-}
-
-jest.mock('@store/auth.store', () => ({
-  useAuthStore: (selector: (state: MockAuthState) => unknown) =>
-    selector({ setOnboardingPending: mockSetOnboardingPending }),
 }));
 
 describe('OnboardingFlow', () => {
@@ -42,14 +32,13 @@ describe('OnboardingFlow', () => {
     expect(screen.getByRole('button', { name: /choose plan/i })).toBeInTheDocument();
   });
 
-  it('clears onboardingPending and navigates to pricing when a plan is chosen', async () => {
+  it('navigates to pricing when a plan is chosen', async () => {
     const user = userEvent.setup();
     render(<OnboardingFlow />);
 
     await user.click(screen.getByRole('button', { name: 'Continue' }));
     await user.click(screen.getByRole('button', { name: /choose plan/i }));
 
-    expect(mockSetOnboardingPending).toHaveBeenCalledWith(false);
     expect(mockNavigate).toHaveBeenCalledWith(ROUTES.PRICING);
   });
 });

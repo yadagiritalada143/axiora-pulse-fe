@@ -37,6 +37,10 @@ export const router = createBrowserRouter([
             element: lazyPage(() => import('@pages/LoginPage')),
           },
           {
+            path: ROUTES.ADMIN_LOGIN,
+            element: lazyPage(() => import('@pages/AdminLoginPage')),
+          },
+          {
             path: ROUTES.REGISTER,
             element: lazyPage(() => import('@pages/RegisterPage')),
           },
@@ -71,6 +75,10 @@ export const router = createBrowserRouter([
             path: ROUTES.PRICING,
             element: lazyPage(() => import('@pages/PricingPage')),
           },
+          {
+            path: ROUTES.ONBOARDING,
+            element: lazyPage(() => import('@pages/OnboardingPage')),
+          },
         ],
       },
       {
@@ -80,6 +88,14 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.WORKSPACE_DETAIL,
         element: lazyPage(() => import('@pages/WorkspaceDetailPage')),
+      },
+      {
+        path: ROUTES.QUESTIONNAIRE_INTRO,
+        element: lazyPage(() => import('@pages/QuestionnaireIntroPage')),
+      },
+      {
+        path: ROUTES.INTERACTIVE_QUESTIONS,
+        element: lazyPage(() => import('@pages/InteractiveQuestionsPage')),
       },
       {
         element: <DashboardLayout />,

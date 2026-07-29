@@ -13,7 +13,7 @@ const mockUseAuthStore = useAuthStore as unknown as jest.Mock;
 
 function renderWithRole(role: 'user' | 'admin' | null) {
   mockUseAuthStore.mockImplementation((selector: (state: unknown) => unknown) =>
-    selector({ role }),
+    selector({ role, isAuthenticated: true }),
   );
 
   return render(
@@ -41,7 +41,7 @@ describe('AdminRoute', () => {
     expect(screen.getByText('Dashboard page')).toBeInTheDocument();
   });
 
-  it('redirects when there is no role', () => {
+  it('redirects to the dashboard when there is no role', () => {
     renderWithRole(null);
 
     expect(screen.getByText('Dashboard page')).toBeInTheDocument();

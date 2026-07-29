@@ -53,9 +53,12 @@ describe('useRegister', () => {
         mfaData: null,
         resetEmailOrMobile: null,
         resetToken: null,
-        onboardingPending: false,
+
+        hasCompletedQuestionnaire: false,
+        showQuestionnaireIntro: false,
         hasActivePlan: false,
         role: null,
+
         setMfaData,
         setAuthenticated: jest.fn(),
         updateUser: jest.fn(),
@@ -63,7 +66,9 @@ describe('useRegister', () => {
         setResetEmailOrMobile: jest.fn(),
         setResetToken: jest.fn(),
         clearResetData: jest.fn(),
-        setOnboardingPending: jest.fn(),
+
+        setHasCompletedQuestionnaire: jest.fn(),
+        setShowQuestionnaireIntro: jest.fn(),
         setHasActivePlan: jest.fn(),
         setRole: jest.fn(),
       }),

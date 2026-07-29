@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
+import { useInteractiveQuestions } from '@/features/onboarding/hooks';
 import {
   useCreateWorkspace,
   useDeleteWorkspace,
@@ -22,13 +23,20 @@ jest.mock('react-markdown', () => {
 });
 
 jest.mock('@features/onboarding/components', () => ({
-  OnboardingFlow: () => null,
+  InteractiveQuestionsFlow: () => null,
 }));
 
 jest.mock('@features/ideaValidation/components', () => ({
   MentorShell: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="mentor-shell">{children}</div>
   ),
+}));
+
+jest.mock('@features/onboarding/hooks', () => ({
+  useInteractiveQuestions: jest.fn(() => ({
+    data: [],
+    isLoading: false,
+  })),
 }));
 
 jest.mock('@features/workspace/hooks/useWorkspaces', () => ({
@@ -40,6 +48,7 @@ jest.mock('@features/workspace/hooks/useWorkspaces', () => ({
 const mockedUseWorkspaces = useWorkspaces as jest.Mock;
 const mockedUseDeleteWorkspace = useDeleteWorkspace as jest.Mock;
 const mockedUseCreateWorkspace = useCreateWorkspace as jest.Mock;
+const mockedUseInteractiveQuestions = useInteractiveQuestions as jest.Mock;
 
 const workspace: Workspace = {
   id: 1,
@@ -60,30 +69,46 @@ function renderDashboard() {
 
 function setAuthState(overrides: Partial<ReturnType<typeof useAuthStore.getState>> = {}) {
   useAuthStore.setState({
-    onboardingPending: false,
     hasActivePlan: true,
     user: null,
+    showQuestionnaireIntro: false,
+    hasCompletedQuestionnaire: false,
     ...overrides,
   });
 }
 
 describe('DashboardPage', () => {
   beforeEach(() => {
-    mockedUseDeleteWorkspace.mockReturnValue({ mutate: jest.fn(), isPending: false });
-    mockedUseCreateWorkspace.mockReturnValue({ mutate: jest.fn(), isPending: false });
+    mockedUseDeleteWorkspace.mockReturnValue({
+      mutate: jest.fn(),
+      isPending: false,
+    });
+
+    mockedUseCreateWorkspace.mockReturnValue({
+      mutate: jest.fn(),
+      isPending: false,
+    });
+
     mockedUseWorkspaces.mockReturnValue({
       data: { total: 1, workspaces: [workspace] },
       isLoading: false,
       isError: false,
     });
+
+    mockedUseInteractiveQuestions.mockReturnValue({
+      data: [],
+      isLoading: false,
+    });
   });
 
   afterEach(() => {
     jest.clearAllMocks();
+
     useAuthStore.setState({
-      onboardingPending: false,
       hasActivePlan: false,
       user: null,
+      showQuestionnaireIntro: false,
+      hasCompletedQuestionnaire: false,
     });
   });
 
@@ -97,9 +122,9 @@ describe('DashboardPage', () => {
     expect(screen.getByText('Rocket Idea')).toBeInTheDocument();
   });
 
-  it('renders the dashboard when onboarding is pending', () => {
+  it('renders the dashboard when the questionnaire intro is showing', () => {
     setAuthState({
-      onboardingPending: true,
+      showQuestionnaireIntro: true,
     });
 
     renderDashboard();

@@ -5,6 +5,17 @@ export interface LoginResponse {
   message: string;
 }
 
+export interface AdminLoginResponse {
+  status: 'success';
+  message: string;
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+  expires_in_minutes: number;
+  role: 'admin';
+  actions: string[];
+}
+
 export interface RegisterResponse {
   userid: number;
   username: string;

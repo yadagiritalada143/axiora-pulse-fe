@@ -9,9 +9,9 @@ import { authService } from '@services/auth';
 import { useAuthStore } from '@store/auth.store';
 
 export function useVerifyOtp() {
-  const setAuthenticated = useAuthStore((state) => state.setAuthenticated);
-  const setOnboardingPending = useAuthStore((state) => state.setOnboardingPending);
   const navigate = useNavigate();
+
+  const setAuthenticated = useAuthStore((state) => state.setAuthenticated);
 
   return useMutation({
     mutationFn: (payload: VerifyOtpRequest) => authService.verifyOTP(payload),
@@ -19,8 +19,7 @@ export function useVerifyOtp() {
     onSuccess: (response) => {
       if (response.status === 'success') {
         setAuthenticated(response.access_token, response.refresh_token);
-        setOnboardingPending(true);
-        void navigate(ROUTES.DASHBOARD);
+        void navigate(ROUTES.ONBOARDING);
         return;
       }
       toast.error(response.message);

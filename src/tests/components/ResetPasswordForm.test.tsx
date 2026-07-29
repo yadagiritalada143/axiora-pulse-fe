@@ -39,19 +39,28 @@ function mockResetToken(resetToken: string | null) {
       mfaData: null,
       resetEmailOrMobile: null,
       resetToken,
-      onboardingPending: false,
+
       hasActivePlan: false,
       role: null,
+
+      hasCompletedQuestionnaire: false,
+      showQuestionnaireIntro: false,
+
       setMfaData: jest.fn(),
       setAuthenticated: jest.fn(),
       updateUser: jest.fn(),
       clearSession: jest.fn(),
+
       setResetEmailOrMobile: jest.fn(),
       setResetToken: jest.fn(),
       clearResetData: jest.fn(),
-      setOnboardingPending: jest.fn(),
+
       setHasActivePlan: jest.fn(),
       setRole: jest.fn(),
+
+      // NEW ACTIONS (if they exist in your store)
+      setHasCompletedQuestionnaire: jest.fn(),
+      setShowQuestionnaireIntro: jest.fn(),
     }),
   );
 }

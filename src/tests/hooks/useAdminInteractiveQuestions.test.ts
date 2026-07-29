@@ -42,7 +42,15 @@ describe('useAdminInteractiveQuestions', () => {
 
   it('fetches every interactive question via the admin listing', async () => {
     mockedOnboardingService.listAllInteractiveQuestions.mockResolvedValue([
-      { id: 1, questionId: 1, question: 'Q1', question_type: 'text', optional: false },
+      {
+        id: 1,
+        question: 'Q1',
+        answer_type: 'textarea',
+        optional: false,
+        answers: [],
+        created_at: '2026-01-01T00:00:00Z',
+        updated_at: '2026-01-01T00:00:00Z',
+      },
     ]);
 
     const { result } = renderHook(() => useAdminInteractiveQuestions(), {
@@ -64,18 +72,24 @@ describe('useCreateInteractiveQuestion', () => {
   it('creates a question and toasts on success', async () => {
     mockedOnboardingService.createInteractiveQuestion.mockResolvedValue({
       id: 7,
-      questionId: 7,
       question: 'New question',
-      question_type: 'text',
+      answer_type: 'textarea',
       optional: false,
+      answers: [],
+      created_at: '2026-01-01T00:00:00Z',
+      updated_at: '2026-01-01T00:00:00Z',
     });
 
     const { result } = renderHook(() => useCreateInteractiveQuestion(), {
       wrapper: createWrapper(),
     });
 
-    result.current.mutate({ question: 'New question', question_type: 'text', optional: false });
-
+    result.current.mutate({
+      question: 'New question',
+      answer_type: 'textarea',
+      optional: false,
+      answers: [],
+    });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(mockedToastSuccess).toHaveBeenCalledWith('Question added.');
@@ -88,8 +102,12 @@ describe('useCreateInteractiveQuestion', () => {
       wrapper: createWrapper(),
     });
 
-    result.current.mutate({ question: 'New question', question_type: 'text', optional: false });
-
+    result.current.mutate({
+      question: 'New question',
+      answer_type: 'textarea',
+      optional: false,
+      answers: [],
+    });
     await waitFor(() => expect(result.current.isError).toBe(true));
 
     expect(mockedToastError).toHaveBeenCalledWith('Unable to add the question. Please try again.');
@@ -102,8 +120,9 @@ describe('useDeleteInteractiveQuestion', () => {
   });
 
   it('deletes a question and toasts on success', async () => {
-    mockedOnboardingService.deleteInteractiveQuestion.mockResolvedValue(undefined);
-
+    mockedOnboardingService.deleteInteractiveQuestion.mockResolvedValue({
+      message: 'Question deleted.',
+    });
     const { result } = renderHook(() => useDeleteInteractiveQuestion(), {
       wrapper: createWrapper(),
     });

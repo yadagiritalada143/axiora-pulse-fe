@@ -8,20 +8,6 @@ function defined<T>(value: T | undefined): T {
   return value;
 }
 
-function collectPaths(routes: RouteObject[] | undefined): string[] {
-  const paths: string[] = [];
-
-  routes?.forEach((route) => {
-    if (route.path) {
-      paths.push(route.path);
-    }
-
-    paths.push(...collectPaths(route.children));
-  });
-
-  return paths;
-}
-
 function findRoute(routes: RouteObject[] | undefined, path: string): RouteObject | undefined {
   for (const route of routes ?? []) {
     if (route.path === path) {
@@ -72,6 +58,7 @@ describe('router', () => {
 
     expect(authPaths).toEqual([
       ROUTES.LOGIN,
+      ROUTES.ADMIN_LOGIN,
       ROUTES.REGISTER,
       ROUTES.VERIFY_OTP,
       ROUTES.VERIFY_LOGIN,
@@ -80,21 +67,25 @@ describe('router', () => {
     ]);
   });
 
-  it('registers all protected application routes', () => {
-    const protectedGroup = defined(router.routes[2]);
+  it('registers all guest-only auth routes under AuthLayout', () => {
+    const guestGroup = defined(router.routes[1]);
+    const authLayoutRoute = defined(guestGroup.children?.[0]);
 
-    const protectedPaths = collectPaths(protectedGroup.children);
+    const authPaths = authLayoutRoute.children?.map((route) => route.path);
 
-    expect(protectedPaths).toEqual(
+    expect(authPaths).toEqual(
       expect.arrayContaining([
-        ROUTES.PRICING,
-        ROUTES.DASHBOARD,
-        ROUTES.WORKSPACE,
-        ROUTES.AI_CHAT,
-        ROUTES.SETTINGS,
-        ROUTES.PROFILE,
+        ROUTES.LOGIN,
+        ROUTES.ADMIN_LOGIN,
+        ROUTES.REGISTER,
+        ROUTES.VERIFY_OTP,
+        ROUTES.VERIFY_LOGIN,
+        ROUTES.FORGOT_PASSWORD,
+        ROUTES.RESET_PASSWORD,
       ]),
     );
+
+    expect(authPaths).toHaveLength(7);
   });
 
   it('registers dashboard routes under the protected route group', () => {

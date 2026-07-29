@@ -48,8 +48,8 @@ function buildMultiValue(selections: string[], otherChecked: boolean, otherText:
 }
 
 export function QuestionRenderer({ question, value, onChange }: QuestionRendererProps) {
-  switch (question.question_type) {
-    case 'text':
+  switch (question.answer_type) {
+    case 'textarea':
       return (
         <Input
           placeholder="Type your answer here"
@@ -58,7 +58,7 @@ export function QuestionRenderer({ question, value, onChange }: QuestionRenderer
         />
       );
 
-    case 'radio': {
+    case 'radiobuttons': {
       const isOther = value[0] === OTHER_VALUE;
       const selected = isOther ? OTHER_VALUE : (value[0] ?? '');
 
@@ -89,7 +89,7 @@ export function QuestionRenderer({ question, value, onChange }: QuestionRenderer
       );
     }
 
-    case 'multi_select': {
+    case 'checkboxes': {
       const { selections, otherChecked, otherText } = splitOtherFromMulti(value);
 
       const toggleOption = (option: string) => {

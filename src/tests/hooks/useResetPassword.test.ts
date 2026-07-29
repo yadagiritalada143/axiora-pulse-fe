@@ -53,9 +53,13 @@ describe('useResetPassword', () => {
         mfaData: null,
         resetEmailOrMobile: null,
         resetToken: 'reset-token',
-        onboardingPending: false,
         hasActivePlan: false,
         role: null,
+
+        // Include these only if they exist in your current AuthState
+        hasCompletedQuestionnaire: false,
+        showQuestionnaireIntro: false,
+
         setMfaData: jest.fn(),
         setAuthenticated: jest.fn(),
         updateUser: jest.fn(),
@@ -63,9 +67,12 @@ describe('useResetPassword', () => {
         setResetEmailOrMobile: jest.fn(),
         setResetToken: jest.fn(),
         clearResetData,
-        setOnboardingPending: jest.fn(),
         setHasActivePlan: jest.fn(),
         setRole: jest.fn(),
+
+        // Include these only if they exist in your current AuthActions
+        setHasCompletedQuestionnaire: jest.fn(),
+        setShowQuestionnaireIntro: jest.fn(),
       }),
     );
   });

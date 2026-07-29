@@ -32,7 +32,7 @@ import {
 
 const DEFAULT_VALUES: CreateInteractiveQuestionFormValues = {
   question: '',
-  question_type: 'text',
+  answer_type: 'textarea',
   optional: false,
   options: [],
 };
@@ -46,13 +46,13 @@ export function InteractiveQuestionForm() {
   });
 
   const { fields, append, remove } = useFieldArray({ control: form.control, name: 'options' });
-  const questionType = useWatch({ control: form.control, name: 'question_type' });
-  const showOptions = questionType !== 'text';
+  const questionType = useWatch({ control: form.control, name: 'answer_type' });
+  const showOptions = questionType !== 'textarea';
 
-  const handleTypeChange = (value: CreateInteractiveQuestionFormValues['question_type']) => {
-    form.setValue('question_type', value, { shouldValidate: true });
+  const handleTypeChange = (value: CreateInteractiveQuestionFormValues['answer_type']) => {
+    form.setValue('answer_type', value, { shouldValidate: true });
 
-    if (value === 'text') {
+    if (value === 'textarea') {
       form.setValue('options', []);
       return;
     }
@@ -67,9 +67,9 @@ export function InteractiveQuestionForm() {
     createQuestion.mutate(
       {
         question: values.question,
-        question_type: values.question_type,
+        answer_type: values.answer_type,
         optional: values.optional,
-        answers: values.question_type === 'text' ? undefined : values.options.map((o) => o.value),
+        answers: values.answer_type === 'textarea' ? [] : values.options.map((o) => o.value),
       },
       { onSuccess: () => form.reset(DEFAULT_VALUES) },
     );
@@ -99,7 +99,7 @@ export function InteractiveQuestionForm() {
 
             <FormField
               control={form.control}
-              name="question_type"
+              name="answer_type"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Question type</FormLabel>

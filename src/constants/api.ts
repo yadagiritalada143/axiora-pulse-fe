@@ -3,6 +3,8 @@ export const API_ENDPOINTS = {
     LOGIN: '/v1/auth/login',
     REGISTER: '/v1/auth/register',
 
+    ADMIN_LOGIN: '/v1/auth/admin/login',
+
     VERIFY_OTP: '/v1/auth/verifyOTP',
     RESEND_OTP: '/v1/auth/resendOTP',
 
@@ -50,6 +52,16 @@ export const API_ENDPOINTS = {
   },
   ORCHESTRATION: {
     RUN: '/v1/orchestration/run',
+  },
+
+  ONBOARDING: {
+    QUESTIONS: '/v1/questionnaire/questions',
+    SUBMIT: '/v1/questionnaire/submit-answers',
+    ADMIN: {
+      QUESTIONS: '/v1/admin/questionnaire/questions',
+      CREATE: '/v1/admin/questionnaire/create-question',
+      DELETE: (id: number) => `/v1/admin/questionnaire/delete-question/${id}`,
+    },
   },
 } as const;
 

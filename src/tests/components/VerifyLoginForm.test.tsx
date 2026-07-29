@@ -78,22 +78,33 @@ function mockMfaData(mfaData: MFAData | null) {
     selector({
       user: null,
       isAuthenticated: false,
+
       mfaData,
+
       resetEmailOrMobile: null,
       resetToken: null,
-      onboardingPending: false,
+
       hasActivePlan: false,
       role: null,
+
+      hasCompletedQuestionnaire: false,
+      showQuestionnaireIntro: false,
+
       setMfaData: jest.fn(),
       setAuthenticated: jest.fn(),
       updateUser: jest.fn(),
       clearSession: jest.fn(),
+
       setResetEmailOrMobile: jest.fn(),
       setResetToken: jest.fn(),
       clearResetData: jest.fn(),
-      setOnboardingPending: jest.fn(),
+
       setHasActivePlan: jest.fn(),
       setRole: jest.fn(),
+
+      // New actions (if present in your store)
+      setHasCompletedQuestionnaire: jest.fn(),
+      setShowQuestionnaireIntro: jest.fn(),
     }),
   );
 }

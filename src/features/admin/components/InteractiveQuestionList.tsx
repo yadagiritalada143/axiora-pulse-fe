@@ -54,7 +54,7 @@ export function InteractiveQuestionList() {
                   <p className="text-foreground text-sm font-medium">{question.question}</p>
                   <div className="flex flex-wrap items-center gap-1.5">
                     <Badge variant="secondary">
-                      {INTERACTIVE_QUESTION_TYPE_LABELS[question.question_type]}
+                      {INTERACTIVE_QUESTION_TYPE_LABELS[question.answer_type]}
                     </Badge>
                     <Badge variant={question.optional ? 'outline' : 'default'}>
                       {question.optional ? 'Optional' : 'Required'}

@@ -35,6 +35,7 @@ function createWrapper() {
 describe('useVerifyForgotPassword', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+
     mockedUseAuthStore.mockImplementation((selector) =>
       selector({
         user: null,
@@ -42,9 +43,12 @@ describe('useVerifyForgotPassword', () => {
         mfaData: null,
         resetEmailOrMobile: 'jane@example.com',
         resetToken: null,
-        onboardingPending: false,
         hasActivePlan: false,
         role: null,
+
+        hasCompletedQuestionnaire: false,
+        showQuestionnaireIntro: false,
+
         setMfaData: jest.fn(),
         setAuthenticated: jest.fn(),
         updateUser: jest.fn(),
@@ -52,9 +56,11 @@ describe('useVerifyForgotPassword', () => {
         setResetEmailOrMobile: jest.fn(),
         setResetToken,
         clearResetData: jest.fn(),
-        setOnboardingPending: jest.fn(),
         setHasActivePlan: jest.fn(),
         setRole: jest.fn(),
+
+        setHasCompletedQuestionnaire: jest.fn(),
+        setShowQuestionnaireIntro: jest.fn(),
       }),
     );
   });

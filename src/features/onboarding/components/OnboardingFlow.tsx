@@ -5,15 +5,12 @@ import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@components/ui/button';
 import { ROUTES } from '@constants/routes';
-import { useAuthStore } from '@store/auth.store';
 
 export function OnboardingFlow() {
   const [step, setStep] = useState<1 | 2>(1);
   const navigate = useNavigate();
-  const setOnboardingPending = useAuthStore((state) => state.setOnboardingPending);
 
   const handleChoosePlan = () => {
-    setOnboardingPending(false);
     void navigate(ROUTES.PRICING);
   };
 

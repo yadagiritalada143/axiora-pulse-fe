@@ -145,10 +145,11 @@ describe('useVerifyOtp', () => {
     const { result } = renderHook(() => useVerifyOtp(), { wrapper: createWrapper() });
 
     await result.current.mutateAsync({ id: 1, otp: 111111, flow: 'register' });
-
     expect(useAuthStore.getState().isAuthenticated).toBe(true);
-    expect(useAuthStore.getState().onboardingPending).toBe(true);
-    expect(mockNavigate).toHaveBeenCalledWith(ROUTES.DASHBOARD);
+    expect(useAuthStore.getState().showQuestionnaireIntro).toBe(true);
+    expect(useAuthStore.getState().hasCompletedQuestionnaire).toBe(false);
+
+    expect(mockNavigate).toHaveBeenCalledWith(ROUTES.QUESTIONNAIRE_INTRO);
   });
 
   it('toasts the response message when verification is not successful', async () => {

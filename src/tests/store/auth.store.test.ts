@@ -51,7 +51,8 @@ describe('useAuthStore', () => {
     expect(state.mfaData).toBeNull();
     expect(state.resetEmailOrMobile).toBeNull();
     expect(state.resetToken).toBeNull();
-    expect(state.onboardingPending).toBe(false);
+    expect(state.hasCompletedQuestionnaire).toBe(false);
+    expect(state.showQuestionnaireIntro).toBe(false);
     expect(state.hasActivePlan).toBe(false);
   });
 
@@ -95,7 +96,8 @@ describe('useAuthStore', () => {
     act(() => {
       useAuthStore.getState().updateUser(mockUser);
       useAuthStore.getState().setAuthenticated('access-token', 'refresh-token');
-      useAuthStore.getState().setOnboardingPending(true);
+      useAuthStore.getState().setHasCompletedQuestionnaire(true);
+      useAuthStore.getState().setShowQuestionnaireIntro(true);
       useAuthStore.getState().setHasActivePlan(true);
       useAuthStore.getState().setResetEmailOrMobile('jane@example.com');
       useAuthStore.getState().setResetToken('reset-token');
@@ -109,16 +111,25 @@ describe('useAuthStore', () => {
     expect(state.mfaData).toBeNull();
     expect(state.resetEmailOrMobile).toBeNull();
     expect(state.resetToken).toBeNull();
-    expect(state.onboardingPending).toBe(false);
+    expect(state.hasCompletedQuestionnaire).toBe(false);
+    expect(state.showQuestionnaireIntro).toBe(false);
     expect(state.hasActivePlan).toBe(false);
   });
 
-  it('setOnboardingPending updates the onboarding flag', () => {
+  it('setHasCompletedQuestionnaire updates the questionnaire completion flag', () => {
     act(() => {
-      useAuthStore.getState().setOnboardingPending(true);
+      useAuthStore.getState().setHasCompletedQuestionnaire(true);
     });
 
-    expect(useAuthStore.getState().onboardingPending).toBe(true);
+    expect(useAuthStore.getState().hasCompletedQuestionnaire).toBe(true);
+  });
+
+  it('setShowQuestionnaireIntro updates the questionnaire intro flag', () => {
+    act(() => {
+      useAuthStore.getState().setShowQuestionnaireIntro(true);
+    });
+
+    expect(useAuthStore.getState().showQuestionnaireIntro).toBe(true);
   });
 
   it('setHasActivePlan updates the active plan flag', () => {

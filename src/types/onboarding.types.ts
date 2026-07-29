@@ -1,24 +1,30 @@
-export type InteractiveQuestionType = 'text' | 'radio' | 'dropdown' | 'multi_select';
+export type InteractiveQuestionType = 'textarea' | 'radiobuttons' | 'checkboxes' | 'dropdown';
 
 export interface InteractiveQuestion {
   id: number;
-  questionId: number;
   question: string;
-  question_type: InteractiveQuestionType;
+  answer_type: InteractiveQuestionType;
   optional: boolean;
-  answers?: string[];
+  answers: string[];
+
+  created_at: string;
+  updated_at: string;
 }
 
 export interface InteractiveAnswerPayload {
-  interactive_question_ID: number;
-  answer: string[];
+  questionnaire_id: number;
+  user_answers: string[];
 }
 
 export type InteractiveAnswerDraft = Record<number, string[]>;
 
 export interface CreateInteractiveQuestionPayload {
   question: string;
-  question_type: InteractiveQuestionType;
+  answer_type: InteractiveQuestionType;
   optional: boolean;
-  answers?: string[];
+  answers: string[];
+}
+
+export interface SubmitInteractiveAnswersResponse {
+  message: string;
 }

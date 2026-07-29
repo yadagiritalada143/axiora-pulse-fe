@@ -1,4 +1,5 @@
 export { LoginForm } from './LoginForm';
+export { AdminLoginForm } from './AdminLoginForm';
 export { RegisterForm } from './RegisterForm';
 export { ForgotPasswordForm } from './ForgotPasswordForm';
 export { ResetPasswordForm } from './ResetPasswordForm';

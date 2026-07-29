@@ -42,10 +42,10 @@ describe('GuestRoute', () => {
     expect(screen.getByText('Login page')).toBeInTheDocument();
   });
 
-  it('redirects an authenticated user with pending onboarding to the dashboard', () => {
+  it('redirects an authenticated user without an active plan to pricing even while onboarding is pending', () => {
     renderWithAuthState({ isAuthenticated: true, hasActivePlan: false, onboardingPending: true });
 
-    expect(screen.getByText('Dashboard page')).toBeInTheDocument();
+    expect(screen.getByText('Pricing page')).toBeInTheDocument();
   });
 
   it('redirects an authenticated user with an active plan to the dashboard', () => {

@@ -41,10 +41,10 @@ describe('HomeRedirect', () => {
     expect(screen.getByText('Login page')).toBeInTheDocument();
   });
 
-  it('redirects to the dashboard when onboarding is pending, regardless of plan state', () => {
+  it('redirects to pricing when onboarding is pending without an active plan', () => {
     renderWithAuthState({ isAuthenticated: true, hasActivePlan: false, onboardingPending: true });
 
-    expect(screen.getByText('Dashboard page')).toBeInTheDocument();
+    expect(screen.getByText('Pricing page')).toBeInTheDocument();
   });
 
   it('redirects to the dashboard when authenticated with an active plan', () => {
