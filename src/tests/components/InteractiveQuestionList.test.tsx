@@ -52,6 +52,16 @@ describe('InteractiveQuestionList', () => {
     expect(await screen.findByText('No questions have been added yet.')).toBeInTheDocument();
   });
 
+  it('shows an error message when the questions fail to load', async () => {
+    mockedOnboardingService.listAllInteractiveQuestions.mockRejectedValue(new Error('boom'));
+
+    renderList();
+
+    expect(
+      await screen.findByText('Unable to load the questions. Please try again.'),
+    ).toBeInTheDocument();
+  });
+
   it('lists every question with its type, requirement, and options', async () => {
     mockedOnboardingService.listAllInteractiveQuestions.mockResolvedValue([
       {

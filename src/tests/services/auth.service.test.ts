@@ -2,6 +2,7 @@
 // typescript-eslint can't tell these are jest.fn()s rather than real bound methods.
 
 import type {
+  AdminLoginResponse,
   ChangePasswordResponse,
   ForgotPasswordResponse,
   LoginResponse,
@@ -79,6 +80,29 @@ describe('authService', () => {
       otp: 123456,
     });
     expect(mockedTokenManager.setTokens).toHaveBeenCalledWith('access-1', 'refresh-1');
+    expect(result).toBe(responseBody);
+  });
+
+  it('adminLogin stores the returned tokens and returns the response body', async () => {
+    const responseBody: AdminLoginResponse = {
+      status: 'success',
+      message: 'Welcome back, admin.',
+      access_token: 'admin-access-1',
+      refresh_token: 'admin-refresh-1',
+      token_type: 'bearer',
+      expires_in_minutes: 60,
+      role: 'admin',
+      actions: ['manage_users'],
+    };
+    mockedApiClient.post.mockResolvedValue({ data: responseBody });
+
+    const result = await authService.adminLogin({ username: 'admin', password: 'secret' });
+
+    expect(mockedApiClient.post).toHaveBeenCalledWith(API_ENDPOINTS.AUTH.ADMIN_LOGIN, {
+      username: 'admin',
+      password: 'secret',
+    });
+    expect(mockedTokenManager.setTokens).toHaveBeenCalledWith('admin-access-1', 'admin-refresh-1');
     expect(result).toBe(responseBody);
   });
 

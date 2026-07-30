@@ -28,11 +28,34 @@ function renderWithRole(role: 'user' | 'admin' | null) {
   );
 }
 
+function renderUnauthenticated() {
+  mockUseAuthStore.mockImplementation((selector: (state: unknown) => unknown) =>
+    selector({ role: null, isAuthenticated: false }),
+  );
+
+  return render(
+    <MemoryRouter initialEntries={[ROUTES.ADMIN_DASHBOARD]}>
+      <Routes>
+        <Route element={<AdminRoute />}>
+          <Route path={ROUTES.ADMIN_DASHBOARD} element={<div>Admin dashboard page</div>} />
+        </Route>
+        <Route path={ROUTES.ADMIN_LOGIN} element={<div>Admin login page</div>} />
+      </Routes>
+    </MemoryRouter>,
+  );
+}
+
 describe('AdminRoute', () => {
   it('renders the gated content for an admin', () => {
     renderWithRole('admin');
 
     expect(screen.getByText('Admin dashboard page')).toBeInTheDocument();
+  });
+
+  it('redirects an unauthenticated visitor to the admin login page', () => {
+    renderUnauthenticated();
+
+    expect(screen.getByText('Admin login page')).toBeInTheDocument();
   });
 
   it('redirects a regular user to the dashboard', () => {

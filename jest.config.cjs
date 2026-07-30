@@ -32,6 +32,7 @@ module.exports = {
     '!src/main.tsx',
     '!src/components/ui/**',
     '!src/**/index.ts',
+    '!src/tests/**',
   ],
   coverageDirectory: 'coverage',
 };

@@ -4,6 +4,7 @@ import { createElement, type ReactNode } from 'react';
 import type * as ReactRouterDom from 'react-router-dom';
 import { toast } from 'sonner';
 
+import type { VerifyLoginResponse } from '@/features/auth/types';
 import { useVerifyLogin } from '@features/auth/hooks/useVerifyLogin';
 import { authService } from '@services/auth';
 import { useAuthStore } from '@store/auth.store';
@@ -172,6 +173,46 @@ describe('useVerifyLogin', () => {
     expect(setRole).toHaveBeenCalledWith('admin');
     expect(setHasActivePlan).not.toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalledWith('/admin/dashboard');
+  });
+
+  it('falls back to a default success message when the response omits one', async () => {
+    mockedAuthService.verifyLogin.mockResolvedValue({
+      status: 'success',
+      message: '',
+      access_token: 'access-token',
+      refresh_token: 'refresh-token',
+      token_type: 'Bearer',
+      expires_in_minutes: 60,
+      role: 'user',
+      hasActivePlan: true,
+    });
+
+    const { result } = renderHook(() => useVerifyLogin(), { wrapper: createWrapper() });
+
+    result.current.mutate({ emailOrMobile: 'jane@example.com', otp: 123456 });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(mockedToastSuccess).toHaveBeenCalledWith('Login successful.');
+  });
+
+  it('shows an error toast without authenticating when the response resolves with a failed status', async () => {
+    // The API contract types `status` as the literal 'success', but the mutation still
+    // guards against a resolved-but-unsuccessful body at runtime - simulate that shape here.
+    mockedAuthService.verifyLogin.mockResolvedValue({
+      status: 'failed',
+      message: 'That code has expired.',
+    } as unknown as VerifyLoginResponse);
+
+    const { result } = renderHook(() => useVerifyLogin(), { wrapper: createWrapper() });
+
+    result.current.mutate({ emailOrMobile: 'jane@example.com', otp: 123456 });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(mockedToastError).toHaveBeenCalledWith('That code has expired.');
+    expect(setAuthenticated).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 
   it('shows an error toast and does not authenticate when verification fails', async () => {

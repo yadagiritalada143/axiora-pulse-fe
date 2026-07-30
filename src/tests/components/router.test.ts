@@ -98,6 +98,40 @@ describe('router', () => {
     expect(findRoute(protectedGroup.children, ROUTES.PROFILE)).toBeDefined();
   });
 
+  it('registers the onboarding, questionnaire-intro, and interactive-questions routes under the protected group', () => {
+    const protectedGroup = defined(router.routes[2]);
+
+    expect(findRoute(protectedGroup.children, ROUTES.ONBOARDING)).toBeDefined();
+    expect(findRoute(protectedGroup.children, ROUTES.QUESTIONNAIRE_INTRO)).toBeDefined();
+    expect(findRoute(protectedGroup.children, ROUTES.INTERACTIVE_QUESTIONS)).toBeDefined();
+  });
+
+  it('gates the admin routes behind AdminRoute, nested under AdminDashboardLayout', () => {
+    const protectedGroup = defined(router.routes[2]);
+    const adminRouteGroup = protectedGroup.children?.find((route) =>
+      findRoute(route.children, ROUTES.ADMIN_DASHBOARD),
+    );
+
+    expect(adminRouteGroup).toBeDefined();
+    expect(adminRouteGroup?.element).toBeDefined();
+
+    const adminLayoutRoute = defined(adminRouteGroup?.children?.[0]);
+    const adminPaths = adminLayoutRoute.children?.map((route) => route.path);
+
+    expect(adminPaths).toEqual([
+      ROUTES.ADMIN_DASHBOARD,
+      ROUTES.ADMIN_INTERACTIVE_QUESTIONS,
+      ROUTES.ADMIN_USERS,
+    ]);
+  });
+
+  it('registers the admin login route as a guest-only route, not under AdminRoute', () => {
+    const guestGroup = defined(router.routes[1]);
+    const authLayoutRoute = defined(guestGroup.children?.[0]);
+
+    expect(findRoute(authLayoutRoute.children, ROUTES.ADMIN_LOGIN)).toBeDefined();
+  });
+
   it('falls back to a wildcard "*" route for unmatched paths', () => {
     const catchAll = defined(router.routes[router.routes.length - 1]);
 

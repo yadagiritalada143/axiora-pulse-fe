@@ -106,4 +106,45 @@ describe('AdminUsersTable', () => {
 
     expect(searchInput).toHaveValue('Prabhas');
   });
+
+  it('advances to the next page and back when there are more results than fit on one page', async () => {
+    const user = userEvent.setup();
+
+    mockedUseAdminUsers.mockReturnValue({
+      data: {
+        users: [
+          {
+            id: 1,
+            username: 'prabhas@mailinator.com',
+            display_name: 'Prabhas',
+            role: 'user',
+            created_at: '2026-07-30T09:39:44.020Z',
+            workspace_count: 1,
+          },
+        ],
+        pagination: { total: 25, limit: 10, offset: 10 },
+      },
+      isLoading: false,
+      isError: false,
+      error: null,
+    } as unknown as ReturnType<typeof useAdminUsers>);
+
+    render(<AdminUsersTable />);
+
+    const prevButton = screen.getByRole('button', { name: /previous/i });
+    const nextButton = screen.getByRole('button', { name: /next/i });
+
+    expect(prevButton).toBeEnabled();
+    expect(nextButton).toBeEnabled();
+
+    // Clicking either button updates internal offset state; the mocked hook keeps returning
+    // the same page, but this exercises the handlePrevPage/handleNextPage branches.
+    await user.click(nextButton);
+    await user.click(prevButton);
+
+    // Text is split across <span> elements, so match on the container's combined text content.
+    expect(screen.getByText(/showing/i).closest('p')).toHaveTextContent(
+      'Showing 11 to 20 of 25 users',
+    );
+  });
 });

@@ -152,7 +152,7 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
               disabled={chat.isPending}
               onClick={() => send(VALIDATION_TRIGGER_MESSAGE)}
             >
-              Start validation
+              Run the Validations
             </Button>
             <Button
               type="button"

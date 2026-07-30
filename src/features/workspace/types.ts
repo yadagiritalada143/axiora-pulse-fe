@@ -52,7 +52,8 @@ export interface WorkspaceStateResponse {
   updated_at: string;
 }
 
-export type WorkspaceReportAgent = 'idea_validation_agent' | 'market_research_agent' | 'full';
+export type WorkspaceReportAgent =
+  'idea_validation_agent' | 'market_research_agent' | 'survey_intelligence_agent' | 'full';
 export type WorkspaceReportFormat = 'pdf' | 'doc';
 
 export interface ExportWorkspaceReportRequest {

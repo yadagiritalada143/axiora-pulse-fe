@@ -3,7 +3,14 @@ import userEvent from '@testing-library/user-event';
 import { LayoutGrid, ListChecks } from 'lucide-react';
 import { MemoryRouter } from 'react-router-dom';
 
+import { useLogout } from '@features/auth/hooks';
 import { MentorShell } from '@features/ideaValidation/components/MentorShell';
+
+jest.mock('@features/auth/hooks', () => ({
+  useLogout: jest.fn(),
+}));
+
+const mockedUseLogout = jest.mocked(useLogout);
 
 function renderShell() {
   return render(
@@ -16,6 +23,16 @@ function renderShell() {
 }
 
 describe('MentorShell', () => {
+  const handleLogout = jest.fn();
+
+  beforeEach(() => {
+    mockedUseLogout.mockReturnValue(handleLogout);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('renders its children alongside the Pulse wordmark', () => {
     renderShell();
 
@@ -85,5 +102,25 @@ describe('MentorShell', () => {
       '/admin/interactive-questions',
     );
     expect(screen.queryByText('Workspace')).not.toBeInTheDocument();
+  });
+
+  it('logs out from the mobile nav footer', async () => {
+    const user = userEvent.setup();
+    renderShell();
+
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+    await user.click(screen.getByRole('button', { name: 'Logout' }));
+
+    expect(handleLogout).toHaveBeenCalledTimes(1);
+  });
+
+  it('logs out from the desktop account dropdown', async () => {
+    const user = userEvent.setup();
+    renderShell();
+
+    await user.click(screen.getByRole('button', { name: /account menu/i }));
+    await user.click(screen.getByRole('menuitem', { name: 'Log out' }));
+
+    expect(handleLogout).toHaveBeenCalledTimes(1);
   });
 });

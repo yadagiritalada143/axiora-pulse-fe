@@ -61,6 +61,16 @@ describe('useInteractiveQuestions', () => {
     expect(onboardingService.getInteractiveQuestions).toHaveBeenCalledTimes(1);
   });
 
+  it('defaults to enabled when no argument is passed', async () => {
+    (onboardingService.getInteractiveQuestions as jest.Mock).mockResolvedValue(FIXTURE_QUESTIONS);
+
+    const { result } = renderHook(() => useInteractiveQuestions(), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.data).toEqual(FIXTURE_QUESTIONS));
+  });
+
   it('does not fetch when disabled', () => {
     (onboardingService.getInteractiveQuestions as jest.Mock).mockResolvedValue(FIXTURE_QUESTIONS);
 

@@ -6,6 +6,7 @@ import { queryKeys } from '@constants/queryKeys';
 import {
   useCreateWorkspace,
   useDeleteWorkspace,
+  useUpdateWorkspace,
   useWorkspace,
   useWorkspaces,
 } from '@features/workspace/hooks/useWorkspaces';
@@ -16,6 +17,7 @@ jest.mock('@services/api', () => ({
   apiClient: {
     get: jest.fn(),
     post: jest.fn(),
+    put: jest.fn(),
     delete: jest.fn(),
   },
 }));
@@ -118,6 +120,44 @@ describe('useCreateWorkspace', () => {
     const { result } = renderHook(() => useCreateWorkspace(), { wrapper });
 
     result.current.mutate({ name: 'Acme' });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error).toBeInstanceOf(Error);
+  });
+});
+
+describe('useUpdateWorkspace', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('invalidates both the workspace list and detail queries on success', async () => {
+    mockedApiClient.put.mockResolvedValueOnce({ data: workspace });
+
+    const { wrapper, queryClient } = createWrapper();
+    const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries');
+
+    const { result } = renderHook(() => useUpdateWorkspace(), { wrapper });
+
+    result.current.mutate({ id: 1, payload: { name: 'Acme Renamed', description: 'Updated' } });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(mockedApiClient.put).toHaveBeenCalledWith('/v1/workspaces/1', {
+      name: 'Acme Renamed',
+      description: 'Updated',
+    });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.workspace.all() });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.workspace.detail(1) });
+  });
+
+  it('surfaces an error when the request fails', async () => {
+    mockedApiClient.put.mockRejectedValueOnce(new Error('network error'));
+
+    const { wrapper } = createWrapper();
+    const { result } = renderHook(() => useUpdateWorkspace(), { wrapper });
+
+    result.current.mutate({ id: 1, payload: { name: 'Acme', description: '' } });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error).toBeInstanceOf(Error);

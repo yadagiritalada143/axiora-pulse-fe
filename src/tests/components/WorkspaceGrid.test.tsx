@@ -9,10 +9,12 @@ jest.mock('@features/workspace/components/WorkspaceCard', () => ({
     workspace,
     onClick,
     onDelete,
+    onEdit,
   }: {
     workspace: Workspace;
     onClick: (id: number) => void;
     onDelete: () => void;
+    onEdit: () => void;
   }) => (
     <div>
       <button type="button" onClick={() => onClick(workspace.id)}>
@@ -20,6 +22,9 @@ jest.mock('@features/workspace/components/WorkspaceCard', () => ({
       </button>
       <button type="button" onClick={onDelete}>
         Delete {workspace.name}
+      </button>
+      <button type="button" onClick={onEdit}>
+        Edit {workspace.name}
       </button>
     </div>
   ),
@@ -103,5 +108,39 @@ describe('WorkspaceGrid', () => {
     await user.click(screen.getByText('Delete Workspace 9'));
 
     expect(onWorkspaceDelete).toHaveBeenCalledWith(workspace);
+  });
+
+  it('forwards the full workspace object on edit', async () => {
+    const user = userEvent.setup();
+    const onWorkspaceEdit = jest.fn();
+    const workspace = makeWorkspace(11);
+
+    render(
+      <WorkspaceGrid
+        workspaces={[workspace]}
+        onWorkspaceClick={jest.fn()}
+        onWorkspaceDelete={jest.fn()}
+        onWorkspaceEdit={onWorkspaceEdit}
+      />,
+    );
+
+    await user.click(screen.getByText('Edit Workspace 11'));
+
+    expect(onWorkspaceEdit).toHaveBeenCalledWith(workspace);
+  });
+
+  it('does not throw when onWorkspaceEdit is not provided and edit is triggered', async () => {
+    const user = userEvent.setup();
+    const workspace = makeWorkspace(13);
+
+    render(
+      <WorkspaceGrid
+        workspaces={[workspace]}
+        onWorkspaceClick={jest.fn()}
+        onWorkspaceDelete={jest.fn()}
+      />,
+    );
+
+    await expect(user.click(screen.getByText('Edit Workspace 13'))).resolves.not.toThrow();
   });
 });

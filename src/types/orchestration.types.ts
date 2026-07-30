@@ -15,25 +15,64 @@ export interface OrchestrationRunRequest {
   idea: OrchestrationIdeaPayload;
 }
 
-export interface OrchestrationAgentResultData {
-  idea_clarity_score: number;
-  problem_summary: string;
-  customer_hypothesis: string;
-  key_assumptions: string[];
+export interface IdeaValidationAgentData {
+  problem_clarity_score: number;
+  falsifiable_problem_sentence: string;
+  problem_statement_summary: string;
+  pain_type_classification: string;
+  who_and_frequency: string;
+  current_workarounds: string[];
+  assumption_list: string[];
   red_flags: string[];
   initial_recommendation: string;
+  confidence: number;
+}
+
+export interface MarketResearchAgentData {
+  audience_narrowness_score: number;
+  primary_icp_summary: string;
+  secondary_segments: string[];
+  persona_summary: string;
+  red_flags: string[];
+  market_opportunity_score: number;
+  market_opportunity_summary: string;
+  target_customer_segments: string[];
+  competitor_overview: string[];
+  opportunity_signals: string[];
+  risk_signals: string[];
+  confidence: number;
+}
+
+export interface SurveyIntelligenceQuestion {
+  question_text: string;
+  question_type: string;
+  target_hypothesis: string;
+}
+
+export interface SurveyIntelligenceAgentData {
+  survey_title: string;
+  survey_objective: string;
+  target_audience_summary: string;
+  questions: SurveyIntelligenceQuestion[];
+  survey_quality_score: number;
   confidence: number;
   disclaimer: string;
 }
 
-export interface OrchestrationAgentResult {
+export interface OrchestrationAgentResult<TData> {
   score: number;
   confidence: number;
-  data: OrchestrationAgentResultData;
+  data: TData;
   model_used: string;
   tokens_input: number;
   tokens_output: number;
   executed_at: string;
+}
+
+export interface OrchestrationAgentResults {
+  idea_validation_agent?: OrchestrationAgentResult<IdeaValidationAgentData>;
+  market_research_agent?: OrchestrationAgentResult<MarketResearchAgentData>;
+  survey_intelligence_agent?: OrchestrationAgentResult<SurveyIntelligenceAgentData>;
 }
 
 export interface OrchestrationResult {
@@ -46,7 +85,7 @@ export interface OrchestrationResult {
   risks: string[];
   assumptions: string[];
   recommendations: string[];
-  agent_results: Record<string, OrchestrationAgentResult>;
+  agent_results: OrchestrationAgentResults;
   mentor_summary: string;
   disclaimer: string;
   created_at: string;

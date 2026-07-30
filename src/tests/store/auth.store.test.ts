@@ -132,6 +132,22 @@ describe('useAuthStore', () => {
     expect(useAuthStore.getState().showQuestionnaireIntro).toBe(true);
   });
 
+  it('setRole updates the account role', () => {
+    act(() => {
+      useAuthStore.getState().setRole('admin');
+    });
+
+    expect(useAuthStore.getState().role).toBe('admin');
+  });
+
+  it('setOnboardingPending updates the onboarding-pending flag', () => {
+    act(() => {
+      useAuthStore.getState().setOnboardingPending?.(true);
+    });
+
+    expect(useAuthStore.getState().onboardingPending).toBe(true);
+  });
+
   it('setHasActivePlan updates the active plan flag', () => {
     act(() => {
       useAuthStore.getState().setHasActivePlan(true);

@@ -112,7 +112,10 @@ describe('QuestionRenderer', () => {
     it('falls back to no options when the question has none', () => {
       render(
         <QuestionRenderer
-          question={makeQuestion({ answer_type: 'radiobuttons' })}
+          question={makeQuestion({
+            answer_type: 'radiobuttons',
+            answers: undefined as unknown as string[],
+          })}
           value={[]}
           onChange={jest.fn()}
         />,
@@ -189,7 +192,10 @@ describe('QuestionRenderer', () => {
     it('falls back to no options when the question has none', () => {
       render(
         <QuestionRenderer
-          question={makeQuestion({ answer_type: 'checkboxes' })}
+          question={makeQuestion({
+            answer_type: 'checkboxes',
+            answers: undefined as unknown as string[],
+          })}
           value={[]}
           onChange={jest.fn()}
         />,
@@ -241,7 +247,10 @@ describe('QuestionRenderer', () => {
       const user = userEvent.setup();
       render(
         <QuestionRenderer
-          question={makeQuestion({ answer_type: 'dropdown' })}
+          question={makeQuestion({
+            answer_type: 'dropdown',
+            answers: undefined as unknown as string[],
+          })}
           value={[]}
           onChange={jest.fn()}
         />,

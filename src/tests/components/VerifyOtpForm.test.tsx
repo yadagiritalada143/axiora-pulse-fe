@@ -174,6 +174,22 @@ describe('VerifyOtpForm', () => {
     );
   });
 
+  it('also submits via the Verify OTP button once it is enabled', async () => {
+    const user = userEvent.setup();
+    const { container } = renderForm();
+
+    await user.type(getOtpInput(container), '654321');
+    verifyOtpMutate.mockClear();
+
+    // handleVerify's own isPending/length guards mirror the disabled-button state exactly
+    // (the button is only ever enabled once otp.length === 6 and isPending is false), so this
+    // exercises handleVerify's call-through path via a direct click rather than only the
+    // OtpInput's auto-submit-on-change path covered above.
+    await user.click(screen.getByRole('button', { name: /verify otp/i }));
+
+    expect(verifyOtpMutate).toHaveBeenCalledWith({ id: 42, otp: 654321, flow: 'register' });
+  });
+
   it('disables the verify button and shows a loader while pending', () => {
     mockUseVerifyOtpReturn({ isPending: true });
     renderForm();

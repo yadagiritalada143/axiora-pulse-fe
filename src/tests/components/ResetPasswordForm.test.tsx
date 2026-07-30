@@ -170,4 +170,50 @@ describe('ResetPasswordForm', () => {
 
     expect(newPasswordInput).toHaveAttribute('type', 'text');
   });
+
+  /**
+   * The shared `Input` component (@components/ui/input) already renders its own built-in
+   * password visibility toggle for `type="password"` fields, and ResetPasswordForm layers a
+   * second, separate toggle (its own `showPassword`/`showConfirm` state) on top of that -
+   * both buttons render stacked at the exact same position. This looks like an unintentional
+   * duplicate control (worth a follow-up to remove one of them), but since it's not a
+   * regression this change introduces, these tests target ResetPasswordForm's own outer
+   * toggle buttons specifically (the ones with `tabIndex={-1}`) to cover its own state.
+   */
+  function getOwnToggleButton(container: HTMLElement, fieldName: string): HTMLButtonElement {
+    const input = getInputByName(container, fieldName);
+    const formControl = input.closest('[data-slot="form-control"]');
+    if (!formControl) {
+      throw new Error(`Expected a form-control wrapper for "${fieldName}"`);
+    }
+    const button = formControl.querySelector<HTMLButtonElement>('button[tabindex="-1"]');
+    if (!button) {
+      throw new Error(`Expected ResetPasswordForm's own toggle button for "${fieldName}"`);
+    }
+    return button;
+  }
+
+  it("toggles the new password field's visibility via ResetPasswordForm's own state", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<ResetPasswordForm />);
+
+    const newPasswordInput = getInputByName(container, 'new_password');
+    expect(newPasswordInput).toHaveAttribute('type', 'password');
+
+    await user.click(getOwnToggleButton(container, 'new_password'));
+
+    expect(newPasswordInput).toHaveAttribute('type', 'text');
+  });
+
+  it("toggles the confirm password field's visibility via ResetPasswordForm's own state", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<ResetPasswordForm />);
+
+    const confirmInput = getInputByName(container, 'confirmPassword');
+    expect(confirmInput).toHaveAttribute('type', 'password');
+
+    await user.click(getOwnToggleButton(container, 'confirmPassword'));
+
+    expect(confirmInput).toHaveAttribute('type', 'text');
+  });
 });

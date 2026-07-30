@@ -1,9 +1,16 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { AgentStepProgress } from '@features/workspace/components/AgentStepProgress';
 import { AGENT_STEPS, getStepFromWorkspaceState } from '@features/workspace/utils/agentStep.utils';
 
 describe('AgentStepProgress', () => {
+  it('defaults to step 1 when currentStep is not provided', () => {
+    render(<AgentStepProgress />);
+
+    expect(screen.getByText('1/5 Steps')).toBeInTheDocument();
+  });
+
   it('renders all 5 step names from the reference design', () => {
     render(<AgentStepProgress currentStep={2} />);
 
@@ -31,5 +38,66 @@ describe('AgentStepProgress', () => {
     expect(getStepFromWorkspaceState('VALIDATING')).toBe(2);
     expect(getStepFromWorkspaceState('VALIDATED')).toBe(3);
     expect(getStepFromWorkspaceState(undefined)).toBe(1);
+  });
+
+  it('toggles the mobile collapsed pipeline open and closed on click', async () => {
+    const user = userEvent.setup();
+    render(<AgentStepProgress currentStep={2} />);
+
+    const toggle = screen.getByText('Agent Workflow').closest('button');
+    expect(toggle).toBeInTheDocument();
+    if (!toggle) throw new Error('toggle button not found');
+
+    const chevron = () => {
+      const svgs = toggle.querySelectorAll('svg');
+      return svgs[svgs.length - 1];
+    };
+    expect(chevron()).toHaveClass('lucide-chevron-down');
+
+    // Collapsed: the mobile per-step breakdown (with its "Completed"/"Active" badges) isn't
+    // rendered yet - only the desktop pipeline's differently-labelled "Done"/"Running" badges are.
+    expect(screen.queryByText('Completed')).not.toBeInTheDocument();
+
+    await user.click(toggle);
+
+    expect(chevron()).toHaveClass('lucide-chevron-up');
+    expect(screen.getByText('Completed')).toBeInTheDocument();
+    expect(screen.getByText('Active')).toBeInTheDocument();
+
+    await user.click(toggle);
+
+    expect(chevron()).toHaveClass('lucide-chevron-down');
+    expect(screen.queryByText('Completed')).not.toBeInTheDocument();
+  });
+
+  it('expands and collapses a step to reveal its detail bullets on the desktop pipeline', async () => {
+    const user = userEvent.setup();
+    render(<AgentStepProgress currentStep={2} />);
+
+    const [firstStep] = AGENT_STEPS;
+    if (!firstStep) throw new Error('AGENT_STEPS is empty');
+
+    const firstDetail = firstStep.details[0];
+    if (!firstDetail) throw new Error('firstStep.details is empty');
+
+    const stepButton = screen.getByRole('button', { name: firstStep.name });
+
+    expect(screen.queryByText(firstDetail)).not.toBeInTheDocument();
+
+    await user.click(stepButton);
+
+    const detailList = screen.getByText(firstStep.name).closest('.min-w-0');
+    expect(detailList).not.toBeNull();
+    expect(within(detailList as HTMLElement).getByText(`• ${firstDetail}`)).toBeInTheDocument();
+
+    await user.click(stepButton);
+
+    expect(screen.queryByText(`• ${firstDetail}`)).not.toBeInTheDocument();
+  });
+
+  it('falls back to the step-1 label when currentStep does not match a known step', () => {
+    render(<AgentStepProgress currentStep={99} />);
+
+    expect(screen.getAllByText('Idea Validation Agent').length).toBeGreaterThan(0);
   });
 });

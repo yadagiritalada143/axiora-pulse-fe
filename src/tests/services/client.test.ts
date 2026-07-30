@@ -1,4 +1,4 @@
-import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
 jest.mock('@config/app.config', () => ({
   appConfig: {
@@ -244,5 +244,109 @@ describe('apiClient response error interceptor', () => {
 
     await expect(getResponseErrorInterceptor()(error)).rejects.toMatchObject({ status: 401 });
     expect(mockedRunExclusiveRefresh).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * The tests above mock `runExclusiveRefresh` entirely, so the real `refreshAccessToken`
+ * function it wraps (not itself exported) never runs. These tests make `runExclusiveRefresh`
+ * invoke its callback for real, exercising `refreshAccessToken`'s token-extraction logic
+ * against a directly-mocked `axios.post` (the plain `axios` call it makes, not `apiClient`).
+ */
+describe('apiClient response error interceptor - real refreshAccessToken', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockedRunExclusiveRefresh.mockImplementation((refresh) => refresh());
+  });
+
+  function make401(originalRequest: InternalAxiosRequestConfig) {
+    return makeAxiosError({
+      config: originalRequest,
+      response: {
+        status: 401,
+        statusText: 'Unauthorized',
+        headers: {},
+        config: originalRequest,
+        data: {},
+      },
+    });
+  }
+
+  it('clears the session when there is no stored refresh token', async () => {
+    mockedTokenManager.getRefreshToken.mockReturnValue(null);
+    const postSpy = jest.spyOn(axios, 'post');
+
+    const originalRequest = makeConfig({ url: '/protected' });
+
+    await expect(getResponseErrorInterceptor()(make401(originalRequest))).rejects.toMatchObject({
+      status: 401,
+    });
+
+    expect(postSpy).not.toHaveBeenCalled();
+    expect(mockedTokenManager.clearTokens).toHaveBeenCalledTimes(1);
+    expect(mockedAuthEvents.emit).toHaveBeenCalledWith('session-expired');
+
+    postSpy.mockRestore();
+  });
+
+  it('extracts a nested snake_case token pair, stores them, and retries the request', async () => {
+    mockedTokenManager.getRefreshToken.mockReturnValue('stored-refresh-token');
+    const postSpy = jest.spyOn(axios, 'post').mockResolvedValue({
+      data: { data: { access_token: 'fresh-access', refresh_token: 'fresh-refresh' } },
+    });
+    const retriedResponse = { data: 'ok' };
+    const requestSpy = jest.spyOn(apiClient, 'request').mockResolvedValue(retriedResponse);
+
+    const originalRequest = makeConfig({ url: '/protected' });
+
+    const result = await getResponseErrorInterceptor()(make401(originalRequest));
+
+    expect(postSpy).toHaveBeenCalledWith(
+      'https://api.test.local/v1/auth/refresh',
+      { refreshToken: 'stored-refresh-token', refresh_token: 'stored-refresh-token' },
+      expect.objectContaining({ skipAuthRefresh: true }),
+    );
+    expect(mockedTokenManager.setTokens).toHaveBeenCalledWith('fresh-access', 'fresh-refresh');
+    expect(result).toBe(retriedResponse);
+
+    postSpy.mockRestore();
+    requestSpy.mockRestore();
+  });
+
+  it('falls back to the current refresh token when the response omits one', async () => {
+    mockedTokenManager.getRefreshToken.mockReturnValue('stored-refresh-token');
+    const postSpy = jest.spyOn(axios, 'post').mockResolvedValue({
+      data: { accessToken: 'fresh-access-camel' },
+    });
+    const requestSpy = jest.spyOn(apiClient, 'request').mockResolvedValue({ data: 'ok' });
+
+    const originalRequest = makeConfig({ url: '/protected' });
+
+    await getResponseErrorInterceptor()(make401(originalRequest));
+
+    expect(mockedTokenManager.setTokens).toHaveBeenCalledWith(
+      'fresh-access-camel',
+      'stored-refresh-token',
+    );
+
+    postSpy.mockRestore();
+    requestSpy.mockRestore();
+  });
+
+  it('clears the session when the refresh response has no access token at all', async () => {
+    mockedTokenManager.getRefreshToken.mockReturnValue('stored-refresh-token');
+    const postSpy = jest.spyOn(axios, 'post').mockResolvedValue({ data: {} });
+
+    const originalRequest = makeConfig({ url: '/protected' });
+
+    await expect(getResponseErrorInterceptor()(make401(originalRequest))).rejects.toMatchObject({
+      status: 401,
+    });
+
+    expect(mockedTokenManager.setTokens).not.toHaveBeenCalled();
+    expect(mockedTokenManager.clearTokens).toHaveBeenCalledTimes(1);
+    expect(mockedAuthEvents.emit).toHaveBeenCalledWith('session-expired');
+
+    postSpy.mockRestore();
   });
 });
