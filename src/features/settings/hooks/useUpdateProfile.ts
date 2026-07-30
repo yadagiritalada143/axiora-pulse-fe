@@ -15,11 +15,15 @@ interface UpdateProfilePayload {
 }
 
 async function updateProfile(payload: UpdateProfilePayload): Promise<User> {
-  const { data } = await apiClient.patch<ApiResponse<User>>(
+  const response = await apiClient.patch<ApiResponse<User> | User>(
     API_ENDPOINTS.USER.UPDATE_PROFILE,
     payload,
   );
-  return data.data;
+  const resData = response.data;
+  if (resData && typeof resData === 'object' && 'data' in resData && resData.data) {
+    return resData.data;
+  }
+  return resData as User;
 }
 
 export function useUpdateProfile() {

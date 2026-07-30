@@ -63,6 +63,10 @@ export const API_ENDPOINTS = {
       DELETE: (id: number) => `/v1/admin/questionnaire/delete-question/${id}`,
     },
   },
+
+  ADMIN: {
+    USERS: '/v1/admin/users',
+  },
 } as const;
 
 export const HTTP_STATUS = {

@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@components/ui/dropdown-menu';
 import { ROUTES } from '@constants/routes';
+import { useLogout } from '@features/auth/hooks';
 import { useAuthStore } from '@store/auth.store';
 import { useUIStore } from '@store/ui.store';
 
@@ -24,7 +25,7 @@ interface NavbarProps {
 export function Navbar({ onSearch, actions }: NavbarProps) {
   const toggleSidebar = useUIStore((state) => state.toggleSidebar);
   const user = useAuthStore((state) => state.user);
-  const clearSession = useAuthStore((state) => state.clearSession);
+  const logout = useLogout();
 
   return (
     <header className="border-border bg-background flex h-16 items-center gap-4 border-b px-4">
@@ -65,7 +66,7 @@ export function Navbar({ onSearch, actions }: NavbarProps) {
               <Link to={ROUTES.SETTINGS}>Settings</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" onSelect={() => clearSession()}>
+            <DropdownMenuItem variant="destructive" onSelect={() => void logout()}>
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

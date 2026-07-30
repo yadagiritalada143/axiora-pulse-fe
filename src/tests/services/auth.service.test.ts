@@ -177,7 +177,7 @@ describe('authService', () => {
     expect(result).toBe(responseBody);
   });
 
-  it('changePassword posts with credentials and returns the response body', async () => {
+  it('changePassword posts and returns the response body', async () => {
     const responseBody: ChangePasswordResponse = { status: 'success', message: 'Password changed' };
     mockedApiClient.post.mockResolvedValue({ data: responseBody });
 
@@ -186,11 +186,10 @@ describe('authService', () => {
       new_password: 'new',
     });
 
-    expect(mockedApiClient.post).toHaveBeenCalledWith(
-      API_ENDPOINTS.AUTH.CHANGE_PASSWORD,
-      { current_password: 'old', new_password: 'new' },
-      { withCredentials: true },
-    );
+    expect(mockedApiClient.post).toHaveBeenCalledWith(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, {
+      current_password: 'old',
+      new_password: 'new',
+    });
     expect(result).toBe(responseBody);
   });
 
@@ -199,15 +198,11 @@ describe('authService', () => {
 
     await authService.logout();
 
-    expect(mockedApiClient.post).toHaveBeenCalledWith(
-      API_ENDPOINTS.AUTH.LOGOUT,
-      {},
-      { withCredentials: true },
-    );
+    expect(mockedApiClient.post).toHaveBeenCalledWith(API_ENDPOINTS.AUTH.LOGOUT, {});
     expect(mockedTokenManager.clearTokens).toHaveBeenCalledTimes(1);
   });
 
-  it('getCurrentUser fetches the current user with credentials', async () => {
+  it('getCurrentUser fetches the current user', async () => {
     const user: User = {
       id: '1',
       email: 'jane@test.com',
@@ -221,9 +216,7 @@ describe('authService', () => {
 
     const result = await authService.getCurrentUser();
 
-    expect(mockedApiClient.get).toHaveBeenCalledWith(API_ENDPOINTS.AUTH.ME, {
-      withCredentials: true,
-    });
+    expect(mockedApiClient.get).toHaveBeenCalledWith(API_ENDPOINTS.AUTH.ME);
     expect(result).toBe(user);
   });
 });

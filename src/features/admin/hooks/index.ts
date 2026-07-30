@@ -3,3 +3,4 @@ export {
   useCreateInteractiveQuestion,
   useDeleteInteractiveQuestion,
 } from './useAdminInteractiveQuestions';
+export { useAdminUsers } from './useAdminUsers';

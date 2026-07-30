@@ -1,5 +1,7 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { createElement, type ReactNode } from 'react';
 
 import type { User } from '@/types/api.types';
 import { ProfileForm } from '@features/settings/components/ProfileForm';
@@ -27,6 +29,13 @@ const user: User = {
   updatedAt: '2026-01-01T00:00:00.000Z',
 };
 
+function renderWithQueryClient(ui: ReactNode) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  return render(createElement(QueryClientProvider, { client: queryClient }, ui));
+}
+
 describe('ProfileForm', () => {
   const mutate = jest.fn();
 
@@ -42,7 +51,7 @@ describe('ProfileForm', () => {
   });
 
   it('prefills the form with the current user', () => {
-    render(<ProfileForm />);
+    renderWithQueryClient(<ProfileForm />);
 
     expect(screen.getByLabelText('Full name')).toHaveValue('Jane Doe');
     expect(screen.getByLabelText('Email address')).toHaveValue('jane@example.com');
@@ -50,7 +59,7 @@ describe('ProfileForm', () => {
 
   it('submits the updated values', async () => {
     const testUser = userEvent.setup();
-    render(<ProfileForm />);
+    renderWithQueryClient(<ProfileForm />);
 
     const nameInput = screen.getByLabelText('Full name');
     await testUser.clear(nameInput);
@@ -63,7 +72,7 @@ describe('ProfileForm', () => {
 
   it('shows a validation error and does not submit when the name is too short', async () => {
     const testUser = userEvent.setup();
-    render(<ProfileForm />);
+    renderWithQueryClient(<ProfileForm />);
 
     const nameInput = screen.getByLabelText('Full name');
     await testUser.clear(nameInput);
@@ -77,7 +86,7 @@ describe('ProfileForm', () => {
 
   it('shows a validation error for an invalid email', async () => {
     const testUser = userEvent.setup();
-    render(<ProfileForm />);
+    renderWithQueryClient(<ProfileForm />);
 
     const emailInput = screen.getByLabelText('Email address');
     await testUser.clear(emailInput);
@@ -94,7 +103,7 @@ describe('ProfileForm', () => {
       selector({ user: null }),
     );
 
-    render(<ProfileForm />);
+    renderWithQueryClient(<ProfileForm />);
 
     expect(screen.getByLabelText('Full name')).toHaveValue('');
     expect(screen.getByLabelText('Email address')).toHaveValue('');
@@ -103,7 +112,7 @@ describe('ProfileForm', () => {
   it('disables the submit button while pending', () => {
     mockedUseUpdateProfile.mockReturnValue({ mutate, isPending: true });
 
-    render(<ProfileForm />);
+    renderWithQueryClient(<ProfileForm />);
 
     expect(screen.getByRole('button', { name: 'Save changes' })).toBeDisabled();
   });

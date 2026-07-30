@@ -4,3 +4,5 @@ export { useRegister } from './useRegister';
 export { useForgotPassword } from './useForgotPassword';
 export { useVerifyForgotPassword } from './useVerifyForgotPassword';
 export { useResetPassword } from './useResetPassword';
+export { useLogout } from './useLogout';
+export { useCurrentUser } from './useCurrentUser';

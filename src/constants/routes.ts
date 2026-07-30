@@ -26,6 +26,7 @@ export const ROUTES = {
   ADMIN_LOGIN: '/admin/login',
   ADMIN_DASHBOARD: '/admin/dashboard',
   ADMIN_INTERACTIVE_QUESTIONS: '/admin/interactive-questions',
+  ADMIN_USERS: '/admin/users',
 
   NOT_FOUND: '/404',
 } as const;
@@ -56,6 +57,7 @@ export const PROTECTED_ROUTES: AppRoute[] = [
 
   ROUTES.ADMIN_DASHBOARD,
   ROUTES.ADMIN_INTERACTIVE_QUESTIONS,
+  ROUTES.ADMIN_USERS,
 ];
 
 export function buildConversationRoute(conversationId: string): string {

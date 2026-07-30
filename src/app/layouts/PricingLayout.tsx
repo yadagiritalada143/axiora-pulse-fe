@@ -1,22 +1,12 @@
 import { LogOut, Sparkles } from 'lucide-react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 
 import { Button } from '@components/ui/button';
 import { appConfig } from '@config/app.config';
-import { ROUTES } from '@constants/routes';
-import { authService } from '@services/auth';
-import { useAuthStore } from '@store/auth.store';
+import { useLogout } from '@features/auth/hooks';
 
 export function PricingLayout() {
-  const navigate = useNavigate();
-  const clearSession = useAuthStore((state) => state.clearSession);
-
-  const handleLogout = () => {
-    // Fire-and-forget — clear session even if the API call fails
-    void authService.logout().catch(() => null);
-    clearSession();
-    void navigate(ROUTES.LOGIN, { replace: true });
-  };
+  const handleLogout = useLogout();
 
   return (
     <div className="bg-background flex min-h-screen flex-col">

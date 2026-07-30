@@ -102,28 +102,22 @@ export const authService = {
     const { data } = await apiClient.post<ChangePasswordResponse>(
       API_ENDPOINTS.AUTH.CHANGE_PASSWORD,
       payload,
-      {
-        withCredentials: true,
-      },
     );
     return data;
   },
 
   async logout(): Promise<void> {
-    await apiClient.post(
-      API_ENDPOINTS.AUTH.LOGOUT,
-      {},
-      {
-        withCredentials: true,
-      },
-    );
-    tokenManager.clearTokens();
+    try {
+      await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT, {});
+    } catch {
+      // Ignored: clear local session tokens even if network fails
+    } finally {
+      tokenManager.clearTokens();
+    }
   },
 
   async getCurrentUser(): Promise<User> {
-    const { data } = await apiClient.get<User>(API_ENDPOINTS.AUTH.ME, {
-      withCredentials: true,
-    });
+    const { data } = await apiClient.get<User>(API_ENDPOINTS.AUTH.ME);
     return data;
   },
 };

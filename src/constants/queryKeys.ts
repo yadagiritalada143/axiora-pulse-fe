@@ -35,5 +35,7 @@ export const queryKeys = {
 
   admin: {
     interactiveQuestions: () => ['admin', 'interactiveQuestions'] as const,
+    users: (params?: { limit?: number; offset?: number; search?: string }) =>
+      ['admin', 'users', params] as const,
   },
 } as const;

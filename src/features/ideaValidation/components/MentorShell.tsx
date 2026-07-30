@@ -15,7 +15,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 
 import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import {
@@ -26,6 +26,7 @@ import {
   DropdownMenuTrigger,
 } from '@components/ui/dropdown-menu';
 import { ROUTES } from '@constants/routes';
+import { useLogout } from '@features/auth/hooks';
 import { cn } from '@lib/utils';
 import { useAuthStore } from '@store/auth.store';
 
@@ -37,13 +38,6 @@ export interface MentorNavItem {
   end?: boolean;
   disabled?: boolean;
 }
-
-const OVERVIEW_ITEM: MentorNavItem = {
-  label: 'Overview',
-  icon: LayoutGrid,
-  href: ROUTES.DASHBOARD,
-  end: true,
-};
 
 const WORKSPACE_NAV_ITEMS: MentorNavItem[] = [
   { label: 'Founder Intelligence', icon: Users, disabled: true },
@@ -61,26 +55,32 @@ interface MentorShellProps {
 
 export function MentorShell({
   children,
-  overviewItem = OVERVIEW_ITEM,
+  overviewItem,
   navItems = WORKSPACE_NAV_ITEMS,
   navSectionLabel = 'Workspace',
 }: MentorShellProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
-  const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
-  const clearSession = useAuthStore((state) => state.clearSession);
+  const role = useAuthStore((state) => state.role);
+  const handleLogout = useLogout();
 
   const closeNav = () => setIsNavOpen(false);
 
-  const handleLogout = () => {
-    clearSession();
-    void navigate(ROUTES.LOGIN, { replace: true });
+  const isAdmin = role === 'admin' || user?.role === 'admin';
+
+  const defaultOverviewItem: MentorNavItem = {
+    label: 'Overview',
+    icon: LayoutGrid,
+    href: isAdmin ? ROUTES.ADMIN_DASHBOARD : ROUTES.DASHBOARD,
+    end: true,
   };
+
+  const activeOverviewItem = overviewItem ?? defaultOverviewItem;
 
   const footerItems: MentorNavItem[] = [
     { label: 'Integrations', icon: Sparkles, disabled: true },
     { label: 'Settings', icon: Settings, href: ROUTES.SETTINGS },
-    { label: 'Logout', icon: LogOut, onClick: handleLogout },
+    { label: 'Logout', icon: LogOut, onClick: () => void handleLogout() },
   ];
 
   return (
@@ -117,7 +117,7 @@ export function MentorShell({
           </div>
 
           <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-2" aria-label="Primary">
-            <MentorNavButton item={overviewItem} onNavigate={closeNav} />
+            <MentorNavButton item={activeOverviewItem} onNavigate={closeNav} />
 
             {navItems.length > 0 ? (
               <>
@@ -196,7 +196,7 @@ export function MentorShell({
                     <Link to={ROUTES.SETTINGS}>Settings</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem variant="destructive" onSelect={handleLogout}>
+                  <DropdownMenuItem variant="destructive" onSelect={() => void handleLogout()}>
                     Log out
                   </DropdownMenuItem>
                 </DropdownMenuContent>

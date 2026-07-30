@@ -37,19 +37,46 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config;
 });
 
+interface RefreshTokenResponseBody {
+  data?: {
+    accessToken?: string;
+    access_token?: string;
+    refreshToken?: string;
+    refresh_token?: string;
+  };
+  accessToken?: string;
+  access_token?: string;
+  refreshToken?: string;
+  refresh_token?: string;
+}
+
 async function refreshAccessToken(): Promise<string> {
   const refreshToken = tokenManager.getRefreshToken();
   if (!refreshToken) throw new Error('No refresh token available.');
 
-  const response = await axios.post<{ data: { accessToken: string; refreshToken: string } }>(
+  const response = await axios.post<RefreshTokenResponseBody>(
     `${appConfig.apiUrl}${API_ENDPOINTS.AUTH.REFRESH}`,
-    { refreshToken },
+    { refreshToken, refresh_token: refreshToken },
     { skipAuthRefresh: true } as InternalAxiosRequestConfig,
   );
 
-  const tokens = response.data.data;
-  tokenManager.setTokens(tokens.accessToken, tokens.refreshToken);
-  return tokens.accessToken;
+  const resBody = response.data;
+  const data = resBody.data ?? resBody;
+  const newAccessToken =
+    data.accessToken ?? data.access_token ?? resBody.accessToken ?? resBody.access_token;
+  const newRefreshToken =
+    data.refreshToken ??
+    data.refresh_token ??
+    resBody.refreshToken ??
+    resBody.refresh_token ??
+    refreshToken;
+
+  if (!newAccessToken) {
+    throw new Error('Refresh token response missing access token.');
+  }
+
+  tokenManager.setTokens(newAccessToken, newRefreshToken);
+  return newAccessToken;
 }
 
 apiClient.interceptors.response.use(
