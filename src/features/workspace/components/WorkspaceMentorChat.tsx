@@ -12,7 +12,9 @@ import {
   useWorkspaceChat,
   useWorkspaceState,
 } from '../hooks/useWorkspaceMentor';
+import { getStepFromWorkspaceState } from '../utils/agentStep.utils';
 
+import { AgentStepProgress } from './AgentStepProgress';
 import { WorkspaceMentorIntake } from './WorkspaceMentorIntake';
 
 // The backend mentor only recognizes a fixed set of phrases as the signal to kick off the
@@ -64,10 +66,21 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
     setDraft('');
   }
 
+  const currentStep = getStepFromWorkspaceState(data.state);
   const hasStarted = data.conversation_history.length > 0;
 
   if (!hasStarted) {
-    return <WorkspaceMentorIntake onSubmit={send} isPending={chat.isPending} error={chat.error} />;
+    return (
+      <div className="mx-auto flex h-full min-h-[70vh] w-full max-w-6xl items-start gap-6">
+        <div className="min-w-0 flex-1">
+          <AgentStepProgress currentStep={1} className="mb-4 block lg:hidden" />
+          <WorkspaceMentorIntake onSubmit={send} isPending={chat.isPending} error={chat.error} />
+        </div>
+        <div className="hidden w-72 shrink-0 lg:block">
+          <AgentStepProgress currentStep={1} />
+        </div>
+      </div>
+    );
   }
 
   const showQuickActions = data.state === 'READY_TO_VALIDATE';
@@ -87,76 +100,86 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
     : null;
 
   return (
-    <div className="mx-auto flex h-full min-h-[70vh] w-full max-w-4xl flex-col">
-      <div className="border-border flex items-center gap-6 border-b text-sm">
-        <span className="text-primary border-primary -mb-px border-b-2 pb-2 font-medium">Arya</span>
-      </div>
+    <div className="mx-auto flex h-full min-h-[70vh] w-full max-w-6xl items-start gap-6">
+      <div className="flex h-full min-w-0 flex-1 flex-col">
+        <AgentStepProgress currentStep={currentStep} className="mb-4 block lg:hidden" />
 
-      <div className="flex-1 space-y-4 overflow-y-auto py-4">
-        {data.conversation_history.map((message, index) =>
-          message.role === 'user' ? (
-            <ChatBubble key={index} align="right" avatarLabel="U">
-              <p className="text-sm whitespace-pre-wrap">
-                {displayMessageContent(message.content)}
-              </p>
-            </ChatBubble>
-          ) : (
-            <ChatBubble key={index} align="left" avatarLabel="AI">
-              <MarkdownRenderer content={message.content} />
-            </ChatBubble>
-          ),
-        )}
-
-        {chat.isPending ? (
-          <ChatBubble align="left" avatarLabel="AI">
-            <TypingIndicator />
-          </ChatBubble>
-        ) : null}
-
-        {validationResponse ? (
-          <IdeaValidationReport
-            workspaceId={workspaceId}
-            ideaTitle={data.idea.idea_title ?? data.name}
-            response={validationResponse}
-            onRetake={() => resetMentor.mutate()}
-          />
-        ) : null}
-
-        <div ref={bottomRef} />
-      </div>
-
-      {showQuickActions ? (
-        <div className="flex flex-wrap gap-2 pb-3">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={chat.isPending}
-            onClick={() => send(VALIDATION_TRIGGER_MESSAGE)}
-          >
-            Start validation
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={chat.isPending}
-            onClick={() => send(VERIFY_DETAILS_MESSAGE)}
-          >
-            Verify the details
-          </Button>
+        <div className="border-border flex items-center gap-6 border-b text-sm">
+          <span className="text-primary border-primary -mb-px border-b-2 pb-2 font-medium">
+            Arya
+          </span>
         </div>
-      ) : null}
 
-      {chat.error ? <ApiErrorMessage error={chat.error} className="mb-3" /> : null}
+        <div className="flex-1 space-y-4 overflow-y-auto py-4">
+          {data.conversation_history.map((message, index) =>
+            message.role === 'user' ? (
+              <ChatBubble key={index} align="right" avatarLabel="U">
+                <p className="text-sm whitespace-pre-wrap">
+                  {displayMessageContent(message.content)}
+                </p>
+              </ChatBubble>
+            ) : (
+              <ChatBubble key={index} align="left" avatarLabel="AI">
+                <MarkdownRenderer content={message.content} />
+              </ChatBubble>
+            ),
+          )}
 
-      <ChatInput
-        value={draft}
-        onChange={setDraft}
-        onSubmit={() => send(draft)}
-        disabled={chat.isPending}
-        placeholder="Type your answer here…."
-      />
+          {chat.isPending ? (
+            <ChatBubble align="left" avatarLabel="AI">
+              <TypingIndicator />
+            </ChatBubble>
+          ) : null}
+
+          {validationResponse ? (
+            <IdeaValidationReport
+              workspaceId={workspaceId}
+              ideaTitle={data.idea.idea_title ?? data.name}
+              response={validationResponse}
+              onRetake={() => resetMentor.mutate()}
+            />
+          ) : null}
+
+          <div ref={bottomRef} />
+        </div>
+
+        {showQuickActions ? (
+          <div className="flex flex-wrap gap-2 pb-3">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={chat.isPending}
+              onClick={() => send(VALIDATION_TRIGGER_MESSAGE)}
+            >
+              Start validation
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={chat.isPending}
+              onClick={() => send(VERIFY_DETAILS_MESSAGE)}
+            >
+              Verify the details
+            </Button>
+          </div>
+        ) : null}
+
+        {chat.error ? <ApiErrorMessage error={chat.error} className="mb-3" /> : null}
+
+        <ChatInput
+          value={draft}
+          onChange={setDraft}
+          onSubmit={() => send(draft)}
+          disabled={chat.isPending}
+          placeholder="Type your answer here…."
+        />
+      </div>
+
+      <div className="hidden w-72 shrink-0 lg:block">
+        <AgentStepProgress currentStep={currentStep} />
+      </div>
     </div>
   );
 }

@@ -6,3 +6,4 @@ export * from './WorkspaceGrid';
 export * from './EditWorkspaceDialog';
 export * from './WorkspaceMentorChat';
 export * from './WorkspaceMentorIntake';
+export * from './AgentStepProgress';

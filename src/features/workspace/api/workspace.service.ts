@@ -14,6 +14,64 @@ import type {
   WorkspaceStateResponse,
 } from '../types';
 
+async function processReportBlob(rawBlob: Blob, format: string): Promise<Blob> {
+  const buffer = await rawBlob.arrayBuffer();
+  const text = new TextDecoder().decode(buffer.slice(0, 500));
+
+  if (text.startsWith('%PDF')) {
+    return new Blob([buffer], { type: 'application/pdf' });
+  }
+
+  if (text.trim().startsWith('JVBERi')) {
+    const base64Str = new TextDecoder().decode(buffer).trim();
+    const binaryStr = atob(base64Str);
+    const bytes = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) {
+      bytes[i] = binaryStr.charCodeAt(i);
+    }
+    return new Blob([bytes.buffer], { type: 'application/pdf' });
+  }
+
+  if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
+    const fullText = new TextDecoder().decode(buffer);
+    try {
+      const parsed = JSON.parse(fullText) as Record<string, unknown>;
+
+      if (parsed.detail || parsed.message || parsed.error) {
+        const errorMsg = String(parsed.detail ?? parsed.message ?? parsed.error);
+        throw new Error(errorMsg);
+      }
+
+      const possibleBase64 =
+        parsed.data ?? parsed.pdf ?? parsed.file ?? parsed.content ?? parsed.report;
+      if (typeof possibleBase64 === 'string') {
+        const cleanBase64 = possibleBase64.replace(/^data:application\/pdf;base64,/, '').trim();
+        if (cleanBase64.startsWith('JVBERi')) {
+          const binaryStr = atob(cleanBase64);
+          const bytes = new Uint8Array(binaryStr.length);
+          for (let i = 0; i < binaryStr.length; i++) {
+            bytes[i] = binaryStr.charCodeAt(i);
+          }
+          return new Blob([bytes.buffer], { type: 'application/pdf' });
+        }
+      }
+    } catch (err) {
+      if (err instanceof Error && !err.message.startsWith('Unexpected token')) {
+        throw err;
+      }
+    }
+  }
+
+  const fallbackMime =
+    format === 'pdf'
+      ? 'application/pdf'
+      : format === 'doc'
+        ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        : 'application/octet-stream';
+
+  return new Blob([buffer], { type: fallbackMime });
+}
+
 export const workspaceService = {
   getWorkspaces: async (): Promise<GetWorkspacesResponse> => {
     const { data } = await apiClient.get<GetWorkspacesResponse>(API_ENDPOINTS.WORKSPACE.LIST);
@@ -94,10 +152,34 @@ export const workspaceService = {
       { responseType: 'blob', timeout: 60_000 },
     );
 
-    const disposition = response.headers['content-disposition'] as string | undefined;
-    const filenameMatch = disposition?.match(/filename="?([^";]+)"?/);
-    const filename = filenameMatch?.[1] ?? `${payload.agent_name}-report.${payload.format}`;
+    const rawBlob = response.data;
 
-    return { blob: response.data, filename };
+    const disposition = response.headers['content-disposition'] as string | undefined;
+    let filename = '';
+    if (disposition) {
+      const filenameStarRegex = /filename\*=UTF-8''([^;]+)/i;
+      const filenameStarMatch = filenameStarRegex.exec(disposition);
+      if (filenameStarMatch?.[1]) {
+        filename = decodeURIComponent(filenameStarMatch[1]);
+      } else {
+        const filenameRegex = /filename="?([^";]+)"?/i;
+        const filenameMatch = filenameRegex.exec(disposition);
+        if (filenameMatch?.[1]) {
+          filename = filenameMatch[1];
+        }
+      }
+    }
+
+    if (!filename) {
+      const ext =
+        payload.format === 'pdf' ? 'pdf' : payload.format === 'doc' ? 'docx' : payload.format;
+      filename = `idea-validation-report.${ext}`;
+    } else if (payload.format === 'pdf' && !filename.toLowerCase().endsWith('.pdf')) {
+      filename = `${filename}.pdf`;
+    }
+
+    const processedBlob = await processReportBlob(rawBlob, payload.format);
+
+    return { blob: processedBlob, filename };
   },
 };

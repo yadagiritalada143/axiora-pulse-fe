@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 import { queryKeys } from '@/constants/queryKeys';
 
@@ -88,11 +89,21 @@ export function useExportWorkspaceReport(workspaceId: number) {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
+      link.setAttribute('download', filename);
       link.download = filename;
       document.body.appendChild(link);
       link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
+      setTimeout(() => {
+        link.remove();
+        URL.revokeObjectURL(url);
+      }, 100);
+      toast.success('Report downloaded successfully.');
+    },
+
+    onError: (error) => {
+      const message =
+        error instanceof Error ? error.message : 'Failed to export the report. Please try again.';
+      toast.error(message);
     },
   });
 }
