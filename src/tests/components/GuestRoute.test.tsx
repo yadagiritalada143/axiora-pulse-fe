@@ -27,6 +27,7 @@ function renderWithAuthState(state: {
         <Route element={<GuestRoute />}>
           <Route path={ROUTES.LOGIN} element={<div>Login page</div>} />
         </Route>
+        <Route path={ROUTES.ONBOARDING} element={<div>Onboarding page</div>} />
         <Route path={ROUTES.DASHBOARD} element={<div>Dashboard page</div>} />
         <Route path={ROUTES.PRICING} element={<div>Pricing page</div>} />
         <Route path={ROUTES.ADMIN_DASHBOARD} element={<div>Admin dashboard page</div>} />
@@ -42,10 +43,10 @@ describe('GuestRoute', () => {
     expect(screen.getByText('Login page')).toBeInTheDocument();
   });
 
-  it('redirects an authenticated user without an active plan to pricing even while onboarding is pending', () => {
+  it('redirects a freshly-registered user (onboardingPending) to onboarding', () => {
     renderWithAuthState({ isAuthenticated: true, hasActivePlan: false, onboardingPending: true });
 
-    expect(screen.getByText('Pricing page')).toBeInTheDocument();
+    expect(screen.getByText('Onboarding page')).toBeInTheDocument();
   });
 
   it('redirects an authenticated user with an active plan to the dashboard', () => {

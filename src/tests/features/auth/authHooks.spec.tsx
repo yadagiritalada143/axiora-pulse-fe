@@ -175,7 +175,7 @@ describe('useVerifyOtp', () => {
 });
 
 describe('useVerifyLogin', () => {
-  it('authenticates and navigates to the dashboard when a plan is active', async () => {
+  it('authenticates and navigates to pricing when a plan is active', async () => {
     verifyLogin.mockResolvedValue({
       status: 'success',
       access_token: 'a',
@@ -191,7 +191,7 @@ describe('useVerifyLogin', () => {
     expect(useAuthStore.getState().isAuthenticated).toBe(true);
     expect(useAuthStore.getState().hasActivePlan).toBe(true);
     expect(useAuthStore.getState().role).toBe('user');
-    expect(mockNavigate).toHaveBeenCalledWith(ROUTES.DASHBOARD);
+    expect(mockNavigate).toHaveBeenCalledWith(ROUTES.PRICING);
   });
 
   it('navigates to pricing when there is no active plan', async () => {

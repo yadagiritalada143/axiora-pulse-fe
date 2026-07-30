@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import onboardingBanner from '@/assets/images/questionnaire-banner.png';
@@ -29,11 +29,6 @@ export default function QuestionnaireIntroPage() {
           </p>
 
           <div className="flex justify-center gap-5 pt-4">
-            <Button variant="outline" size="lg" onClick={() => navigate(-1)}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
-            </Button>
-
             <Button
               size="lg"
               onClick={() => {

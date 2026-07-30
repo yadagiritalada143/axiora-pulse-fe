@@ -29,7 +29,7 @@ export function useVerifyLogin() {
 
         const hasActivePlan = response.hasActivePlan ?? false;
         setHasActivePlan(hasActivePlan);
-        void navigate(hasActivePlan ? ROUTES.DASHBOARD : ROUTES.PRICING);
+        void navigate(ROUTES.PRICING);
         return;
       }
       toast.error(response.message);

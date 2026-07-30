@@ -79,7 +79,7 @@ describe('useVerifyLogin', () => {
     );
   });
 
-  it('authenticates and navigates to the dashboard when the user has an active plan', async () => {
+  it('authenticates and navigates to pricing when the user has an active plan', async () => {
     mockedAuthService.verifyLogin.mockResolvedValue({
       status: 'success',
       message: 'Login successful.',
@@ -105,7 +105,7 @@ describe('useVerifyLogin', () => {
     expect(setRole).toHaveBeenCalledWith('user');
     expect(setHasActivePlan).toHaveBeenCalledWith(true);
     expect(mockedToastSuccess).toHaveBeenCalledWith('Login successful.');
-    expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
+    expect(mockNavigate).toHaveBeenCalledWith('/pricing');
   });
 
   it('navigates to pricing when the user has no active plan', async () => {

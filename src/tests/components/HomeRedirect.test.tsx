@@ -26,6 +26,7 @@ function renderWithAuthState(state: {
       <Routes>
         <Route path={ROUTES.HOME} element={<HomeRedirect />} />
         <Route path={ROUTES.LOGIN} element={<div>Login page</div>} />
+        <Route path={ROUTES.ONBOARDING} element={<div>Onboarding page</div>} />
         <Route path={ROUTES.DASHBOARD} element={<div>Dashboard page</div>} />
         <Route path={ROUTES.PRICING} element={<div>Pricing page</div>} />
         <Route path={ROUTES.ADMIN_DASHBOARD} element={<div>Admin dashboard page</div>} />
@@ -41,10 +42,10 @@ describe('HomeRedirect', () => {
     expect(screen.getByText('Login page')).toBeInTheDocument();
   });
 
-  it('redirects to pricing when onboarding is pending without an active plan', () => {
+  it('redirects a freshly-registered user (onboardingPending) to onboarding', () => {
     renderWithAuthState({ isAuthenticated: true, hasActivePlan: false, onboardingPending: true });
 
-    expect(screen.getByText('Pricing page')).toBeInTheDocument();
+    expect(screen.getByText('Onboarding page')).toBeInTheDocument();
   });
 
   it('redirects to the dashboard when authenticated with an active plan', () => {
@@ -53,7 +54,7 @@ describe('HomeRedirect', () => {
     expect(screen.getByText('Dashboard page')).toBeInTheDocument();
   });
 
-  it('redirects to pricing when authenticated without an active plan and onboarding is done', () => {
+  it('redirects a plan-less non-admin user to pricing', () => {
     renderWithAuthState({ isAuthenticated: true, hasActivePlan: false, onboardingPending: false });
 
     expect(screen.getByText('Pricing page')).toBeInTheDocument();

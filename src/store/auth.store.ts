@@ -23,6 +23,7 @@ interface AuthState {
 
   hasActivePlan: boolean;
   role: AccountRole | null;
+  onboardingPending?: boolean;
 
   hasCompletedQuestionnaire: boolean;
   showQuestionnaireIntro: boolean;
@@ -40,6 +41,7 @@ interface AuthActions {
 
   setHasActivePlan: (hasActivePlan: boolean) => void;
   setRole: (role: AccountRole) => void;
+  setOnboardingPending?: (pending: boolean) => void;
 
   setHasCompletedQuestionnaire: (value: boolean) => void;
   setShowQuestionnaireIntro: (value: boolean) => void;
@@ -60,6 +62,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       hasActivePlan: false,
 
       role: null,
+      onboardingPending: false,
 
       hasCompletedQuestionnaire: false,
       showQuestionnaireIntro: false,
@@ -98,6 +101,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
           hasActivePlan: false,
           role: null,
+          onboardingPending: false,
 
           hasCompletedQuestionnaire: false,
           showQuestionnaireIntro: false,
@@ -110,6 +114,10 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
       setRole: (role) => {
         set({ role });
+      },
+
+      setOnboardingPending: (onboardingPending) => {
+        set({ onboardingPending });
       },
 
       setResetEmailOrMobile: (emailOrMobile) => {

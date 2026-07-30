@@ -6,13 +6,20 @@ import { useAuthStore } from '@store/auth.store';
 export function GuestRoute() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const hasActivePlan = useAuthStore((state) => state.hasActivePlan);
+  const onboardingPending = useAuthStore((state) => state.onboardingPending);
   const role = useAuthStore((state) => state.role);
 
-  if (isAuthenticated) {
-    const destination =
-      role === 'admin' ? ROUTES.ADMIN_DASHBOARD : hasActivePlan ? ROUTES.DASHBOARD : ROUTES.PRICING;
-    return <Navigate to={destination} replace />;
+  if (!isAuthenticated) {
+    return <Outlet />;
   }
 
-  return <Outlet />;
+  if (role === 'admin') {
+    return <Navigate to={ROUTES.ADMIN_DASHBOARD} replace />;
+  }
+
+  if (onboardingPending) {
+    return <Navigate to={ROUTES.ONBOARDING} replace />;
+  }
+
+  return <Navigate to={hasActivePlan ? ROUTES.DASHBOARD : ROUTES.PRICING} replace />;
 }
