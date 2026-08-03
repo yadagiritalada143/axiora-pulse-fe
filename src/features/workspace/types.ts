@@ -9,6 +9,7 @@ export interface Workspace {
   name: string;
   description: string;
   state?: WorkspaceMentorStateValue;
+  is_delete?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -85,4 +86,11 @@ export interface DeleteWorkspaceResponse {
   status: string;
   message: string;
   workspace_id: number;
+}
+
+export interface RestoreWorkspaceResponse {
+  status: string;
+  message: string;
+  workspace_id: number;
+  is_delete: boolean;
 }

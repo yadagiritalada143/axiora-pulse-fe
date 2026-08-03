@@ -2,6 +2,7 @@ export { ChatBubble } from './ChatBubble';
 export { UserMessage } from './UserMessage';
 export { AIMessage } from './AIMessage';
 export { MarkdownRenderer } from './MarkdownRenderer';
+export { TypeOnMarkdown } from './TypeOnMarkdown';
 export { TypingIndicator } from './TypingIndicator';
 export { ChatLoader } from './ChatLoader';
 export { ChatInput } from './ChatInput';

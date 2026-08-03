@@ -1,10 +1,7 @@
 import { Paperclip, Send } from 'lucide-react';
-import { useRef, type KeyboardEvent } from 'react';
+import { useEffect, useRef, type KeyboardEvent } from 'react';
 
 import { Button } from '@components/ui/button';
-import { Textarea } from '@components/ui/textarea';
-
-const MAX_CHARACTERS = 2000;
 
 interface ChatInputProps {
   value: string;
@@ -24,6 +21,14 @@ export function ChatInput({
   placeholder,
 }: ChatInputProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }, [value]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey) {
@@ -34,13 +39,15 @@ export function ChatInput({
 
   return (
     <div className="border-input bg-background rounded-lg border p-3 shadow-sm">
-      <Textarea
+      <textarea
+        ref={textareaRef}
         value={value}
-        onChange={(event) => onChange(event.target.value.slice(0, MAX_CHARACTERS))}
+        onChange={(event) => onChange(event.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder ?? 'Describe your startup idea...'}
-        rows={4}
-        className="resize-none border-none p-0 shadow-none focus-visible:ring-0"
+        rows={1}
+        style={{ minHeight: '30px', maxHeight: '200px' }}
+        className="w-full resize-none overflow-y-auto border-none bg-transparent p-0 text-sm shadow-none outline-none focus:ring-0"
         disabled={disabled}
       />
 
@@ -69,9 +76,6 @@ export function ChatInput({
               </Button>
             </>
           ) : null}
-          <span className="text-muted-foreground text-xs">
-            {value.length}/{MAX_CHARACTERS} characters
-          </span>
         </div>
 
         <Button

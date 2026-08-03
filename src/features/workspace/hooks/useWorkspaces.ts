@@ -8,7 +8,6 @@ export function useWorkspaces() {
   return useQuery({
     queryKey: queryKeys.workspace.list(),
     queryFn: workspaceService.getWorkspaces,
-    refetchOnMount: false,
     refetchOnWindowFocus: false,
   });
 }
@@ -58,6 +57,29 @@ export function useDeleteWorkspace() {
 
   return useMutation({
     mutationFn: workspaceService.deleteWorkspace,
+
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.workspace.all(),
+      });
+    },
+  });
+}
+
+export function useArchivedWorkspaces() {
+  return useQuery({
+    queryKey: [...queryKeys.workspace.all(), 'archived'],
+    queryFn: workspaceService.getArchivedWorkspaces,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useRestoreWorkspace() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: workspaceService.restoreWorkspace,
 
     onSuccess: () => {
       void queryClient.invalidateQueries({

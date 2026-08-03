@@ -105,6 +105,10 @@ export const router = createBrowserRouter([
             element: lazyPage(() => import('@pages/WorkspacePage')),
           },
           {
+            path: ROUTES.WORKSPACE_ARCHIVE,
+            element: lazyPage(() => import('@pages/WorkspaceArchivePage')),
+          },
+          {
             path: ROUTES.AI_CHAT,
             element: lazyPage(() => import('@pages/AIChatPage')),
           },

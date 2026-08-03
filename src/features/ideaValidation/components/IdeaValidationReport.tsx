@@ -293,7 +293,6 @@ function AgentReportCard({
         <p className="text-foreground text-sm font-semibold">{title}</p>
         <Button
           size="sm"
-          variant="outline"
           className="gap-2"
           onClick={handleExport}
           disabled={exportReport.isPending}

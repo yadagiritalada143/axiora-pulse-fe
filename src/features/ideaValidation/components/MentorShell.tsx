@@ -1,4 +1,5 @@
 import {
+  Archive,
   Bell,
   FileText,
   Info,
@@ -78,6 +79,7 @@ export function MentorShell({
   const activeOverviewItem = overviewItem ?? defaultOverviewItem;
 
   const footerItems: MentorNavItem[] = [
+    { label: 'Archive', icon: Archive, href: ROUTES.WORKSPACE_ARCHIVE },
     { label: 'Integrations', icon: Sparkles, disabled: true },
     { label: 'Settings', icon: Settings, href: ROUTES.SETTINGS },
     { label: 'Logout', icon: LogOut, onClick: () => void handleLogout() },
