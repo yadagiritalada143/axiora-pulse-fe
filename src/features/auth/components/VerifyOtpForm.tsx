@@ -50,7 +50,7 @@ export function VerifyOtpForm({ heading, description }: { heading: string; descr
     verifyOtp.mutate({
       id: mfaData.userid,
       otp: Number(otp),
-      flow: 'register',
+      flow: mfaData.flow,
     });
   };
 
@@ -83,7 +83,7 @@ export function VerifyOtpForm({ heading, description }: { heading: string; descr
               verifyOtp.mutate({
                 id: mfaData.userid,
                 otp: Number(value),
-                flow: 'register',
+                flow: mfaData.flow,
               });
             }
           }}

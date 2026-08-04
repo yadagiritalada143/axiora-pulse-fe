@@ -68,7 +68,7 @@ export function ProfileForm() {
             <FormItem>
               <FormLabel>Email address</FormLabel>
               <FormControl>
-                <Input type="email" {...field} />
+                <Input type="email" {...field} disabled />
               </FormControl>
               <FormMessage />
             </FormItem>

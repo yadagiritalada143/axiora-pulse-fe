@@ -110,7 +110,11 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
   return (
     <div className="mx-auto flex h-full min-h-[70vh] w-full max-w-6xl items-start gap-6">
       <div className="flex h-full min-w-0 flex-1 flex-col">
-        <AgentStepProgress currentStep={currentStep} className="mb-4 block lg:hidden" />
+        <AgentStepProgress
+          currentStep={currentStep}
+          isRunning={data.state === 'VALIDATING'}
+          className="mb-4 block lg:hidden"
+        />
 
         <div className="border-border flex items-center gap-6 border-b text-sm">
           <span className="text-primary border-primary -mb-px border-b-2 pb-2 font-medium">
@@ -194,7 +198,7 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
       </div>
 
       <div className="hidden w-72 shrink-0 lg:block">
-        <AgentStepProgress currentStep={currentStep} />
+        <AgentStepProgress currentStep={currentStep} isRunning={data.state === 'VALIDATING'} />
       </div>
     </div>
   );

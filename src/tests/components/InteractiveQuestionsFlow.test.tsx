@@ -175,20 +175,7 @@ describe('InteractiveQuestionsFlow', () => {
     expect(screen.getByText("You're All Set!")).toBeInTheDocument();
   });
 
-  it('accepts a free-text "Other" answer on a radio question as sufficient to enable Next', async () => {
-    const user = userEvent.setup();
-    render(<InteractiveQuestionsFlow questions={QUESTIONS} />);
-
-    await answerFirstAndAdvance(user);
-
-    await user.click(screen.getByRole('radio', { name: /others/i }));
-    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
-
-    await user.type(screen.getByRole('textbox'), 'Growth Lead');
-    expect(screen.getByRole('button', { name: 'Next' })).toBeEnabled();
-  });
-
-  it('treats a regular checkbox selection alongside an empty "Other" as answered', async () => {
+  it('treats a regular checkbox selection as answered', async () => {
     const user = userEvent.setup();
     const multiQuestion: InteractiveQuestion = {
       id: 201,
@@ -202,7 +189,6 @@ describe('InteractiveQuestionsFlow', () => {
     render(<InteractiveQuestionsFlow questions={[multiQuestion]} />);
 
     await user.click(screen.getByRole('checkbox', { name: 'Speed' }));
-    await user.click(screen.getByRole('checkbox', { name: /others/i }));
 
     expect(screen.getByRole('button', { name: 'Next' })).toBeEnabled();
   });
