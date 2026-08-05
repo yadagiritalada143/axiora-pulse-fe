@@ -16,6 +16,8 @@ export const ROUTES = {
   WORKSPACE: '/workspace',
   WORKSPACE_ARCHIVE: '/workspace/archive',
   WORKSPACE_DETAIL: '/workspace/:workspaceId',
+  WORKSPACE_SURVEY: '/workspace/:workspaceId/survey',
+  PUBLIC_SURVEY: '/surveys/public/:surveyId',
   AI_CHAT: '/workspace/ai-chat',
   AI_CHAT_CONVERSATION: '/workspace/ai-chat/:conversationId',
   SETTINGS: '/settings',
@@ -53,6 +55,7 @@ export const PROTECTED_ROUTES: AppRoute[] = [
   ROUTES.DASHBOARD,
   ROUTES.WORKSPACE,
   ROUTES.WORKSPACE_ARCHIVE,
+  ROUTES.WORKSPACE_SURVEY,
   ROUTES.AI_CHAT,
   ROUTES.SETTINGS,
   ROUTES.PROFILE,
@@ -68,4 +71,8 @@ export function buildConversationRoute(conversationId: string): string {
 
 export function buildWorkspaceRoute(workspaceId: number | string): string {
   return ROUTES.WORKSPACE_DETAIL.replace(':workspaceId', String(workspaceId));
+}
+
+export function buildWorkspaceSurveyRoute(workspaceId: number | string): string {
+  return ROUTES.WORKSPACE_SURVEY.replace(':workspaceId', String(workspaceId));
 }

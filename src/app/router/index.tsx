@@ -23,6 +23,10 @@ export const router = createBrowserRouter([
         index: true,
         element: <HomeRedirect />,
       },
+      {
+        path: '/surveys/public/:surveyId',
+        element: lazyPage(() => import('@pages/PublicSurveyPage')),
+      },
     ],
   },
   {
@@ -90,6 +94,10 @@ export const router = createBrowserRouter([
         element: lazyPage(() => import('@pages/WorkspaceDetailPage')),
       },
       {
+        path: ROUTES.WORKSPACE_SURVEY,
+        element: lazyPage(() => import('@pages/WorkspaceSurveyPage')),
+      },
+      {
         path: ROUTES.QUESTIONNAIRE_INTRO,
         element: lazyPage(() => import('@pages/QuestionnaireIntroPage')),
       },
@@ -146,6 +154,7 @@ export const router = createBrowserRouter([
       },
     ],
   },
+
   {
     path: '*',
     element: lazyPage(() => import('@pages/NotFoundPage')),

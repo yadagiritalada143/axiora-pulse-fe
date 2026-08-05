@@ -1,5 +1,6 @@
 import { Download, Loader2 } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import type { OrchestrationRunResponse } from '@/types/orchestration.types';
@@ -183,6 +184,15 @@ export function IdeaValidationReport({
                       </li>
                     ))}
                   </ul>
+                  <div className="mt-4 flex justify-end">
+                    <Button
+                      asChild
+                      size="sm"
+                      className="gap-1.5 bg-[#FF4500] font-semibold text-white hover:bg-[#FF4500]/90"
+                    >
+                      <Link to={`/workspace/${workspaceId}/survey`}>Edit & Share Survey</Link>
+                    </Button>
+                  </div>
                 </div>
               ) : null}
             </AgentReportCard>
@@ -291,19 +301,31 @@ function AgentReportCard({
     <div className="border-border rounded-lg border p-5">
       <div className="mb-3 flex items-center justify-between gap-3">
         <p className="text-foreground text-sm font-semibold">{title}</p>
-        <Button
-          size="sm"
-          className="gap-2"
-          onClick={handleExport}
-          disabled={exportReport.isPending}
-        >
-          {exportReport.isPending ? (
-            <Loader2 className="size-3.5 animate-spin" aria-hidden />
-          ) : (
-            <Download className="size-3.5" aria-hidden />
+        <div className="flex items-center gap-2">
+          {agentName === 'survey_intelligence_agent' && (
+            <Button
+              size="sm"
+              variant="outline"
+              asChild
+              className="border-[#FF4500] text-[#FF4500] hover:bg-[#FF4500]/10"
+            >
+              <Link to={`/workspace/${workspaceId}/survey`}>Manage Survey</Link>
+            </Button>
           )}
-          Export
-        </Button>
+          <Button
+            size="sm"
+            className="gap-2"
+            onClick={handleExport}
+            disabled={exportReport.isPending}
+          >
+            {exportReport.isPending ? (
+              <Loader2 className="size-3.5 animate-spin" aria-hidden />
+            ) : (
+              <Download className="size-3.5" aria-hidden />
+            )}
+            Export
+          </Button>
+        </div>
       </div>
       <div className="space-y-1">{children}</div>
     </div>
