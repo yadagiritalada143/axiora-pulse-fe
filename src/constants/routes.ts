@@ -14,6 +14,7 @@ export const ROUTES = {
   ONBOARDING: '/onboarding',
   DASHBOARD: '/dashboard',
   WORKSPACE: '/workspace',
+  WORKSPACE_ARCHIVE: '/workspace/archive',
   WORKSPACE_DETAIL: '/workspace/:workspaceId',
   AI_CHAT: '/workspace/ai-chat',
   AI_CHAT_CONVERSATION: '/workspace/ai-chat/:conversationId',
@@ -51,6 +52,7 @@ export const PROTECTED_ROUTES: AppRoute[] = [
 
   ROUTES.DASHBOARD,
   ROUTES.WORKSPACE,
+  ROUTES.WORKSPACE_ARCHIVE,
   ROUTES.AI_CHAT,
   ROUTES.SETTINGS,
   ROUTES.PROFILE,

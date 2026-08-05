@@ -27,9 +27,27 @@ export function useVerifyLogin() {
           return;
         }
 
+        if (response.auth_actions) {
+          const { payment, interactive_questions } = response.auth_actions;
+          setHasActivePlan(payment);
+          useAuthStore.getState().setHasCompletedQuestionnaire(interactive_questions);
+          useAuthStore.getState().setShowQuestionnaireIntro(!interactive_questions);
+
+          if (!payment) {
+            void navigate(ROUTES.PRICING);
+          } else {
+            void navigate(ROUTES.DASHBOARD);
+          }
+          return;
+        }
+
         const hasActivePlan = response.hasActivePlan ?? false;
         setHasActivePlan(hasActivePlan);
-        void navigate(ROUTES.PRICING);
+        if (hasActivePlan) {
+          void navigate(ROUTES.DASHBOARD);
+        } else {
+          void navigate(ROUTES.PRICING);
+        }
         return;
       }
       toast.error(response.message);

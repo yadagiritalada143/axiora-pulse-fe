@@ -22,6 +22,11 @@ export interface RegisterResponse {
   registerMFA: boolean;
 }
 
+export interface AuthActionsData {
+  payment: boolean;
+  interactive_questions: boolean;
+}
+
 export interface VerifyOtpResponse {
   status: 'success' | 'failed';
   message: string;
@@ -31,6 +36,8 @@ export interface VerifyOtpResponse {
   expires_in_minutes: number;
   /** Present once the backend starts sending it. Defaults to false when absent. */
   hasActivePlan?: boolean;
+  role?: AccountRole;
+  auth_actions?: AuthActionsData | null;
 }
 
 export interface VerifyLoginResponse {
@@ -43,6 +50,7 @@ export interface VerifyLoginResponse {
   role: AccountRole;
   /** Present once the backend starts sending it. Defaults to false when absent. */
   hasActivePlan?: boolean;
+  auth_actions?: AuthActionsData | null;
 }
 
 export interface ResendOtpResponse {

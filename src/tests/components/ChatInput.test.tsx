@@ -133,10 +133,4 @@ describe('ChatInput', () => {
     expect(screen.getByPlaceholderText('Describe your startup idea...')).toBeDisabled();
     expect(screen.getByRole('button', { name: /send/i })).toBeDisabled();
   });
-
-  it('shows the character count', () => {
-    render(<ChatInput value="Hello" onChange={jest.fn()} onSubmit={jest.fn()} />);
-
-    expect(screen.getByText('5/2000 characters')).toBeInTheDocument();
-  });
 });

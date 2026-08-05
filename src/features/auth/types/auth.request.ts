@@ -16,7 +16,7 @@ export interface RegisterRequest {
 export interface VerifyOtpRequest {
   id: number;
   otp: number;
-  flow: 'register';
+  flow: 'register' | 'login';
 }
 
 export interface ResendOtpRequest {

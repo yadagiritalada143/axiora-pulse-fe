@@ -9,10 +9,15 @@ import { AGENT_STEPS } from '../utils/agentStep.utils';
 
 interface AgentStepProgressProps {
   currentStep?: number;
+  isRunning?: boolean;
   className?: string;
 }
 
-export function AgentStepProgress({ currentStep = 1, className }: AgentStepProgressProps) {
+export function AgentStepProgress({
+  currentStep = 1,
+  isRunning = false,
+  className,
+}: AgentStepProgressProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [expandedStep, setExpandedStep] = useState<number | null>(null);
 
@@ -73,7 +78,10 @@ export function AgentStepProgress({ currentStep = 1, className }: AgentStepProgr
                             isCompleted
                               ? 'animate-in zoom-in-50 bg-emerald-500 text-white'
                               : isActive
-                                ? 'animate-pulse bg-[#FF4500] text-white ring-2 ring-[#FF4500]/30'
+                                ? cn(
+                                    'bg-[#FF4500] text-white ring-2 ring-[#FF4500]/30',
+                                    isRunning && 'animate-pulse',
+                                  )
                                 : 'border-border text-muted-foreground bg-background border',
                           )}
                         >
@@ -102,7 +110,7 @@ export function AgentStepProgress({ currentStep = 1, className }: AgentStepProgr
                           </Badge>
                         ) : isActive ? (
                           <Badge variant="default" className="bg-[#FF4500] text-[10px]">
-                            Active
+                            {isRunning ? 'Running' : 'Active'}
                           </Badge>
                         ) : (
                           <Badge variant="secondary" className="text-muted-foreground text-[10px]">
@@ -201,8 +209,8 @@ export function AgentStepProgress({ currentStep = 1, className }: AgentStepProgr
                           </span>
                         ) : isActive ? (
                           <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#FF4500]/10 px-1.5 py-0.5 text-[10px] font-semibold text-[#FF4500]">
-                            <Loader2 className="size-2.5 animate-spin" />
-                            Running
+                            {isRunning && <Loader2 className="size-2.5 animate-spin" />}
+                            {isRunning ? 'Running' : 'Active'}
                           </span>
                         ) : (
                           <span className="text-muted-foreground/60 shrink-0 text-[10px]">

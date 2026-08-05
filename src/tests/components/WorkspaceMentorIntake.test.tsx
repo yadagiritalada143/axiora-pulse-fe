@@ -94,14 +94,4 @@ describe('WorkspaceMentorIntake', () => {
       screen.getAllByText('AI-powered platform that helps founders validate their ideas faster.'),
     ).toHaveLength(4);
   });
-
-  it('limits the description to the max character length', async () => {
-    const user = userEvent.setup();
-    render(<WorkspaceMentorIntake onSubmit={jest.fn()} isPending={false} />);
-
-    const textarea = screen.getByLabelText('Describe your startup Idea….');
-    await user.type(textarea, 'short description');
-
-    expect(screen.getByText('17/2000 Characters')).toBeInTheDocument();
-  });
 });

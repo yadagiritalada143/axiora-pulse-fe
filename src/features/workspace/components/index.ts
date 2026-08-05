@@ -1,3 +1,4 @@
+export * from './ArchivedWorkspaceCard';
 export * from './WorkspaceEmpty';
 export * from './CreateWorkspaceDialog';
 export * from './WorkspaceCard';

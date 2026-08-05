@@ -38,6 +38,7 @@ const mockedUseAuthStore = jest.mocked(useAuthStore);
 const mockedToastError = jest.mocked(toast.error);
 
 const setAuthenticated = jest.fn();
+const setRole = jest.fn();
 
 function createWrapper() {
   const queryClient = new QueryClient({
@@ -79,7 +80,7 @@ describe('useVerifyOtp', () => {
         setResetToken: jest.fn(),
         clearResetData: jest.fn(),
         setHasActivePlan: jest.fn(),
-        setRole: jest.fn(),
+        setRole,
 
         // Add these too if your store defines them
         setHasCompletedQuestionnaire: jest.fn(),
@@ -183,5 +184,30 @@ describe('useVerifyOtp', () => {
     await waitFor(() => expect(result.current.isError).toBe(true));
 
     expect(mockedToastError).toHaveBeenCalledWith('That OTP is incorrect.');
+  });
+
+  it('stores the user role on successful OTP verification if present', async () => {
+    mockedAuthService.verifyOTP.mockResolvedValue({
+      status: 'success',
+      message: 'Verified.',
+      access_token: 'access-token',
+      refresh_token: 'refresh-token',
+      token_type: 'bearer',
+      expires_in_minutes: 60,
+      role: 'user',
+    });
+
+    const { result } = renderHook(() => useVerifyOtp(), {
+      wrapper: createWrapper(),
+    });
+
+    result.current.mutate({
+      id: 42,
+      otp: 123456,
+      flow: 'register',
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(setRole).toHaveBeenCalledWith('user');
   });
 });

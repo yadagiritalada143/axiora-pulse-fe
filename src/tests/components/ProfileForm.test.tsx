@@ -4,9 +4,14 @@ import userEvent from '@testing-library/user-event';
 import { createElement, type ReactNode } from 'react';
 
 import type { User } from '@/types/api.types';
+import { useCurrentUser } from '@features/auth/hooks';
 import { ProfileForm } from '@features/settings/components/ProfileForm';
 import { useUpdateProfile } from '@features/settings/hooks/useUpdateProfile';
 import { useAuthStore } from '@store/auth.store';
+
+jest.mock('@features/auth/hooks', () => ({
+  useCurrentUser: jest.fn(),
+}));
 
 jest.mock('@features/settings/hooks/useUpdateProfile', () => ({
   useUpdateProfile: jest.fn(),
@@ -16,6 +21,7 @@ jest.mock('@store/auth.store', () => ({
   useAuthStore: jest.fn(),
 }));
 
+const mockedUseCurrentUser = useCurrentUser as jest.Mock;
 const mockedUseUpdateProfile = useUpdateProfile as jest.Mock;
 const mockedUseAuthStore = useAuthStore as unknown as jest.Mock;
 
@@ -31,8 +37,13 @@ const user: User = {
 
 function renderWithQueryClient(ui: ReactNode) {
   const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
   });
+
   return render(createElement(QueryClientProvider, { client: queryClient }, ui));
 }
 
@@ -40,10 +51,23 @@ describe('ProfileForm', () => {
   const mutate = jest.fn();
 
   beforeEach(() => {
-    mockedUseAuthStore.mockImplementation((selector: (state: { user: User }) => unknown) =>
-      selector({ user }),
+    mockedUseAuthStore.mockImplementation(
+      (selector: (state: { user: User; isAuthenticated: boolean }) => unknown) =>
+        selector({
+          user,
+          isAuthenticated: true,
+        }),
     );
-    mockedUseUpdateProfile.mockReturnValue({ mutate, isPending: false });
+
+    mockedUseCurrentUser.mockReturnValue({
+      data: user,
+      isLoading: false,
+    });
+
+    mockedUseUpdateProfile.mockReturnValue({
+      mutate,
+      isPending: false,
+    });
   });
 
   afterEach(() => {
@@ -59,22 +83,29 @@ describe('ProfileForm', () => {
 
   it('submits the updated values', async () => {
     const testUser = userEvent.setup();
+
     renderWithQueryClient(<ProfileForm />);
 
     const nameInput = screen.getByLabelText('Full name');
+
     await testUser.clear(nameInput);
     await testUser.type(nameInput, 'Jane Smith');
 
     await testUser.click(screen.getByRole('button', { name: 'Save changes' }));
 
-    expect(mutate).toHaveBeenCalledWith({ name: 'Jane Smith', email: 'jane@example.com' });
+    expect(mutate).toHaveBeenCalledWith({
+      name: 'Jane Smith',
+      email: 'jane@example.com',
+    });
   });
 
   it('shows a validation error and does not submit when the name is too short', async () => {
     const testUser = userEvent.setup();
+
     renderWithQueryClient(<ProfileForm />);
 
     const nameInput = screen.getByLabelText('Full name');
+
     await testUser.clear(nameInput);
     await testUser.type(nameInput, 'J');
 
@@ -84,24 +115,25 @@ describe('ProfileForm', () => {
     expect(mutate).not.toHaveBeenCalled();
   });
 
-  it('shows a validation error for an invalid email', async () => {
-    const testUser = userEvent.setup();
+  it('disables the email field', () => {
     renderWithQueryClient(<ProfileForm />);
 
-    const emailInput = screen.getByLabelText('Email address');
-    await testUser.clear(emailInput);
-    await testUser.type(emailInput, 'not-an-email');
-
-    await testUser.click(screen.getByRole('button', { name: 'Save changes' }));
-
-    expect(await screen.findByText('Enter a valid email address')).toBeInTheDocument();
-    expect(mutate).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Email address')).toBeDisabled();
   });
 
   it('defaults to empty fields when there is no current user', () => {
-    mockedUseAuthStore.mockImplementation((selector: (state: { user: User | null }) => unknown) =>
-      selector({ user: null }),
+    mockedUseAuthStore.mockImplementation(
+      (selector: (state: { user: User | null; isAuthenticated: boolean }) => unknown) =>
+        selector({
+          user: null,
+          isAuthenticated: false,
+        }),
     );
+
+    mockedUseCurrentUser.mockReturnValue({
+      data: null,
+      isLoading: false,
+    });
 
     renderWithQueryClient(<ProfileForm />);
 
@@ -109,8 +141,30 @@ describe('ProfileForm', () => {
     expect(screen.getByLabelText('Email address')).toHaveValue('');
   });
 
+  it('shows the loader while loading the authenticated user', () => {
+    mockedUseAuthStore.mockImplementation(
+      (selector: (state: { user: User | null; isAuthenticated: boolean }) => unknown) =>
+        selector({
+          user: null,
+          isAuthenticated: true,
+        }),
+    );
+
+    mockedUseCurrentUser.mockReturnValue({
+      data: null,
+      isLoading: true,
+    });
+
+    renderWithQueryClient(<ProfileForm />);
+
+    expect(screen.getByText('Loading profile...')).toBeInTheDocument();
+  });
+
   it('disables the submit button while pending', () => {
-    mockedUseUpdateProfile.mockReturnValue({ mutate, isPending: true });
+    mockedUseUpdateProfile.mockReturnValue({
+      mutate,
+      isPending: true,
+    });
 
     renderWithQueryClient(<ProfileForm />);
 

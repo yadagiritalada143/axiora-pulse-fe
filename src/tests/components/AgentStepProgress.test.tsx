@@ -61,8 +61,8 @@ describe('AgentStepProgress', () => {
     await user.click(toggle);
 
     expect(chevron()).toHaveClass('lucide-chevron-up');
-    expect(screen.getByText('Completed')).toBeInTheDocument();
-    expect(screen.getByText('Active')).toBeInTheDocument();
+    expect(screen.getAllByText('Completed').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Active').length).toBeGreaterThan(0);
 
     await user.click(toggle);
 
@@ -99,5 +99,14 @@ describe('AgentStepProgress', () => {
     render(<AgentStepProgress currentStep={99} />);
 
     expect(screen.getAllByText('Idea Validation Agent').length).toBeGreaterThan(0);
+  });
+
+  it('renders Active when isRunning is false and Running when isRunning is true', () => {
+    const { rerender } = render(<AgentStepProgress currentStep={1} isRunning={false} />);
+    expect(screen.getAllByText('Active').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Running')).not.toBeInTheDocument();
+
+    rerender(<AgentStepProgress currentStep={1} isRunning={true} />);
+    expect(screen.getAllByText('Running').length).toBeGreaterThan(0);
   });
 });

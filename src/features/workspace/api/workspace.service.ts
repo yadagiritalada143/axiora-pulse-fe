@@ -7,6 +7,7 @@ import type {
   ExportWorkspaceReportRequest,
   ExportWorkspaceReportResult,
   GetWorkspacesResponse,
+  RestoreWorkspaceResponse,
   UpdateWorkspaceRequest,
   Workspace,
   WorkspaceChatRequest,
@@ -106,6 +107,22 @@ export const workspaceService = {
   deleteWorkspace: async (id: number): Promise<DeleteWorkspaceResponse> => {
     const { data } = await apiClient.delete<DeleteWorkspaceResponse>(
       API_ENDPOINTS.WORKSPACE.DELETE(id),
+    );
+
+    return data;
+  },
+
+  getArchivedWorkspaces: async (): Promise<GetWorkspacesResponse> => {
+    const { data } = await apiClient.get<GetWorkspacesResponse>(
+      API_ENDPOINTS.WORKSPACE.ARCHIVED_LIST,
+    );
+
+    return data;
+  },
+
+  restoreWorkspace: async (id: number): Promise<RestoreWorkspaceResponse> => {
+    const { data } = await apiClient.patch<RestoreWorkspaceResponse>(
+      API_ENDPOINTS.WORKSPACE.RESTORE(id),
     );
 
     return data;

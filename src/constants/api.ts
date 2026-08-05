@@ -30,10 +30,12 @@ export const API_ENDPOINTS = {
 
   WORKSPACE: {
     LIST: '/v1/workspaces',
+    ARCHIVED_LIST: '/v1/workspaces?is_delete=true',
     CREATE: '/v1/workspaces',
     DETAIL: (workspaceId: number) => `/v1/workspaces/${workspaceId}`,
     UPDATE: (workspaceId: number) => `/v1/workspaces/${workspaceId}`,
     DELETE: (workspaceId: number) => `/v1/workspaces/${workspaceId}`,
+    RESTORE: (workspaceId: number) => `/v1/workspaces/${workspaceId}/restore`,
     CHAT: (workspaceId: number) => `/v1/workspaces/${workspaceId}/chat`,
     STATE: (workspaceId: number) => `/v1/workspaces/${workspaceId}/state`,
     RESET: (workspaceId: number) => `/v1/workspaces/${workspaceId}/reset`,

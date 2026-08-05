@@ -10,17 +10,46 @@ import { useAuthStore } from '@store/auth.store';
 
 export function useVerifyOtp() {
   const setAuthenticated = useAuthStore((state) => state.setAuthenticated);
+  const setRole = useAuthStore((state) => state.setRole);
   const setOnboardingPending = useAuthStore((state) => state.setOnboardingPending);
   const navigate = useNavigate();
 
   return useMutation({
     mutationFn: (payload: VerifyOtpRequest) => authService.verifyOTP(payload),
 
-    onSuccess: (response) => {
+    onSuccess: (response, variables) => {
       if (response.status === 'success') {
         setAuthenticated(response.access_token, response.refresh_token);
-        setOnboardingPending?.(true);
-        void navigate(ROUTES.ONBOARDING);
+        if (response.role) {
+          setRole(response.role);
+        }
+
+        if (response.auth_actions) {
+          const { payment, interactive_questions } = response.auth_actions;
+          useAuthStore.getState().setHasActivePlan(payment);
+          useAuthStore.getState().setHasCompletedQuestionnaire(interactive_questions);
+          useAuthStore.getState().setShowQuestionnaireIntro(!interactive_questions);
+
+          if (!payment) {
+            void navigate(ROUTES.PRICING);
+          } else {
+            void navigate(ROUTES.DASHBOARD);
+          }
+          return;
+        }
+
+        if (variables.flow === 'login') {
+          const hasActivePlan = response.hasActivePlan ?? false;
+          useAuthStore.getState().setHasActivePlan(hasActivePlan);
+          if (hasActivePlan) {
+            void navigate(ROUTES.DASHBOARD);
+          } else {
+            void navigate(ROUTES.PRICING);
+          }
+        } else {
+          setOnboardingPending?.(true);
+          void navigate(ROUTES.ONBOARDING);
+        }
         return;
       }
       toast.error(response.message);

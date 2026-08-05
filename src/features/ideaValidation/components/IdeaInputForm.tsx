@@ -12,8 +12,6 @@ import { cn } from '@lib/utils';
 
 import { useRunOrchestration } from '../hooks';
 
-const DESCRIPTION_MAX_LENGTH = 2000;
-
 const EXAMPLE_IDEAS = [
   {
     title: 'Example 1',
@@ -106,14 +104,11 @@ export function IdeaInputForm({ workspaceId, onValidated }: IdeaInputFormProps) 
         <Textarea
           id="idea-description"
           value={description}
-          onChange={(event) => setDescription(event.target.value.slice(0, DESCRIPTION_MAX_LENGTH))}
+          onChange={(event) => setDescription(event.target.value)}
           placeholder="What problem are you solving Who is it for How does your solution work What makes it different"
           disabled={isPending}
           className="min-h-32 resize-none border-none px-0 shadow-none focus-visible:ring-0"
         />
-        <p className="text-muted-foreground text-right text-xs">
-          {description.length}/{DESCRIPTION_MAX_LENGTH} Characters
-        </p>
       </div>
 
       <div className="sm:hidden">
