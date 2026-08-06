@@ -44,6 +44,21 @@ export const API_ENDPOINTS = {
     REPORT_EXPORT: (workspaceId: number) => `/v1/workspaces/${workspaceId}/reports/export`,
   },
 
+  SURVEY: {
+    SAVE_QUESTIONS: '/v1/surveys',
+    GET_ALL: '/v1/surveys',
+    GET_BY_WORKSPACE: (workspaceId: number) => `/v1/surveys/workspace/${workspaceId}`,
+    GET_PUBLIC: (surveyId: number) => `/v1/surveys/public/${surveyId}`,
+    SUBMIT_PUBLIC: (surveyId: number) => `/v1/surveys/public/${surveyId}/submit`,
+    GET_SINGLE: (surveyId: number) => `/v1/surveys/${surveyId}`,
+    UPDATE: (surveyId: number) => `/v1/surveys/${surveyId}`,
+    DELETE: (surveyId: number) => `/v1/surveys/${surveyId}`,
+    EXPORT: (surveyId: number) => `/v1/surveys/${surveyId}/export`,
+    RESPONSES: (surveyId: number) => `/v1/surveys/${surveyId}/responses`,
+    UPDATE_WORKSPACE_QUESTIONS: (workspaceId: number) =>
+      `/v1/workspaces/${workspaceId}/survey/questions`,
+  },
+
   BILLING: {
     PLANS: '/billing/plans',
     SUBSCRIBE: '/billing/subscribe',

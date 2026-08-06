@@ -14,6 +14,12 @@ jest.mock('sonner', () => ({
   toast: { success: jest.fn(), error: jest.fn() },
 }));
 
+jest.mock('react-router-dom', () => ({
+  Link: ({ to, children }: { to: string; children: React.ReactNode }) => (
+    <a href={to}>{children}</a>
+  ),
+}));
+
 const mockedUseExportWorkspaceReport = useExportWorkspaceReport as jest.Mock;
 
 const RESPONSE: OrchestrationRunResponse = {

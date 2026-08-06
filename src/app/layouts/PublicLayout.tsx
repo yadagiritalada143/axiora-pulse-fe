@@ -1,5 +1,5 @@
 import { Sparkles } from 'lucide-react';
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 
 import { Button } from '@components/ui/button';
 import { appConfig } from '@config/app.config';
@@ -7,6 +7,13 @@ import { ROUTES } from '@constants/routes';
 
 /** Layout for marketing/public pages (pricing, landing) that need a simple top nav. */
 export function PublicLayout() {
+  const location = useLocation();
+  const isPublicSurvey = location.pathname.startsWith('/surveys/public/');
+
+  if (isPublicSurvey) {
+    return <Outlet />;
+  }
+
   return (
     <div className="bg-background flex min-h-screen flex-col">
       <header className="border-border flex h-16 items-center justify-between border-b px-6">

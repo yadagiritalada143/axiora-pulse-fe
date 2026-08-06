@@ -1,7 +1,15 @@
-import { Bot, FileText, Loader2, ShieldCheck, TrendingUp, Users } from 'lucide-react';
+import {
+  Bot,
+  ClipboardList,
+  FileText,
+  Loader2,
+  ShieldCheck,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 
-import { ROUTES, buildWorkspaceRoute } from '@constants/routes';
+import { ROUTES, buildWorkspaceRoute, buildWorkspaceSurveyRoute } from '@constants/routes';
 import { MentorShell, type MentorNavItem } from '@features/ideaValidation/components';
 import { WorkspaceMentorChat } from '@features/workspace/components';
 import { useWorkspace } from '@features/workspace/hooks/useWorkspaces';
@@ -11,12 +19,20 @@ export default function WorkspaceDetailPage() {
   const numericId = Number(workspaceId);
   const { data: workspace, isLoading, isError } = useWorkspace(numericId);
 
+  const hasSurvey = workspace?.state === 'VALIDATED';
+
   const navItems: MentorNavItem[] = [
     {
       label: 'AI Mentor',
       icon: Bot,
       href: workspaceId ? buildWorkspaceRoute(workspaceId) : ROUTES.DASHBOARD,
       end: true,
+    },
+    {
+      label: 'Survey Intelligence',
+      icon: ClipboardList,
+      href: workspaceId ? buildWorkspaceSurveyRoute(workspaceId) : '#',
+      disabled: !hasSurvey,
     },
     { label: 'Founder Intelligence', icon: Users, disabled: true },
     { label: 'Startup Intelligence', icon: TrendingUp, disabled: true },

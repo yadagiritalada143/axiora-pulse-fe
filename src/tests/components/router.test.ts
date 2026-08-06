@@ -46,7 +46,7 @@ describe('router', () => {
   it('renders HomeRedirect at the index of the public group', () => {
     const publicGroup = defined(router.routes[0]);
 
-    expect(publicGroup.children).toHaveLength(1);
+    expect(publicGroup.children).toHaveLength(2);
     expect(defined(publicGroup.children?.[0]).index).toBe(true);
   });
 
@@ -130,6 +130,14 @@ describe('router', () => {
     const authLayoutRoute = defined(guestGroup.children?.[0]);
 
     expect(findRoute(authLayoutRoute.children, ROUTES.ADMIN_LOGIN)).toBeDefined();
+  });
+
+  it('registers survey intelligence routes', () => {
+    const publicGroup = defined(router.routes[0]);
+    const protectedGroup = defined(router.routes[2]);
+
+    expect(findRoute(publicGroup.children, '/surveys/public/:surveyId')).toBeDefined();
+    expect(findRoute(protectedGroup.children, ROUTES.WORKSPACE_SURVEY)).toBeDefined();
   });
 
   it('falls back to a wildcard "*" route for unmatched paths', () => {
