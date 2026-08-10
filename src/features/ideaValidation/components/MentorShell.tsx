@@ -1,6 +1,5 @@
 import {
   Archive,
-  Bell,
   FileText,
   Info,
   LayoutGrid,
@@ -153,13 +152,13 @@ export function MentorShell({
             </button>
 
             <div className="flex flex-1 items-center justify-end gap-1.5 sm:gap-3">
-              <button
+              {/* <button
                 type="button"
                 aria-label="Notifications"
                 className="text-muted-foreground hover:bg-accent flex size-9 shrink-0 items-center justify-center rounded-full transition-colors"
               >
                 <Bell className="size-4" />
-              </button>
+              </button> */}
 
               <button
                 type="button"
