@@ -1,5 +1,6 @@
 import { Loader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import type { OrchestrationRunResponse } from '@/types/orchestration.types';
 import {
@@ -8,11 +9,13 @@ import {
   MarkdownRenderer,
   TypeOnMarkdown,
   TypingIndicator,
+  type ChatAttachment,
 } from '@components/chat';
 import { ApiErrorMessage } from '@components/common/ApiErrorMessage';
 import { Button } from '@components/ui/button';
 import { IdeaValidationReport } from '@features/ideaValidation/components';
 
+import { workspaceService } from '../api';
 import {
   useResetWorkspaceMentor,
   useWorkspaceChat,
@@ -32,6 +35,14 @@ function displayMessageContent(content: string): string {
     : content;
 }
 
+function getAttachmentType(fileName: string): 'image' | 'pdf' | 'doc' | 'link' {
+  const ext = fileName.split('.').pop()?.toLowerCase();
+  if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext ?? '')) return 'image';
+  if (ext === 'pdf') return 'pdf';
+  if (['doc', 'docx', 'txt', 'rtf', 'odt'].includes(ext ?? '')) return 'doc';
+  return 'doc';
+}
+
 interface WorkspaceMentorChatProps {
   workspaceId: number;
 }
@@ -41,6 +52,7 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
   const chat = useWorkspaceChat(workspaceId);
   const resetMentor = useResetWorkspaceMentor(workspaceId);
   const [draft, setDraft] = useState('');
+  const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
   const [typeOnAssistantMessages, setTypeOnAssistantMessages] = useState<Set<number>>(
     () => new Set(),
   );
@@ -49,6 +61,47 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [data?.conversation_history.length, chat.isPending]);
+
+  const handleAttach = async (files: FileList) => {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (!file) continue;
+      const tempId = `temp-${Date.now()}-${i}`;
+      const newAttachment: ChatAttachment = {
+        id: tempId,
+        name: file.name,
+        url: '',
+        type: getAttachmentType(file.name),
+        isUploading: true,
+      };
+
+      setAttachments((prev) => [...prev, newAttachment]);
+
+      try {
+        const uploaded = await workspaceService.uploadAttachment(workspaceId, file);
+        setAttachments((prev) =>
+          prev.map((att) =>
+            att.id === tempId
+              ? {
+                  id: uploaded.id,
+                  name: uploaded.name || file.name,
+                  url: uploaded.url,
+                  type: getAttachmentType(uploaded.name || file.name),
+                  isUploading: false,
+                }
+              : att,
+          ),
+        );
+      } catch {
+        toast.error(`Failed to upload ${file.name}. Please try again.`);
+        setAttachments((prev) => prev.filter((att) => att.id !== tempId));
+      }
+    }
+  };
+
+  const handleRemoveAttachment = (id: string | number) => {
+    setAttachments((prev) => prev.filter((att) => att.id !== id));
+  };
 
   if (isLoading) {
     return (
@@ -67,11 +120,23 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
   }
 
   function send(message: string) {
-    if (!message.trim() || chat.isPending) return;
+    if ((!message.trim() && attachments.length === 0) || chat.isPending) return;
+
+    let finalMessage = message.trim();
+    if (attachments.length > 0) {
+      const attachmentsText = attachments
+        .map((att) =>
+          att.type === 'image' ? `![${att.name}](${att.url})` : `[📁 ${att.name}](${att.url})`,
+        )
+        .join('\n');
+      finalMessage = finalMessage ? `${finalMessage}\n\n${attachmentsText}` : attachmentsText;
+    }
+
     const nextAssistantMessageIndex = (data?.conversation_history.length ?? 0) + 1;
     setTypeOnAssistantMessages((previous) => new Set(previous).add(nextAssistantMessageIndex));
-    chat.mutate(message.trim());
+    chat.mutate(finalMessage);
     setDraft('');
+    setAttachments([]);
   }
 
   const currentStep = getStepFromWorkspaceState(data.state);
@@ -127,9 +192,7 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
             if (message.role === 'user') {
               return (
                 <ChatBubble key={index} align="right" avatarLabel="U">
-                  <p className="text-sm whitespace-pre-wrap">
-                    {displayMessageContent(message.content)}
-                  </p>
+                  <MarkdownRenderer content={displayMessageContent(message.content)} />
                 </ChatBubble>
               );
             }
@@ -194,6 +257,9 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
           onSubmit={() => send(draft)}
           disabled={chat.isPending}
           placeholder="Type your answer here…."
+          attachments={attachments}
+          onAttach={handleAttach}
+          onRemoveAttachment={handleRemoveAttachment}
         />
       </div>
 

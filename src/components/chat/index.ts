@@ -6,5 +6,6 @@ export { TypeOnMarkdown } from './TypeOnMarkdown';
 export { TypingIndicator } from './TypingIndicator';
 export { ChatLoader } from './ChatLoader';
 export { ChatInput } from './ChatInput';
+export type { ChatAttachment } from './ChatInput';
 export { ConversationList } from './ConversationList';
 export { ModelSelector } from './ModelSelector';
