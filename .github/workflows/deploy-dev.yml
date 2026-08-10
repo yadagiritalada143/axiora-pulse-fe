@@ -1,0 +1,63 @@
+# axiora-pulse-fe/.github/workflows/deploy-dev.yml
+name: Deploy dev
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-dev-fe
+  cancel-in-progress: true
+
+jobs:
+  # Build the frontend image once and push it to ECR (sha-<sha> + moving qa tag).
+  build:
+    uses: ./.github/workflows/ci-build-push.yml
+    permissions:
+      id-token: write
+      contents: read
+    with:
+      image_name: axiora-pulse-fe
+      extra_tags: qa
+
+  # Deploy that exact image to the QA box by PULLING it — restarts only `web`.
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up SSH
+        env:
+          SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          HOST: ${{ secrets.EC2_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Deploy image to QA
+        env:
+          HOST: ${{ secrets.EC2_HOST }}
+          IMAGE_TAG_FE: ${{ needs.build.outputs.sha_tag }}
+          REGISTRY: ${{ vars.ECR_REGISTRY }}
+          REGION: ${{ vars.AWS_REGION }}
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=yes "ubuntu@$HOST" bash -s <<EOF
+            set -euo pipefail
+            cd /opt/axiora
+            # Pin the box to the exact frontend image CI just built.
+            sed -i "s|^IMAGE_TAG_FE=.*|IMAGE_TAG_FE=${IMAGE_TAG_FE}|" .env
+            aws ecr get-login-password --region ${REGION} \
+              | docker login --username AWS --password-stdin ${REGISTRY}
+            docker compose pull web
+            docker compose up -d web
+          EOF
+
+      - name: Smoke test
+        env:
+          HOST: ${{ secrets.EC2_HOST }}
+        run: |
+          ssh -i ~/.ssh/id_ed25519 "ubuntu@$HOST" \
+            'docker compose -f /opt/axiora/docker-compose.yml exec -T api curl -fsS http://web:80/ >/dev/null' \
+            && echo "Frontend responding"
