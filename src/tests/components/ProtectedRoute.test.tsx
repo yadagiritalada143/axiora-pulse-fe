@@ -13,7 +13,12 @@ const mockUseAuthStore = useAuthStore as unknown as jest.Mock;
 
 function renderWithAuthState(isAuthenticated: boolean, initialEntry = ROUTES.DASHBOARD) {
   mockUseAuthStore.mockImplementation((selector: (state: unknown) => unknown) =>
-    selector({ isAuthenticated }),
+    selector({
+      isAuthenticated,
+      hasCompletedQuestionnaire: true,
+      hasActivePlan: true,
+      role: 'user',
+    }),
   );
 
   return render(

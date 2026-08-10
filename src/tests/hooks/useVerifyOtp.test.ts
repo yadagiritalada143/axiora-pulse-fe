@@ -57,36 +57,32 @@ describe('useVerifyOtp', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockedUseAuthStore.mockImplementation((selector) =>
-      selector({
-        user: null,
-        isAuthenticated: false,
-        mfaData: null,
-        resetEmailOrMobile: null,
-        resetToken: null,
-        hasActivePlan: false,
-        role: null,
+    const defaultState = {
+      user: null,
+      isAuthenticated: false,
+      mfaData: null,
+      resetEmailOrMobile: null,
+      resetToken: null,
+      hasActivePlan: false,
+      role: null,
+      hasCompletedQuestionnaire: true,
+      showQuestionnaireIntro: false,
 
-        // Missing AuthState fields
-        hasCompletedQuestionnaire: false,
-        showQuestionnaireIntro: false,
+      setMfaData: jest.fn(),
+      setAuthenticated,
+      updateUser: jest.fn(),
+      clearSession: jest.fn(),
+      setResetEmailOrMobile: jest.fn(),
+      setResetToken: jest.fn(),
+      clearResetData: jest.fn(),
+      setHasActivePlan: jest.fn(),
+      setRole,
+      setHasCompletedQuestionnaire: jest.fn(),
+      setShowQuestionnaireIntro: jest.fn(),
+    };
 
-        // Actions
-        setMfaData: jest.fn(),
-        setAuthenticated,
-        updateUser: jest.fn(),
-        clearSession: jest.fn(),
-        setResetEmailOrMobile: jest.fn(),
-        setResetToken: jest.fn(),
-        clearResetData: jest.fn(),
-        setHasActivePlan: jest.fn(),
-        setRole,
-
-        // Add these too if your store defines them
-        setHasCompletedQuestionnaire: jest.fn(),
-        setShowQuestionnaireIntro: jest.fn(),
-      }),
-    );
+    mockedUseAuthStore.mockImplementation((selector) => selector(defaultState));
+    mockedUseAuthStore.getState = jest.fn().mockReturnValue(defaultState);
   });
 
   it('authenticates and navigates to the dashboard on success', async () => {

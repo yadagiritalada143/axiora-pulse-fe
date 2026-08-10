@@ -32,6 +32,8 @@ export function useVerifyOtp() {
 
           if (!payment) {
             void navigate(ROUTES.PRICING);
+          } else if (!interactive_questions) {
+            void navigate(ROUTES.QUESTIONNAIRE_INTRO);
           } else {
             void navigate(ROUTES.DASHBOARD);
           }
@@ -42,7 +44,11 @@ export function useVerifyOtp() {
           const hasActivePlan = response.hasActivePlan ?? false;
           useAuthStore.getState().setHasActivePlan(hasActivePlan);
           if (hasActivePlan) {
-            void navigate(ROUTES.DASHBOARD);
+            if (!useAuthStore.getState().hasCompletedQuestionnaire) {
+              void navigate(ROUTES.QUESTIONNAIRE_INTRO);
+            } else {
+              void navigate(ROUTES.DASHBOARD);
+            }
           } else {
             void navigate(ROUTES.PRICING);
           }
