@@ -128,6 +128,10 @@ export const workspaceService = {
     return data;
   },
 
+  permanentDeleteWorkspace: async (id: number): Promise<void> => {
+    await apiClient.delete(API_ENDPOINTS.WORKSPACE.PERMANENT_DELETE(id));
+  },
+
   chatWithMentor: async (
     workspaceId: number,
     payload: WorkspaceChatRequest,

@@ -88,3 +88,17 @@ export function useRestoreWorkspace() {
     },
   });
 }
+
+export function usePermanentDeleteWorkspace() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: workspaceService.permanentDeleteWorkspace,
+
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.workspace.all(),
+      });
+    },
+  });
+}

@@ -2,16 +2,30 @@ import { Archive, Loader } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { Button } from '@components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@components/ui/dialog';
 import { ArchivedWorkspaceCard } from '@features/workspace/components';
 import {
   useArchivedWorkspaces,
   useRestoreWorkspace,
+  usePermanentDeleteWorkspace,
 } from '@features/workspace/hooks/useWorkspaces';
 
 export default function WorkspaceArchivePage() {
   const { data, isLoading, isError } = useArchivedWorkspaces();
   const restoreWorkspace = useRestoreWorkspace();
+  const deleteWorkspace = usePermanentDeleteWorkspace();
+
   const [restoringId, setRestoringId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   if (isLoading) {
     return (
@@ -45,12 +59,28 @@ export default function WorkspaceArchivePage() {
     });
   }
 
+  function handlePermanentDelete(workspaceId: number) {
+    setDeletingId(workspaceId);
+    deleteWorkspace.mutate(workspaceId, {
+      onSuccess: () => {
+        toast.success('Workspace deleted permanently.');
+        setDeletingId(null);
+        setConfirmDeleteId(null);
+      },
+      onError: () => {
+        toast.error('Failed to permanently delete workspace. Please try again.');
+        setDeletingId(null);
+      },
+    });
+  }
+
   return (
     <div className="mx-auto w-full max-w-6xl">
       <div className="mb-8 space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">Archive</h1>
         <p className="text-muted-foreground text-sm">
-          Workspaces you&apos;ve deleted are stored here. You can restore them at any time.
+          Workspaces you&apos;ve deleted are stored here. You can restore them or delete them
+          permanently.
         </p>
       </div>
 
@@ -71,11 +101,44 @@ export default function WorkspaceArchivePage() {
               key={workspace.id}
               workspace={workspace}
               onRestore={handleRestore}
+              onDeletePermanent={(id) => setConfirmDeleteId(id)}
               isRestoring={restoringId === workspace.id}
+              isDeleting={deletingId === workspace.id}
             />
           ))}
         </div>
       )}
+
+      <Dialog
+        open={confirmDeleteId !== null}
+        onOpenChange={(open) => !open && setConfirmDeleteId(null)}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Workspace Permanently</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to permanently delete this workspace? This action cannot be
+              undone and will delete all associated chats, surveys, and validation data.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 flex justify-end gap-2">
+            <Button
+              variant="outline"
+              disabled={deletingId !== null}
+              onClick={() => setConfirmDeleteId(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-destructive hover:bg-destructive/90 font-semibold text-white"
+              disabled={deletingId !== null}
+              onClick={() => confirmDeleteId && handlePermanentDelete(confirmDeleteId)}
+            >
+              {deletingId !== null ? 'Deleting…' : 'Delete Permanently'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

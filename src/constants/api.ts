@@ -36,6 +36,7 @@ export const API_ENDPOINTS = {
     UPDATE: (workspaceId: number) => `/v1/workspaces/${workspaceId}`,
     DELETE: (workspaceId: number) => `/v1/workspaces/${workspaceId}`,
     RESTORE: (workspaceId: number) => `/v1/workspaces/${workspaceId}/restore`,
+    PERMANENT_DELETE: (workspaceId: number) => `/v1/workspaces/${workspaceId}/permanent`,
     CHAT: (workspaceId: number) => `/v1/workspaces/${workspaceId}/chat`,
     STATE: (workspaceId: number) => `/v1/workspaces/${workspaceId}/state`,
     RESET: (workspaceId: number) => `/v1/workspaces/${workspaceId}/reset`,

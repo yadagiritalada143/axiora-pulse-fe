@@ -90,8 +90,9 @@ describe('WorkspaceMentorIntake', () => {
     render(<WorkspaceMentorIntake onSubmit={jest.fn()} isPending={false} />);
 
     expect(screen.getByText('Need help getting started?')).toBeInTheDocument();
-    expect(
-      screen.getAllByText('AI-powered platform that helps founders validate their ideas faster.'),
-    ).toHaveLength(4);
+    expect(screen.getByText('AI Micro-SaaS Accelerator')).toBeInTheDocument();
+    expect(screen.getByText('Visual Math AI Tutor')).toBeInTheDocument();
+    expect(screen.getByText('Fleet Route Optimizer')).toBeInTheDocument();
+    expect(screen.getByText('Lifestyle Health Tracker')).toBeInTheDocument();
   });
 });
