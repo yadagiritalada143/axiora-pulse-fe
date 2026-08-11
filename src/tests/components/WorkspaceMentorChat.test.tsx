@@ -191,7 +191,7 @@ describe('WorkspaceMentorChat', () => {
 
     await user.click(screen.getByRole('button', { name: 'Submit idea' }));
 
-    expect(chatMutate).toHaveBeenCalledWith('My idea');
+    expect(chatMutate).toHaveBeenCalledWith({ message: 'My idea', attachments: null });
   });
 
   it('renders the conversation history in order once the conversation has started', () => {
@@ -271,12 +271,16 @@ describe('WorkspaceMentorChat', () => {
     expect(verifyDetailsButton).toBeInTheDocument();
 
     await user.click(runValidationButton);
-    expect(chatMutate).toHaveBeenCalledWith('Run validation analysis');
+    expect(chatMutate).toHaveBeenCalledWith({
+      message: 'Run validation analysis',
+      attachments: null,
+    });
 
     await user.click(verifyDetailsButton);
-    expect(chatMutate).toHaveBeenCalledWith(
-      'Can you verify and summarize the idea details you have so far?',
-    );
+    expect(chatMutate).toHaveBeenCalledWith({
+      message: 'Can you verify and summarize the idea details you have so far?',
+      attachments: null,
+    });
   });
 
   it('sends a typed message from the chat input and clears the draft', async () => {
@@ -293,7 +297,7 @@ describe('WorkspaceMentorChat', () => {
     await user.type(input, 'What next?');
     await user.click(screen.getByRole('button', { name: 'Send' }));
 
-    expect(chatMutate).toHaveBeenCalledWith('What next?');
+    expect(chatMutate).toHaveBeenCalledWith({ message: 'What next?', attachments: null });
   });
 
   it('does not call the chat mutation when submitting a blank or whitespace-only draft', async () => {

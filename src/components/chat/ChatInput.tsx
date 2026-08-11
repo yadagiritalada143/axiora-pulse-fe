@@ -10,6 +10,8 @@ export interface ChatAttachment {
   url: string;
   type: 'image' | 'pdf' | 'doc' | 'link';
   isUploading?: boolean;
+  base64Data?: string;
+  mimeType?: string;
 }
 
 interface ChatInputProps {

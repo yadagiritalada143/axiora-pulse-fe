@@ -62,17 +62,36 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [data?.conversation_history.length, chat.isPending]);
 
+  const readFileAsDataURL = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleAttach = async (files: FileList) => {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (!file) continue;
       const tempId = `temp-${Date.now()}-${i}`;
+
+      let base64Data = '';
+      try {
+        base64Data = await readFileAsDataURL(file);
+      } catch (e) {
+        console.error('Failed to read file content to base64', e);
+      }
+
       const newAttachment: ChatAttachment = {
         id: tempId,
         name: file.name,
         url: '',
         type: getAttachmentType(file.name),
         isUploading: true,
+        base64Data,
+        mimeType: file.type,
       };
 
       setAttachments((prev) => [...prev, newAttachment]);
@@ -83,10 +102,9 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
           prev.map((att) =>
             att.id === tempId
               ? {
+                  ...att,
                   id: uploaded.id,
-                  name: uploaded.name || file.name,
                   url: uploaded.url,
-                  type: getAttachmentType(uploaded.name || file.name),
                   isUploading: false,
                 }
               : att,
@@ -132,9 +150,19 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
       finalMessage = finalMessage ? `${finalMessage}\n\n${attachmentsText}` : attachmentsText;
     }
 
+    const payloadAttachments = attachments.map((att) => ({
+      type: att.type,
+      name: att.name,
+      url_or_data: att.base64Data ?? att.url,
+      mime_type: att.mimeType ?? null,
+    }));
+
     const nextAssistantMessageIndex = (data?.conversation_history.length ?? 0) + 1;
     setTypeOnAssistantMessages((previous) => new Set(previous).add(nextAssistantMessageIndex));
-    chat.mutate(finalMessage);
+    chat.mutate({
+      message: finalMessage,
+      attachments: payloadAttachments.length > 0 ? payloadAttachments : null,
+    });
     setDraft('');
     setAttachments([]);
   }

@@ -4,7 +4,11 @@ import { toast } from 'sonner';
 import { queryKeys } from '@/constants/queryKeys';
 
 import { workspaceService } from '../api';
-import type { ExportWorkspaceReportRequest, WorkspaceStateResponse } from '../types';
+import type {
+  ExportWorkspaceReportRequest,
+  WorkspaceChatRequest,
+  WorkspaceStateResponse,
+} from '../types';
 
 export function useWorkspaceState(workspaceId: number) {
   return useQuery({
@@ -19,9 +23,10 @@ export function useWorkspaceChat(workspaceId: number) {
   const queryKey = queryKeys.workspace.state(workspaceId);
 
   return useMutation({
-    mutationFn: (message: string) => workspaceService.chatWithMentor(workspaceId, { message }),
+    mutationFn: (payload: WorkspaceChatRequest) =>
+      workspaceService.chatWithMentor(workspaceId, payload),
 
-    onMutate: async (message) => {
+    onMutate: async (payload) => {
       await queryClient.cancelQueries({ queryKey });
       const previous = queryClient.getQueryData<WorkspaceStateResponse>(queryKey);
 
@@ -31,7 +36,7 @@ export function useWorkspaceChat(workspaceId: number) {
               ...current,
               conversation_history: [
                 ...current.conversation_history,
-                { role: 'user', content: message },
+                { role: 'user', content: payload.message },
               ],
             }
           : current,
