@@ -49,35 +49,31 @@ function createWrapper() {
 describe('useVerifyLogin', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedUseAuthStore.mockImplementation((selector) =>
-      selector({
-        user: null,
-        isAuthenticated: false,
-        mfaData: null,
-        resetEmailOrMobile: null,
-        resetToken: null,
-        hasActivePlan: false,
-        role: null,
+    const defaultState = {
+      user: null,
+      isAuthenticated: false,
+      mfaData: null,
+      resetEmailOrMobile: null,
+      resetToken: null,
+      hasActivePlan: false,
+      role: null,
+      hasCompletedQuestionnaire: true,
+      showQuestionnaireIntro: false,
 
-        // Include these only if they exist in your current AuthState
-        hasCompletedQuestionnaire: false,
-        showQuestionnaireIntro: false,
-
-        setMfaData: jest.fn(),
-        setAuthenticated,
-        updateUser: jest.fn(),
-        clearSession: jest.fn(),
-        setResetEmailOrMobile: jest.fn(),
-        setResetToken: jest.fn(),
-        clearResetData: jest.fn(),
-        setHasActivePlan,
-        setRole,
-
-        // Include these only if they exist in your current AuthActions
-        setHasCompletedQuestionnaire: jest.fn(),
-        setShowQuestionnaireIntro: jest.fn(),
-      }),
-    );
+      setMfaData: jest.fn(),
+      setAuthenticated,
+      updateUser: jest.fn(),
+      clearSession: jest.fn(),
+      setResetEmailOrMobile: jest.fn(),
+      setResetToken: jest.fn(),
+      clearResetData: jest.fn(),
+      setHasActivePlan,
+      setRole,
+      setHasCompletedQuestionnaire: jest.fn(),
+      setShowQuestionnaireIntro: jest.fn(),
+    };
+    mockedUseAuthStore.mockImplementation((selector) => selector(defaultState));
+    mockedUseAuthStore.getState = jest.fn().mockReturnValue(defaultState);
   });
 
   it('authenticates and navigates to dashboard when the user has an active plan', async () => {
@@ -243,5 +239,52 @@ describe('useVerifyLogin', () => {
     await waitFor(() => expect(result.current.isError).toBe(true));
 
     expect(mockedToastError).toHaveBeenCalledWith('That OTP is incorrect.');
+  });
+
+  it('navigates to questionnaire intro when the user has an active plan but has not completed the questionnaire', async () => {
+    const customState = {
+      user: null,
+      isAuthenticated: false,
+      mfaData: null,
+      resetEmailOrMobile: null,
+      resetToken: null,
+      hasActivePlan: false,
+      role: null,
+      hasCompletedQuestionnaire: false,
+      showQuestionnaireIntro: false,
+
+      setMfaData: jest.fn(),
+      setAuthenticated,
+      updateUser: jest.fn(),
+      clearSession: jest.fn(),
+      setResetEmailOrMobile: jest.fn(),
+      setResetToken: jest.fn(),
+      clearResetData: jest.fn(),
+      setHasActivePlan,
+      setRole,
+      setHasCompletedQuestionnaire: jest.fn(),
+      setShowQuestionnaireIntro: jest.fn(),
+    };
+    mockedUseAuthStore.mockImplementation((selector) => selector(customState));
+    mockedUseAuthStore.getState = jest.fn().mockReturnValue(customState);
+
+    mockedAuthService.verifyLogin.mockResolvedValue({
+      status: 'success',
+      message: 'Login successful.',
+      access_token: 'access-token',
+      refresh_token: 'refresh-token',
+      token_type: 'Bearer',
+      expires_in_minutes: 60,
+      role: 'user',
+      hasActivePlan: true,
+    });
+
+    const { result } = renderHook(() => useVerifyLogin(), { wrapper: createWrapper() });
+
+    result.current.mutate({ emailOrMobile: 'jane@example.com', otp: 123456 });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(mockNavigate).toHaveBeenCalledWith('/questionnaire-intro');
   });
 });

@@ -1,4 +1,4 @@
-import { Bell, Menu } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -42,9 +42,9 @@ export function Navbar({ onSearch, actions }: NavbarProps) {
       <div className="flex items-center gap-2">
         {actions}
 
-        <Button variant="ghost" size="icon" aria-label="Notifications">
+        {/* <Button variant="ghost" size="icon" aria-label="Notifications">
           <Bell className="size-4" />
-        </Button>
+        </Button> */}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

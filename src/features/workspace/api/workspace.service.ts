@@ -1,5 +1,6 @@
 import { API_ENDPOINTS } from '@/constants/api';
 import { apiClient } from '@/services/api';
+import type { MessageAttachment } from '@/types/chat.types';
 
 import type {
   CreateWorkspaceRequest,
@@ -10,6 +11,7 @@ import type {
   RestoreWorkspaceResponse,
   UpdateWorkspaceRequest,
   Workspace,
+  WorkspaceAttachmentResponse,
   WorkspaceChatRequest,
   WorkspaceChatResponse,
   WorkspaceStateResponse,
@@ -126,6 +128,33 @@ export const workspaceService = {
     );
 
     return data;
+  },
+
+  permanentDeleteWorkspace: async (id: number): Promise<void> => {
+    await apiClient.delete(API_ENDPOINTS.WORKSPACE.PERMANENT_DELETE(id));
+  },
+
+  uploadAttachment: async (workspaceId: number, file: File): Promise<MessageAttachment> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const { data } = await apiClient.post<WorkspaceAttachmentResponse>(
+      API_ENDPOINTS.WORKSPACE.ATTACHMENTS(workspaceId),
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      },
+    );
+
+    return {
+      id: String(data.id),
+      name: data.file_name,
+      url: data.file_url,
+      mimeType: data.mime_type,
+      sizeBytes: data.file_size_bytes ?? 0,
+    };
   },
 
   chatWithMentor: async (

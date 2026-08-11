@@ -1,4 +1,4 @@
-import { Building2, Clock, MoreHorizontal, RotateCcw } from 'lucide-react';
+import { Building2, Clock, MoreHorizontal, RotateCcw, Trash2 } from 'lucide-react';
 
 import { Button } from '@components/ui/button';
 import { Card } from '@components/ui/card';
@@ -15,15 +15,19 @@ import type { Workspace } from '../types';
 interface ArchivedWorkspaceCardProps {
   workspace: Workspace;
   onRestore: (workspaceId: number) => void;
+  onDeletePermanent: (workspaceId: number) => void;
   isRestoring?: boolean;
+  isDeleting?: boolean;
 }
 
 export function ArchivedWorkspaceCard({
   workspace,
   onRestore,
+  onDeletePermanent,
   isRestoring,
+  isDeleting,
 }: ArchivedWorkspaceCardProps) {
-  const updatedLabel = formatRelativeTime(workspace.updated_at || workspace.created_at);
+  const updatedLabel = formatRelativeTime(workspace.updated_at ?? workspace.created_at);
 
   return (
     <Card className="relative gap-0 overflow-hidden py-0 opacity-75">
@@ -55,9 +59,20 @@ export function ArchivedWorkspaceCard({
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-            <DropdownMenuItem disabled={isRestoring} onClick={() => onRestore(workspace.id)}>
+            <DropdownMenuItem
+              disabled={Boolean(isRestoring) || Boolean(isDeleting)}
+              onClick={() => onRestore(workspace.id)}
+            >
               <RotateCcw className="size-4" />
               {isRestoring ? 'Restoring…' : 'Restore'}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={Boolean(isRestoring) || Boolean(isDeleting)}
+              onClick={() => onDeletePermanent(workspace.id)}
+              className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
+            >
+              <Trash2 className="size-4" />
+              Delete Permanently
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

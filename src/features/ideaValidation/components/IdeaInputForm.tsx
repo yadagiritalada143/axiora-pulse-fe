@@ -14,20 +14,24 @@ import { useRunOrchestration } from '../hooks';
 
 const EXAMPLE_IDEAS = [
   {
-    title: 'Example 1',
-    description: 'AI-powered platform that helps founders validate their ideas faster.',
+    title: 'AI Micro-SaaS Accelerator',
+    description:
+      'A dev-tool that generates production-ready SaaS boilerplates with auth, database, and stripe billing configured in under 5 minutes.',
   },
   {
-    title: 'Example 1',
-    description: 'AI-powered platform that helps founders validate their ideas faster.',
+    title: 'Visual Math AI Tutor',
+    description:
+      'An interactive mobile learning platform that provides step-by-step visual explanations and personalized AI coaching for students.',
   },
   {
-    title: 'Example 1',
-    description: 'AI-powered platform that helps founders validate their ideas faster.',
+    title: 'Fleet Route Optimizer',
+    description:
+      'An intelligent route planning system for delivery fleets that dynamically avoids traffic, reduces fuel costs, and lowers CO2 emission.',
   },
   {
-    title: 'Example 1',
-    description: 'AI-powered platform that helps founders validate their ideas faster.',
+    title: 'Lifestyle Health Tracker',
+    description:
+      'An AI-powered wellness dashboard that monitors habits, provides proactive symptoms screening, and recommends preventative health actions.',
   },
 ];
 
@@ -124,13 +128,26 @@ export function IdeaInputForm({ workspaceId, onValidated }: IdeaInputFormProps) 
         <p className="text-foreground mb-3 text-sm font-medium">Need help getting started?</p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {EXAMPLE_IDEAS.map((example, index) => (
-            <div key={index} className="border-border rounded-lg border p-4">
-              <span className="bg-primary/10 text-primary mb-3 flex size-8 items-center justify-center rounded-full">
+            <button
+              key={index}
+              type="button"
+              onClick={() => {
+                setTitle(example.title);
+                setDescription(example.description);
+              }}
+              disabled={isPending}
+              className="border-border group cursor-pointer rounded-lg border p-4 text-left transition-all duration-200 hover:border-[#FF4500]/50 hover:bg-[#FF4500]/5 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-[#FF4500] focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <span className="mb-3 flex size-8 items-center justify-center rounded-full bg-[#FF4500]/10 text-[#FF4500] transition-transform duration-200 group-hover:scale-110">
                 <Sparkles className="size-4" aria-hidden />
               </span>
-              <p className="text-foreground text-sm font-medium">{example.title}</p>
-              <p className="text-muted-foreground mt-1 text-xs">{example.description}</p>
-            </div>
+              <p className="text-foreground text-sm font-semibold transition-colors group-hover:text-[#FF4500]">
+                {example.title}
+              </p>
+              <p className="text-muted-foreground mt-1 line-clamp-3 text-xs leading-normal">
+                {example.description}
+              </p>
+            </button>
           ))}
         </div>
       </div>

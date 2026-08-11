@@ -94,3 +94,17 @@ export interface RestoreWorkspaceResponse {
   workspace_id: number;
   is_delete: boolean;
 }
+
+export interface WorkspaceAttachmentResponse {
+  id: number;
+  user_id: number;
+  workspace_id: number;
+  file_name: string;
+  file_type: string;
+  mime_type: string;
+  s3_key: string;
+  file_url: string;
+  file_size_bytes: number | null;
+  created_at: string;
+  updated_at: string;
+}

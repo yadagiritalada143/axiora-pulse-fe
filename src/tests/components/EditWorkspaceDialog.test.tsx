@@ -9,6 +9,13 @@ jest.mock('@features/workspace/hooks/useWorkspaces', () => ({
   useUpdateWorkspace: jest.fn(),
 }));
 
+jest.mock('sonner', () => ({
+  toast: {
+    error: jest.fn(),
+    success: jest.fn(),
+  },
+}));
+
 const mockedUseUpdateWorkspace = useUpdateWorkspace as jest.Mock;
 
 const workspace: Workspace = {

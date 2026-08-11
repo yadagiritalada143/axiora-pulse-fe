@@ -1,6 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
+import type { ApiRequestError } from '@/types/error.types';
 import { Button } from '@components/ui/button';
 import {
   Dialog,
@@ -45,6 +47,11 @@ export function CreateWorkspaceDialog({ open, onOpenChange }: CreateWorkspaceDia
       onSuccess: () => {
         form.reset();
         onOpenChange(false);
+        toast.success('Workspace created successfully!');
+      },
+      onError: (err) => {
+        const apiError = err as ApiRequestError;
+        toast.error(apiError.message ?? 'Failed to create workspace. Please try again.');
       },
     });
   }

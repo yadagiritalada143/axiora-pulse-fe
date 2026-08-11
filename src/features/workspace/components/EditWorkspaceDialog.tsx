@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 
+import type { ApiRequestError } from '@/types/error.types';
 import { Button } from '@components/ui/button';
 import {
   Dialog,
@@ -41,6 +43,11 @@ export function EditWorkspaceDialog({ open, workspace, onOpenChange }: EditWorks
       {
         onSuccess: () => {
           onOpenChange(false);
+          toast.success('Workspace updated successfully!');
+        },
+        onError: (err) => {
+          const apiError = err as ApiRequestError;
+          toast.error(apiError.message ?? 'Failed to update workspace. Please try again.');
         },
       },
     );

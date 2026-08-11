@@ -8,6 +8,13 @@ jest.mock('@features/workspace/hooks/useWorkspaces', () => ({
   useCreateWorkspace: jest.fn(),
 }));
 
+jest.mock('sonner', () => ({
+  toast: {
+    error: jest.fn(),
+    success: jest.fn(),
+  },
+}));
+
 const mockedUseCreateWorkspace = useCreateWorkspace as jest.Mock;
 
 describe('CreateWorkspaceDialog', () => {
