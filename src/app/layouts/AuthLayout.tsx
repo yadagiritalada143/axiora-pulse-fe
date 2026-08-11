@@ -1,5 +1,7 @@
 import { Outlet } from 'react-router-dom';
 
+import { Logo } from '@components/common/Logo';
+
 const STRIPE_POSITIONS = ['-2%', '19%', '40%', '61%', '82%'];
 
 /**
@@ -50,16 +52,8 @@ export function AuthLayout() {
         </div>
         <div className="relative z-10 flex h-full flex-col items-center justify-start px-6 pt-10 text-center lg:h-full lg:w-full lg:px-12 lg:pt-24 lg:text-left">
           {' '}
-          <div className="mb-5 flex items-center justify-center lg:hidden">
-            <div className="mb-5 flex items-center justify-center lg:hidden">
-              <div className="flex size-16 items-center justify-center rounded-full bg-white">
-                <div className="bg-primary/10 flex size-14 items-center justify-center rounded-full">
-                  <div className="bg-primary/15 flex size-11 items-center justify-center rounded-full">
-                    <div className="bg-primary size-10 rounded-full shadow-[0_0_12px_3px_rgba(59,130,246,0.25)]" />
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="mb-6 flex items-center justify-center lg:hidden">
+            <Logo size="lg" tone="dark" />
           </div>
           <h1 className="font-display w-full text-3xl leading-tight font-semibold tracking-wide lg:text-6xl lg:leading-[1.1]">
             Turn <span className="text-primary">Ideas</span> into{' '}
@@ -71,13 +65,7 @@ export function AuthLayout() {
       <div className="bg-background text-foreground relative z-10 -mt-6 flex flex-1 flex-col rounded-t-3xl px-6 pt-8 pb-8 lg:mt-0 lg:flex-1 lg:items-center lg:justify-center lg:rounded-none lg:p-10">
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col lg:flex-none">
           <div className="mb-6 hidden lg:flex">
-            <div className="bg-primary/5 flex size-14 items-center justify-center rounded-full">
-              <div className="bg-primary/10 flex size-11 items-center justify-center rounded-full">
-                <div className="bg-primary/15 flex size-9 items-center justify-center rounded-full">
-                  <div className="bg-primary size-4 rounded-full shadow-[0_0_12px_3px_var(--primary)]" />
-                </div>
-              </div>
-            </div>
+            <Logo size="lg" />
           </div>
 
           <Outlet />

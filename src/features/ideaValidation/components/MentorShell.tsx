@@ -17,6 +17,7 @@ import {
 import { useState, type ReactNode } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 
+import { Logo } from '@components/common/Logo';
 import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import {
   DropdownMenu,
@@ -103,10 +104,7 @@ export function MentorShell({
           )}
         >
           <div className="flex h-16 items-center justify-between px-5">
-            <span className="text-foreground flex items-center text-lg font-semibold">
-              Pulse
-              <span className="bg-primary ml-0.5 size-1.5 rounded-full" aria-hidden />
-            </span>
+            <Logo />
             <button
               type="button"
               aria-label="Close menu"
