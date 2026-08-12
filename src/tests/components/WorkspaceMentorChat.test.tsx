@@ -335,6 +335,64 @@ describe('WorkspaceMentorChat', () => {
     expect(screen.getByText('Report')).toBeInTheDocument();
   });
 
+  it('anchors the validation report after the point it appeared, so later replies render below it', () => {
+    const chatMutate = jest.fn();
+    const initialData = buildState({
+      conversation_history: [
+        { role: 'user', content: 'My idea' },
+        { role: 'assistant', content: 'Tell me more' },
+      ],
+    });
+    setup({ data: initialData, chatMutate });
+
+    const { rerender } = render(<WorkspaceMentorChat workspaceId={1} />);
+
+    const validatedData: WorkspaceStateResponse = {
+      ...initialData,
+      state: 'VALIDATED',
+      conversation_history: [
+        ...initialData.conversation_history,
+        { role: 'user', content: 'Run validation analysis' },
+        { role: 'assistant', content: 'Validated! Score 80.' },
+      ],
+      validation_result: {
+        orchestration_run_id: 'run-1',
+        idea_id: 'idea-1',
+        created_at: '2026-01-01T00:00:00.000Z',
+      } as unknown as OrchestrationResult,
+    };
+    mockedUseWorkspaceState.mockReturnValue({
+      data: validatedData,
+      isLoading: false,
+      isError: false,
+    });
+    rerender(<WorkspaceMentorChat workspaceId={1} />);
+
+    expect(screen.getByText('Report')).toBeInTheDocument();
+
+    const followUpData: WorkspaceStateResponse = {
+      ...validatedData,
+      conversation_history: [
+        ...validatedData.conversation_history,
+        { role: 'user', content: 'What should I do next?' },
+        { role: 'assistant', content: 'Focus on customer interviews.' },
+      ],
+    };
+    mockedUseWorkspaceState.mockReturnValue({
+      data: followUpData,
+      isLoading: false,
+      isError: false,
+    });
+    rerender(<WorkspaceMentorChat workspaceId={1} />);
+
+    const reportEl = screen.getByText('Report');
+    const followUpBubble = screen.getByText('Focus on customer interviews.');
+
+    expect(
+      reportEl.compareDocumentPosition(followUpBubble) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
   it('shows the chat error message when the mutation fails', () => {
     setup({
       data: buildState({ conversation_history: [{ role: 'user', content: 'Hi' }] }),

@@ -22,9 +22,9 @@ import {
 } from '@components/ui/form';
 import { Input } from '@components/ui/input';
 import { Textarea } from '@components/ui/textarea';
+import { workspaceSchema, type WorkspaceFormData } from '@schemas/workspace.schema';
 
 import { useCreateWorkspace } from '../hooks/useWorkspaces';
-import { createWorkspaceSchema, type CreateWorkspaceFormData } from '../schemas/workspace.schema';
 
 interface CreateWorkspaceDialogProps {
   open: boolean;
@@ -34,15 +34,15 @@ interface CreateWorkspaceDialogProps {
 export function CreateWorkspaceDialog({ open, onOpenChange }: CreateWorkspaceDialogProps) {
   const { mutate, isPending } = useCreateWorkspace();
 
-  const form = useForm<CreateWorkspaceFormData>({
-    resolver: zodResolver(createWorkspaceSchema),
+  const form = useForm<WorkspaceFormData>({
+    resolver: zodResolver(workspaceSchema),
     defaultValues: {
       name: '',
       description: '',
     },
   });
 
-  function onSubmit(values: CreateWorkspaceFormData) {
+  function onSubmit(values: WorkspaceFormData) {
     mutate(values, {
       onSuccess: () => {
         form.reset();

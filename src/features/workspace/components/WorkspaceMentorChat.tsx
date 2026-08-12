@@ -1,5 +1,5 @@
 import { Loader2 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import type { OrchestrationRunResponse } from '@/types/orchestration.types';
@@ -52,10 +52,15 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
     () => new Set(),
   );
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [reportAnchorIndex, setReportAnchorIndex] = useState<number | null>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [data?.conversation_history.length, chat.isPending]);
+
+  if (data?.validation_result && reportAnchorIndex === null) {
+    setReportAnchorIndex(data.conversation_history.length);
+  }
 
   const readFileAsDataURL = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -195,6 +200,15 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
       }
     : null;
 
+  const effectiveReportAnchor = reportAnchorIndex ?? data.conversation_history.length;
+  const reportNode = validationResponse ? (
+    <IdeaValidationReport
+      workspaceId={workspaceId}
+      ideaTitle={data.idea.idea_title ?? data.name}
+      response={validationResponse}
+    />
+  ) : null;
+
   return (
     <div className="mx-auto flex h-full min-h-[70vh] w-full max-w-6xl items-start gap-6">
       <div className="flex h-full min-w-0 flex-1 flex-col">
@@ -211,25 +225,27 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
         </div>
 
         <div className="flex-1 space-y-4 overflow-y-auto py-4">
-          {data.conversation_history.map((message, index) => {
-            if (message.role === 'user') {
-              return (
-                <ChatBubble key={index} align="right" avatarLabel="U">
+          {effectiveReportAnchor === 0 ? reportNode : null}
+
+          {data.conversation_history.map((message, index) => (
+            <Fragment key={index}>
+              {message.role === 'user' ? (
+                <ChatBubble align="right" avatarLabel="U">
                   <MarkdownRenderer content={displayMessageContent(message.content)} />
                 </ChatBubble>
-              );
-            }
+              ) : (
+                <ChatBubble align="left" avatarLabel="AI">
+                  {typeOnAssistantMessages.has(index) ? (
+                    <TypeOnMarkdown content={message.content} />
+                  ) : (
+                    <MarkdownRenderer content={message.content} />
+                  )}
+                </ChatBubble>
+              )}
 
-            return (
-              <ChatBubble key={index} align="left" avatarLabel="AI">
-                {typeOnAssistantMessages.has(index) ? (
-                  <TypeOnMarkdown content={message.content} />
-                ) : (
-                  <MarkdownRenderer content={message.content} />
-                )}
-              </ChatBubble>
-            );
-          })}
+              {effectiveReportAnchor === index + 1 ? reportNode : null}
+            </Fragment>
+          ))}
 
           {chat.isPending ? (
             <ChatBubble align="left" avatarLabel="AI">
@@ -237,13 +253,9 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
             </ChatBubble>
           ) : null}
 
-          {validationResponse ? (
-            <IdeaValidationReport
-              workspaceId={workspaceId}
-              ideaTitle={data.idea.idea_title ?? data.name}
-              response={validationResponse}
-            />
-          ) : null}
+          {validationResponse && effectiveReportAnchor > data.conversation_history.length
+            ? reportNode
+            : null}
 
           <div ref={bottomRef} />
         </div>

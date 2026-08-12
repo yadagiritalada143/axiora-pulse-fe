@@ -1,4 +1,4 @@
-import { createWorkspaceSchema } from '@features/workspace/schemas/workspace.schema';
+import { workspaceSchema as createWorkspaceSchema } from '@schemas/workspace.schema';
 
 describe('createWorkspaceSchema', () => {
   it('accepts a valid name without a description', () => {
