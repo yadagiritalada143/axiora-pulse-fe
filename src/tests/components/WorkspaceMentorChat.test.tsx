@@ -335,28 +335,6 @@ describe('WorkspaceMentorChat', () => {
     expect(screen.getByText('Report')).toBeInTheDocument();
   });
 
-  it('calls the reset mentor mutation when the validation report requests a retake', async () => {
-    const resetMutate = jest.fn();
-    setup({
-      data: buildState({
-        conversation_history: [{ role: 'user', content: 'Hi' }],
-        validation_result: {
-          orchestration_run_id: 'run-1',
-          idea_id: 'idea-1',
-          created_at: '2026-01-01T00:00:00.000Z',
-        } as unknown as OrchestrationResult,
-      }),
-      resetMutate,
-    });
-
-    const user = userEvent.setup();
-    render(<WorkspaceMentorChat workspaceId={1} />);
-
-    await user.click(screen.getByRole('button', { name: 'Retake' }));
-
-    expect(resetMutate).toHaveBeenCalled();
-  });
-
   it('shows the chat error message when the mutation fails', () => {
     setup({
       data: buildState({ conversation_history: [{ role: 'user', content: 'Hi' }] }),

@@ -14,7 +14,7 @@ interface IdeaValidationReportProps {
   workspaceId: number;
   ideaTitle: string;
   response: OrchestrationRunResponse;
-  onRetake: () => void;
+  onRetake?: () => void;
 }
 
 const VERDICT_STYLES: Record<string, string> = {
@@ -197,8 +197,6 @@ export function IdeaValidationReport({
               ) : null}
             </AgentReportCard>
           ) : null}
-
-          <p className="text-muted-foreground text-xs">{result.disclaimer}</p>
         </>
       ) : (
         <div className="border-border rounded-lg border p-5">
@@ -209,12 +207,14 @@ export function IdeaValidationReport({
         </div>
       )}
 
-      <div className="border-border flex flex-col gap-3 rounded-lg border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-foreground truncate text-sm font-medium">Idea- {ideaTitle}</p>
-        <Button variant="outline" onClick={onRetake} className="shrink-0">
-          Retake
-        </Button>
-      </div>
+      {onRetake && (
+        <div className="border-border flex flex-col gap-3 rounded-lg border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-foreground truncate text-sm font-medium">Idea- {ideaTitle}</p>
+          <Button variant="outline" onClick={onRetake} className="shrink-0">
+            Retake
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

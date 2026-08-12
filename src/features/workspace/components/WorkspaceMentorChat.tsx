@@ -16,11 +16,7 @@ import { Button } from '@components/ui/button';
 import { IdeaValidationReport } from '@features/ideaValidation/components';
 
 import { workspaceService } from '../api';
-import {
-  useResetWorkspaceMentor,
-  useWorkspaceChat,
-  useWorkspaceState,
-} from '../hooks/useWorkspaceMentor';
+import { useWorkspaceChat, useWorkspaceState } from '../hooks/useWorkspaceMentor';
 import { getStepFromWorkspaceState } from '../utils/agentStep.utils';
 
 import { AgentStepProgress } from './AgentStepProgress';
@@ -50,7 +46,6 @@ interface WorkspaceMentorChatProps {
 export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
   const { data, isLoading, isError } = useWorkspaceState(workspaceId);
   const chat = useWorkspaceChat(workspaceId);
-  const resetMentor = useResetWorkspaceMentor(workspaceId);
   const [draft, setDraft] = useState('');
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
   const [typeOnAssistantMessages, setTypeOnAssistantMessages] = useState<Set<number>>(
@@ -247,7 +242,6 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
               workspaceId={workspaceId}
               ideaTitle={data.idea.idea_title ?? data.name}
               response={validationResponse}
-              onRetake={() => resetMentor.mutate()}
             />
           ) : null}
 
