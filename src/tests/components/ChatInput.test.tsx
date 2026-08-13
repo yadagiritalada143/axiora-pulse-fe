@@ -1,8 +1,30 @@
-import { render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 
 import { ChatInput } from '@components/chat/ChatInput';
+
+// Minimal stand-in for the browser's SpeechRecognition API (not implemented in jsdom), matching
+// the subset ChatInput actually uses.
+interface FakeSpeechRecognitionResult {
+  isFinal: boolean;
+  0: { transcript: string };
+}
+interface FakeSpeechRecognitionEvent {
+  resultIndex: number;
+  results: { length: number; [index: number]: FakeSpeechRecognitionResult };
+}
+class FakeSpeechRecognition {
+  continuous = false;
+  interimResults = false;
+  lang = '';
+  onstart: (() => void) | null = null;
+  onresult: ((event: FakeSpeechRecognitionEvent) => void) | null = null;
+  onerror: ((event: { error: string }) => void) | null = null;
+  onend: (() => void) | null = null;
+  start = jest.fn(() => this.onstart?.());
+  stop = jest.fn(() => this.onend?.());
+}
 
 function Controlled({
   onSubmit,
@@ -132,5 +154,78 @@ describe('ChatInput', () => {
 
     expect(screen.getByPlaceholderText('Describe your startup idea...')).toBeDisabled();
     expect(screen.getByRole('button', { name: /send/i })).toBeDisabled();
+  });
+
+  describe('voice input', () => {
+    let instances: FakeSpeechRecognition[];
+
+    function getRecognition(): FakeSpeechRecognition {
+      const recognition = instances[0];
+      if (!recognition) throw new Error('Expected a SpeechRecognition instance to be created');
+      return recognition;
+    }
+
+    beforeEach(() => {
+      instances = [];
+      (window as unknown as Record<'SpeechRecognition', unknown>).SpeechRecognition = jest
+        .fn()
+        .mockImplementation(() => {
+          const instance = new FakeSpeechRecognition();
+          instances.push(instance);
+          return instance;
+        });
+    });
+
+    afterEach(() => {
+      delete (window as unknown as { SpeechRecognition?: unknown }).SpeechRecognition;
+      jest.useRealTimers();
+    });
+
+    it('records in continuous mode and auto-stops after 20 seconds, not sooner', () => {
+      jest.useFakeTimers();
+      render(<ChatInput value="" onChange={jest.fn()} onSubmit={jest.fn()} />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Start voice typing' }));
+      const recognition = getRecognition();
+      expect(recognition.continuous).toBe(true);
+
+      act(() => {
+        jest.advanceTimersByTime(19_999);
+      });
+      expect(recognition.stop).not.toHaveBeenCalled();
+
+      act(() => {
+        jest.advanceTimersByTime(1);
+      });
+      expect(recognition.stop).toHaveBeenCalledTimes(1);
+    });
+
+    it('accumulates multiple final phrases spoken during one recording', () => {
+      const onChange = jest.fn();
+      render(<ChatInput value="" onChange={onChange} onSubmit={jest.fn()} />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Start voice typing' }));
+      const recognition = getRecognition();
+
+      act(() => {
+        recognition.onresult?.({
+          resultIndex: 0,
+          results: { length: 1, 0: { isFinal: true, 0: { transcript: 'hello' } } },
+        });
+      });
+      expect(onChange).toHaveBeenLastCalledWith('hello');
+
+      act(() => {
+        recognition.onresult?.({
+          resultIndex: 1,
+          results: {
+            length: 2,
+            0: { isFinal: true, 0: { transcript: 'hello' } },
+            1: { isFinal: true, 0: { transcript: 'world' } },
+          },
+        });
+      });
+      expect(onChange).toHaveBeenLastCalledWith('hello world');
+    });
   });
 });

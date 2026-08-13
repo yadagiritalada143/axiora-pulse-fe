@@ -1,7 +1,9 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { toast } from 'sonner';
 
 import type { OrchestrationResult } from '@/types/orchestration.types';
+import { workspaceService } from '@features/workspace/api';
 import { WorkspaceMentorChat } from '@features/workspace/components/WorkspaceMentorChat';
 import {
   useResetWorkspaceMentor,
@@ -9,6 +11,16 @@ import {
   useWorkspaceState,
 } from '@features/workspace/hooks/useWorkspaceMentor';
 import type { WorkspaceStateResponse } from '@features/workspace/types';
+
+jest.mock('sonner', () => ({
+  toast: { success: jest.fn(), error: jest.fn() },
+}));
+
+jest.mock('@features/workspace/api', () => ({
+  workspaceService: {
+    uploadAttachment: jest.fn(),
+  },
+}));
 
 jest.mock('@features/workspace/hooks/useWorkspaceMentor', () => ({
   useWorkspaceState: jest.fn(),
@@ -42,12 +54,14 @@ jest.mock('@components/chat', () => ({
     onSubmit,
     disabled,
     placeholder,
+    onAttach,
   }: {
     value: string;
     onChange: (value: string) => void;
     onSubmit: () => void;
     disabled?: boolean;
     placeholder?: string;
+    onAttach?: (files: FileList) => void;
   }) => (
     <div>
       <textarea
@@ -60,6 +74,15 @@ jest.mock('@components/chat', () => ({
       <button type="button" onClick={onSubmit} disabled={disabled}>
         Send
       </button>
+      {onAttach && (
+        <input
+          type="file"
+          aria-label="attach-file"
+          onChange={(event) => {
+            if (event.target.files) onAttach(event.target.files);
+          }}
+        />
+      )}
     </div>
   ),
 }));
@@ -97,6 +120,7 @@ Element.prototype.scrollIntoView = jest.fn();
 const mockedUseWorkspaceState = useWorkspaceState as jest.Mock;
 const mockedUseWorkspaceChat = useWorkspaceChat as jest.Mock;
 const mockedUseResetWorkspaceMentor = useResetWorkspaceMentor as jest.Mock;
+const mockedUploadAttachment = workspaceService.uploadAttachment as jest.Mock;
 
 const baseIdea = {
   idea_title: null,
@@ -347,6 +371,7 @@ describe('WorkspaceMentorChat', () => {
 
     const { rerender } = render(<WorkspaceMentorChat workspaceId={1} />);
 
+    // Validation completes: two more messages land, plus a validation_result.
     const validatedData: WorkspaceStateResponse = {
       ...initialData,
       state: 'VALIDATED',
@@ -370,6 +395,7 @@ describe('WorkspaceMentorChat', () => {
 
     expect(screen.getByText('Report')).toBeInTheDocument();
 
+    // User keeps chatting after validation completes.
     const followUpData: WorkspaceStateResponse = {
       ...validatedData,
       conversation_history: [
@@ -388,9 +414,49 @@ describe('WorkspaceMentorChat', () => {
     const reportEl = screen.getByText('Report');
     const followUpBubble = screen.getByText('Focus on customer interviews.');
 
+    // The report must appear *before* the follow-up reply in document order, not after it -
+    // otherwise the follow-up message renders visually above a pinned report and the
+    // auto-scroll-to-bottom effect scrolls straight past it, looking like it never arrived.
     expect(
       reportEl.compareDocumentPosition(followUpBubble) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
+  });
+
+  it('rejects an unsupported file extension instantly with a short message, without calling the upload API', async () => {
+    setup({ data: buildState({ conversation_history: [{ role: 'user', content: 'Hi' }] }) });
+
+    const user = userEvent.setup();
+    render(<WorkspaceMentorChat workspaceId={1} />);
+
+    const file = new File(['bad'], 'virus.exe', { type: 'application/octet-stream' });
+    await user.upload(screen.getByLabelText('attach-file'), file);
+
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith(
+        'Only JPEG, PNG, WEBP, GIF, BMP images, PDFs, and DOCX, DOC, TXT, MD, RTF, CSV documents are allowed.',
+      ),
+    );
+    // No network round trip for a file we can already tell is unsupported client-side.
+    expect(mockedUploadAttachment).not.toHaveBeenCalled();
+  });
+
+  it('shows the backend validation message when an allowed-extension file is still rejected server-side', async () => {
+    setup({ data: buildState({ conversation_history: [{ role: 'user', content: 'Hi' }] }) });
+
+    const backendMessage = 'File content does not match a valid image signature.';
+    mockedUploadAttachment.mockRejectedValue({
+      status: 400,
+      code: 'API_ERROR',
+      message: backendMessage,
+    });
+
+    const user = userEvent.setup();
+    render(<WorkspaceMentorChat workspaceId={1} />);
+
+    const file = new File(['not-really-a-png'], 'fake.png', { type: 'image/png' });
+    await user.upload(screen.getByLabelText('attach-file'), file);
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(backendMessage));
   });
 
   it('shows the chat error message when the mutation fails', () => {

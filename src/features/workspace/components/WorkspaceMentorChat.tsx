@@ -2,6 +2,7 @@ import { Loader2 } from 'lucide-react';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { isApiError } from '@/types/error.types';
 import type { OrchestrationRunResponse } from '@/types/orchestration.types';
 import {
   ChatBubble,
@@ -37,6 +38,29 @@ function getAttachmentType(fileName: string): 'image' | 'pdf' | 'doc' | 'link' {
   if (ext === 'pdf') return 'pdf';
   if (['doc', 'docx', 'txt', 'rtf', 'odt'].includes(ext ?? '')) return 'doc';
   return 'doc';
+}
+
+const ALLOWED_ATTACHMENT_EXTENSIONS = [
+  'jpg',
+  'jpeg',
+  'png',
+  'webp',
+  'gif',
+  'bmp',
+  'pdf',
+  'docx',
+  'doc',
+  'txt',
+  'md',
+  'rtf',
+  'csv',
+];
+const UNSUPPORTED_ATTACHMENT_MESSAGE =
+  'Only JPEG, PNG, WEBP, GIF, BMP images, PDFs, and DOCX, DOC, TXT, MD, RTF, CSV documents are allowed.';
+
+function isAllowedAttachment(fileName: string): boolean {
+  const ext = fileName.split('.').pop()?.toLowerCase();
+  return !!ext && ALLOWED_ATTACHMENT_EXTENSIONS.includes(ext);
 }
 
 interface WorkspaceMentorChatProps {
@@ -75,6 +99,12 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (!file) continue;
+
+      if (!isAllowedAttachment(file.name)) {
+        toast.error(UNSUPPORTED_ATTACHMENT_MESSAGE);
+        continue;
+      }
+
       const tempId = `temp-${Date.now()}-${i}`;
 
       let base64Data = '';
@@ -110,8 +140,8 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
               : att,
           ),
         );
-      } catch {
-        toast.error(`Failed to upload ${file.name}. Please try again.`);
+      } catch (error) {
+        toast.error(isApiError(error) ? error.message : `Failed to upload ${file.name}.`);
         setAttachments((prev) => prev.filter((att) => att.id !== tempId));
       }
     }

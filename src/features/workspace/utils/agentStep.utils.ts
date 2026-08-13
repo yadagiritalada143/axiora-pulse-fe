@@ -10,7 +10,7 @@ export interface AgentStep {
 export const AGENT_STEPS: AgentStep[] = [
   {
     id: 1,
-    name: 'Idea Validation Agent',
+    name: 'Idea Validation',
     description: 'Validates business idea, feasibility & potential gaps',
     details: [
       "Validates the founder's business idea and determines whether it is genuine.",
@@ -20,7 +20,7 @@ export const AGENT_STEPS: AgentStep[] = [
   },
   {
     id: 2,
-    name: 'Market Research Agent',
+    name: 'Market Research',
     description: 'Analyzes target audience, demand & competitor positioning',
     details: [
       'Identifies the target audience and customer segments.',
@@ -31,7 +31,7 @@ export const AGENT_STEPS: AgentStep[] = [
   },
   {
     id: 3,
-    name: 'Survey Intelligence Agent',
+    name: 'Survey Intelligence',
     description: 'Creates market surveys & analyzes customer sentiment',
     details: [
       'Creates customer market validation surveys.',
@@ -44,7 +44,7 @@ export const AGENT_STEPS: AgentStep[] = [
   },
   {
     id: 4,
-    name: 'Go-To-Market Strategy Agent',
+    name: 'Go-To-Market Strategy',
     description: 'Develops GTM approach & customer acquisition channels',
     details: [
       'Evaluates the best approach for introducing the product to the market.',
@@ -55,7 +55,7 @@ export const AGENT_STEPS: AgentStep[] = [
   },
   {
     id: 5,
-    name: 'Financial Readiness Agent',
+    name: 'Financial Readiness',
     description: 'Provides pricing strategies, cost structures & financial planning',
     details: [
       'Educates founders about suitable revenue models.',

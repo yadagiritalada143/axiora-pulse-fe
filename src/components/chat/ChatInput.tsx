@@ -14,6 +14,8 @@ export interface ChatAttachment {
   mimeType?: string;
 }
 
+const MAX_RECORDING_MS = 20_000;
+
 interface ChatInputProps {
   value: string;
   onChange: (value: string) => void;
@@ -37,13 +39,21 @@ export function ChatInput({
 }: ChatInputProps) {
   const [isListening, setIsListening] = useState(false);
 
-  interface SpeechRecognitionResult {
+  interface SpeechRecognitionAlternative {
     transcript: string;
   }
-  type SpeechRecognitionResultList = Record<number, Record<number, SpeechRecognitionResult>>;
+
+  type SpeechRecognitionResult = Record<number, SpeechRecognitionAlternative> & {
+    isFinal: boolean;
+  };
+  interface SpeechRecognitionResultList {
+    length: number;
+    [index: number]: SpeechRecognitionResult;
+  }
 
   interface SpeechRecognitionEvent {
     results: SpeechRecognitionResultList;
+    resultIndex: number;
   }
   interface SpeechRecognitionErrorEvent {
     error: string;
@@ -61,6 +71,14 @@ export function ChatInput({
   }
 
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
+  const recordingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearRecordingTimeout = () => {
+    if (recordingTimeoutRef.current) {
+      clearTimeout(recordingTimeoutRef.current);
+      recordingTimeoutRef.current = null;
+    }
+  };
 
   const SpeechRecognitionConstructor =
     typeof window !== 'undefined'
@@ -77,6 +95,7 @@ export function ChatInput({
       if (recognitionRef.current) {
         recognitionRef.current.stop();
       }
+      clearRecordingTimeout();
     };
   }, []);
 
@@ -88,27 +107,45 @@ export function ChatInput({
     } else {
       try {
         const recognition = new SpeechRecognitionConstructor();
-        recognition.continuous = false;
+        recognition.continuous = true;
         recognition.interimResults = false;
         recognition.lang = 'en-US';
 
+        let accumulatedText = value;
+
         recognition.onstart = () => {
           setIsListening(true);
+          clearRecordingTimeout();
+          recordingTimeoutRef.current = setTimeout(() => {
+            recognitionRef.current?.stop();
+          }, MAX_RECORDING_MS);
         };
 
         recognition.onresult = (event: SpeechRecognitionEvent) => {
-          const resultText = event.results[0]?.[0]?.transcript;
-          if (resultText) {
-            onChange(value ? `${value.trim()} ${resultText}` : resultText);
+          let newText = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const result = event.results[i];
+            const transcript = result?.[0]?.transcript;
+            if (result?.isFinal && transcript) {
+              newText = newText ? `${newText} ${transcript}` : transcript;
+            }
+          }
+          if (newText) {
+            accumulatedText = accumulatedText.trim()
+              ? `${accumulatedText.trim()} ${newText}`
+              : newText;
+            onChange(accumulatedText);
           }
         };
 
         recognition.onerror = (err: SpeechRecognitionErrorEvent) => {
           console.error('Speech recognition error:', err.error);
+          clearRecordingTimeout();
           setIsListening(false);
         };
 
         recognition.onend = () => {
+          clearRecordingTimeout();
           setIsListening(false);
         };
 
