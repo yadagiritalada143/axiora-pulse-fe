@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 
-import { ChatInput } from '@components/chat/ChatInput';
+import { ChatInput, type ChatAttachment } from '@components/chat/ChatInput';
 
 function Controlled({
   onSubmit,
@@ -132,5 +132,94 @@ describe('ChatInput', () => {
 
     expect(screen.getByPlaceholderText('Describe your startup idea...')).toBeDisabled();
     expect(screen.getByRole('button', { name: /send/i })).toBeDisabled();
+  });
+
+  describe('attachments', () => {
+    const attachments: ChatAttachment[] = [
+      { id: 1, name: 'photo.png', url: '/photo.png', type: 'image' },
+      { id: 2, name: 'deck.pdf', url: '/deck.pdf', type: 'pdf' },
+      { id: 3, name: 'spec.doc', url: '/spec.doc', type: 'doc' },
+      { id: 4, name: 'axiora.com', url: 'https://axiora.com', type: 'link' },
+    ];
+
+    function renderWithAttachments(props: Partial<React.ComponentProps<typeof ChatInput>> = {}) {
+      const onSubmit = jest.fn();
+      const onRemoveAttachment = jest.fn();
+
+      render(
+        <ChatInput
+          value=""
+          onChange={jest.fn()}
+          onSubmit={onSubmit}
+          attachments={attachments}
+          onRemoveAttachment={onRemoveAttachment}
+          {...props}
+        />,
+      );
+
+      return { onSubmit, onRemoveAttachment };
+    }
+
+    it('renders a chip per attachment', () => {
+      renderWithAttachments();
+
+      for (const attachment of attachments) {
+        expect(screen.getByText(attachment.name)).toBeInTheDocument();
+      }
+    });
+
+    it('removes an attachment through its remove button', async () => {
+      const user = userEvent.setup();
+      const { onRemoveAttachment } = renderWithAttachments();
+
+      await user.click(screen.getByRole('button', { name: 'Remove deck.pdf' }));
+
+      expect(onRemoveAttachment).toHaveBeenCalledWith(2);
+    });
+
+    it('omits remove buttons when no removal handler is supplied', () => {
+      render(
+        <ChatInput value="" onChange={jest.fn()} onSubmit={jest.fn()} attachments={attachments} />,
+      );
+
+      expect(screen.queryByRole('button', { name: /^Remove / })).not.toBeInTheDocument();
+    });
+
+    it('enables sending with attachments even when the message is empty', () => {
+      renderWithAttachments();
+
+      expect(screen.getByRole('button', { name: /send/i })).toBeEnabled();
+    });
+
+    it('blocks sending while an attachment is still uploading', async () => {
+      const user = userEvent.setup();
+      const { onSubmit } = renderWithAttachments({
+        attachments: [{ id: 5, name: 'big.pdf', url: '', type: 'pdf', isUploading: true }],
+      });
+
+      expect(screen.getByRole('button', { name: /send/i })).toBeDisabled();
+
+      await user.type(screen.getByPlaceholderText('Describe your startup idea...'), '{Enter}');
+
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('submits on Enter when attachments are present without any typed text', async () => {
+      const user = userEvent.setup();
+      const { onSubmit } = renderWithAttachments();
+
+      await user.type(screen.getByPlaceholderText('Describe your startup idea...'), '{Enter}');
+
+      expect(onSubmit).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not submit on Enter while the input is disabled', async () => {
+      const user = userEvent.setup();
+      const { onSubmit } = renderWithAttachments({ disabled: true });
+
+      await user.type(screen.getByPlaceholderText('Describe your startup idea...'), '{Enter}');
+
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
   });
 });

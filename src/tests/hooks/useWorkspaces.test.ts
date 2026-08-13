@@ -4,8 +4,11 @@ import { createElement, type ReactNode } from 'react';
 
 import { queryKeys } from '@constants/queryKeys';
 import {
+  useArchivedWorkspaces,
   useCreateWorkspace,
   useDeleteWorkspace,
+  usePermanentDeleteWorkspace,
+  useRestoreWorkspace,
   useUpdateWorkspace,
   useWorkspace,
   useWorkspaces,
@@ -18,6 +21,7 @@ jest.mock('@services/api', () => ({
     get: jest.fn(),
     post: jest.fn(),
     put: jest.fn(),
+    patch: jest.fn(),
     delete: jest.fn(),
   },
 }));
@@ -184,6 +188,74 @@ describe('useDeleteWorkspace', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(mockedApiClient.delete).toHaveBeenCalledWith('/v1/workspaces/1');
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.workspace.all() });
+  });
+});
+
+describe('useArchivedWorkspaces', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('fetches the archived workspace list', async () => {
+    const archived: Workspace = { ...workspace, is_delete: true };
+    const response: GetWorkspacesResponse = { total: 1, workspaces: [archived] };
+    mockedApiClient.get.mockResolvedValueOnce({ data: response });
+
+    const { wrapper } = createWrapper();
+    const { result } = renderHook(() => useArchivedWorkspaces(), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(mockedApiClient.get).toHaveBeenCalledWith('/v1/workspaces?is_delete=true');
+    expect(result.current.data).toEqual(response);
+  });
+});
+
+describe('useRestoreWorkspace', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('invalidates the workspace queries on success', async () => {
+    mockedApiClient.patch.mockResolvedValueOnce({
+      data: { status: 'ok', message: 'restored', workspace_id: 1, is_delete: false },
+    });
+
+    const { wrapper, queryClient } = createWrapper();
+    const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries');
+
+    const { result } = renderHook(() => useRestoreWorkspace(), { wrapper });
+
+    result.current.mutate(1);
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(mockedApiClient.patch).toHaveBeenCalledWith('/v1/workspaces/1/restore');
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.workspace.all() });
+  });
+});
+
+describe('usePermanentDeleteWorkspace', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('invalidates the workspace queries on success', async () => {
+    mockedApiClient.delete.mockResolvedValueOnce({
+      data: { status: 'ok', message: 'deleted', workspace_id: 1 },
+    });
+
+    const { wrapper, queryClient } = createWrapper();
+    const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries');
+
+    const { result } = renderHook(() => usePermanentDeleteWorkspace(), { wrapper });
+
+    result.current.mutate(1);
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(mockedApiClient.delete).toHaveBeenCalledWith('/v1/workspaces/1/permanent');
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.workspace.all() });
   });
 });
