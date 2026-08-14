@@ -1,8 +1,8 @@
-import { LogOut, Sparkles } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { Outlet } from 'react-router-dom';
 
+import { Logo } from '@components/common/Logo';
 import { Button } from '@components/ui/button';
-import { appConfig } from '@config/app.config';
 import { useLogout } from '@features/auth/hooks';
 
 export function PricingLayout() {
@@ -12,10 +12,7 @@ export function PricingLayout() {
     <div className="bg-background flex min-h-screen flex-col">
       {/* ── Slim header ── */}
       <header className="border-border flex h-16 shrink-0 items-center justify-between border-b px-6">
-        <div className="flex items-center gap-2 text-lg font-semibold">
-          <Sparkles className="text-primary size-5" />
-          <span>{appConfig.name}</span>
-        </div>
+        <Logo />
 
         <Button
           variant="ghost"

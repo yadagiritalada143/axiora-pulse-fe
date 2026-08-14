@@ -1,7 +1,8 @@
-import { FileText, Image, Loader2, Paperclip, Send, X } from 'lucide-react';
-import { useEffect, useRef, type KeyboardEvent } from 'react';
+import { FileText, Image, Loader2, Mic, Paperclip, Send, X } from 'lucide-react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 
 import { Button } from '@components/ui/button';
+import { cn } from '@lib/utils';
 
 export interface ChatAttachment {
   id: string | number;
@@ -9,7 +10,11 @@ export interface ChatAttachment {
   url: string;
   type: 'image' | 'pdf' | 'doc' | 'link';
   isUploading?: boolean;
+  base64Data?: string;
+  mimeType?: string;
 }
+
+const MAX_RECORDING_MS = 20_000;
 
 interface ChatInputProps {
   value: string;
@@ -32,6 +37,126 @@ export function ChatInput({
   disabled,
   placeholder,
 }: ChatInputProps) {
+  const [isListening, setIsListening] = useState(false);
+
+  interface SpeechRecognitionAlternative {
+    transcript: string;
+  }
+
+  type SpeechRecognitionResult = Record<number, SpeechRecognitionAlternative> & {
+    isFinal: boolean;
+  };
+  interface SpeechRecognitionResultList {
+    length: number;
+    [index: number]: SpeechRecognitionResult;
+  }
+
+  interface SpeechRecognitionEvent {
+    results: SpeechRecognitionResultList;
+    resultIndex: number;
+  }
+  interface SpeechRecognitionErrorEvent {
+    error: string;
+  }
+  interface ISpeechRecognition {
+    continuous: boolean;
+    interimResults: boolean;
+    lang: string;
+    onstart: (() => void) | null;
+    onresult: ((event: SpeechRecognitionEvent) => void) | null;
+    onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
+    onend: (() => void) | null;
+    start: () => void;
+    stop: () => void;
+  }
+
+  const recognitionRef = useRef<ISpeechRecognition | null>(null);
+  const recordingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearRecordingTimeout = () => {
+    if (recordingTimeoutRef.current) {
+      clearTimeout(recordingTimeoutRef.current);
+      recordingTimeoutRef.current = null;
+    }
+  };
+
+  const SpeechRecognitionConstructor =
+    typeof window !== 'undefined'
+      ? ((window as unknown as { SpeechRecognition: new () => ISpeechRecognition })
+          .SpeechRecognition ??
+        (window as unknown as { webkitSpeechRecognition: new () => ISpeechRecognition })
+          .webkitSpeechRecognition)
+      : null;
+
+  const isSpeechSupported = !!SpeechRecognitionConstructor;
+
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      clearRecordingTimeout();
+    };
+  }, []);
+
+  const toggleListening = () => {
+    if (!SpeechRecognitionConstructor) return;
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+    } else {
+      try {
+        const recognition = new SpeechRecognitionConstructor();
+        recognition.continuous = true;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        let accumulatedText = value;
+
+        recognition.onstart = () => {
+          setIsListening(true);
+          clearRecordingTimeout();
+          recordingTimeoutRef.current = setTimeout(() => {
+            recognitionRef.current?.stop();
+          }, MAX_RECORDING_MS);
+        };
+
+        recognition.onresult = (event: SpeechRecognitionEvent) => {
+          let newText = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const result = event.results[i];
+            const transcript = result?.[0]?.transcript;
+            if (result?.isFinal && transcript) {
+              newText = newText ? `${newText} ${transcript}` : transcript;
+            }
+          }
+          if (newText) {
+            accumulatedText = accumulatedText.trim()
+              ? `${accumulatedText.trim()} ${newText}`
+              : newText;
+            onChange(accumulatedText);
+          }
+        };
+
+        recognition.onerror = (err: SpeechRecognitionErrorEvent) => {
+          console.error('Speech recognition error:', err.error);
+          clearRecordingTimeout();
+          setIsListening(false);
+        };
+
+        recognition.onend = () => {
+          clearRecordingTimeout();
+          setIsListening(false);
+        };
+
+        recognitionRef.current = recognition;
+        recognition.start();
+      } catch (e) {
+        console.error('Failed to start speech recognition:', e);
+        setIsListening(false);
+      }
+    }
+  };
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -102,6 +227,16 @@ export function ChatInput({
         disabled={disabled}
       />
 
+      {isListening && (
+        <div className="my-2 flex items-center gap-2 px-1 text-xs font-medium text-red-500">
+          <span className="relative flex h-2 w-2 shrink-0">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span>
+          </span>
+          <span className="animate-pulse">Listening...</span>
+        </div>
+      )}
+
       <div className="mt-2 flex items-center justify-between">
         <div className="flex items-center gap-1">
           {onAttach && (
@@ -127,6 +262,24 @@ export function ChatInput({
                 <Paperclip className="size-4" />
               </Button>
             </>
+          )}
+
+          {isSpeechSupported && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={isListening ? 'Stop voice typing' : 'Start voice typing'}
+              onClick={toggleListening}
+              disabled={disabled}
+              className={cn(
+                'transition-all duration-200',
+                isListening &&
+                  'scale-105 bg-red-500/10 text-red-500 hover:bg-red-500/20 hover:text-red-600',
+              )}
+            >
+              <Mic className={cn('size-4', isListening && 'animate-pulse')} />
+            </Button>
           )}
         </div>
 

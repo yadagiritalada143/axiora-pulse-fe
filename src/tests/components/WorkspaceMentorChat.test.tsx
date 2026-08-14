@@ -12,6 +12,16 @@ import {
 } from '@features/workspace/hooks/useWorkspaceMentor';
 import type { WorkspaceStateResponse } from '@features/workspace/types';
 
+jest.mock('sonner', () => ({
+  toast: { success: jest.fn(), error: jest.fn() },
+}));
+
+jest.mock('@features/workspace/api', () => ({
+  workspaceService: {
+    uploadAttachment: jest.fn(),
+  },
+}));
+
 jest.mock('@features/workspace/hooks/useWorkspaceMentor', () => ({
   useWorkspaceState: jest.fn(),
   useWorkspaceChat: jest.fn(),
@@ -88,6 +98,15 @@ jest.mock('@components/chat', () => ({
       <button type="button" onClick={onSubmit} disabled={disabled}>
         Send
       </button>
+      {onAttach && (
+        <input
+          type="file"
+          aria-label="attach-file"
+          onChange={(event) => {
+            if (event.target.files) onAttach(event.target.files);
+          }}
+        />
+      )}
     </div>
   ),
 }));
@@ -229,7 +248,7 @@ describe('WorkspaceMentorChat', () => {
 
     await user.click(screen.getByRole('button', { name: 'Submit idea' }));
 
-    expect(chatMutate).toHaveBeenCalledWith('My idea');
+    expect(chatMutate).toHaveBeenCalledWith({ message: 'My idea', attachments: null });
   });
 
   it('renders the conversation history in order once the conversation has started', () => {
@@ -309,12 +328,16 @@ describe('WorkspaceMentorChat', () => {
     expect(verifyDetailsButton).toBeInTheDocument();
 
     await user.click(runValidationButton);
-    expect(chatMutate).toHaveBeenCalledWith('Run validation analysis');
+    expect(chatMutate).toHaveBeenCalledWith({
+      message: 'Run validation analysis',
+      attachments: null,
+    });
 
     await user.click(verifyDetailsButton);
-    expect(chatMutate).toHaveBeenCalledWith(
-      'Can you verify and summarize the idea details you have so far?',
-    );
+    expect(chatMutate).toHaveBeenCalledWith({
+      message: 'Can you verify and summarize the idea details you have so far?',
+      attachments: null,
+    });
   });
 
   it('sends a typed message from the chat input and clears the draft', async () => {
@@ -331,7 +354,7 @@ describe('WorkspaceMentorChat', () => {
     await user.type(input, 'What next?');
     await user.click(screen.getByRole('button', { name: 'Send' }));
 
-    expect(chatMutate).toHaveBeenCalledWith('What next?');
+    expect(chatMutate).toHaveBeenCalledWith({ message: 'What next?', attachments: null });
   });
 
   it('does not call the chat mutation when submitting a blank or whitespace-only draft', async () => {
@@ -369,26 +392,104 @@ describe('WorkspaceMentorChat', () => {
     expect(screen.getByText('Report')).toBeInTheDocument();
   });
 
-  it('calls the reset mentor mutation when the validation report requests a retake', async () => {
-    const resetMutate = jest.fn();
-    setup({
-      data: buildState({
-        conversation_history: [{ role: 'user', content: 'Hi' }],
-        validation_result: {
-          orchestration_run_id: 'run-1',
-          idea_id: 'idea-1',
-          created_at: '2026-01-01T00:00:00.000Z',
-        } as unknown as OrchestrationResult,
-      }),
-      resetMutate,
+  it('anchors the validation report after the point it appeared, so later replies render below it', () => {
+    const chatMutate = jest.fn();
+    const initialData = buildState({
+      conversation_history: [
+        { role: 'user', content: 'My idea' },
+        { role: 'assistant', content: 'Tell me more' },
+      ],
+    });
+    setup({ data: initialData, chatMutate });
+
+    const { rerender } = render(<WorkspaceMentorChat workspaceId={1} />);
+
+    // Validation completes: two more messages land, plus a validation_result.
+    const validatedData: WorkspaceStateResponse = {
+      ...initialData,
+      state: 'VALIDATED',
+      conversation_history: [
+        ...initialData.conversation_history,
+        { role: 'user', content: 'Run validation analysis' },
+        { role: 'assistant', content: 'Validated! Score 80.' },
+      ],
+      validation_result: {
+        orchestration_run_id: 'run-1',
+        idea_id: 'idea-1',
+        created_at: '2026-01-01T00:00:00.000Z',
+      } as unknown as OrchestrationResult,
+    };
+    mockedUseWorkspaceState.mockReturnValue({
+      data: validatedData,
+      isLoading: false,
+      isError: false,
+    });
+    rerender(<WorkspaceMentorChat workspaceId={1} />);
+
+    expect(screen.getByText('Report')).toBeInTheDocument();
+
+    // User keeps chatting after validation completes.
+    const followUpData: WorkspaceStateResponse = {
+      ...validatedData,
+      conversation_history: [
+        ...validatedData.conversation_history,
+        { role: 'user', content: 'What should I do next?' },
+        { role: 'assistant', content: 'Focus on customer interviews.' },
+      ],
+    };
+    mockedUseWorkspaceState.mockReturnValue({
+      data: followUpData,
+      isLoading: false,
+      isError: false,
+    });
+    rerender(<WorkspaceMentorChat workspaceId={1} />);
+
+    const reportEl = screen.getByText('Report');
+    const followUpBubble = screen.getByText('Focus on customer interviews.');
+
+    // The report must appear *before* the follow-up reply in document order, not after it -
+    // otherwise the follow-up message renders visually above a pinned report and the
+    // auto-scroll-to-bottom effect scrolls straight past it, looking like it never arrived.
+    expect(
+      reportEl.compareDocumentPosition(followUpBubble) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it('rejects an unsupported file extension instantly with a short message, without calling the upload API', async () => {
+    setup({ data: buildState({ conversation_history: [{ role: 'user', content: 'Hi' }] }) });
+
+    const user = userEvent.setup();
+    render(<WorkspaceMentorChat workspaceId={1} />);
+
+    const file = new File(['bad'], 'virus.exe', { type: 'application/octet-stream' });
+    await user.upload(screen.getByLabelText('attach-file'), file);
+
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith(
+        'Only JPEG, PNG, WEBP, GIF, BMP images, PDFs, and DOCX, DOC, TXT, MD, RTF, CSV documents are allowed.',
+      ),
+    );
+    // No network round trip for a file we can already tell is unsupported client-side.
+    expect(mockedUploadAttachment).not.toHaveBeenCalled();
+  });
+
+  it('shows the backend validation message when an allowed-extension file is still rejected server-side', async () => {
+    setup({ data: buildState({ conversation_history: [{ role: 'user', content: 'Hi' }] }) });
+
+    const backendMessage = 'File content does not match a valid image signature.';
+    mockedUploadAttachment.mockRejectedValue({
+      status: 400,
+      code: 'API_ERROR',
+      message: backendMessage,
     });
 
     const user = userEvent.setup();
     render(<WorkspaceMentorChat workspaceId={1} />);
 
-    await user.click(screen.getByRole('button', { name: 'Retake' }));
+    const file = new File(['not-really-a-png'], 'fake.png', { type: 'image/png' });
+    await user.upload(screen.getByLabelText('attach-file'), file);
 
-    expect(resetMutate).toHaveBeenCalled();
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(backendMessage));
   });
 
   it('shows the chat error message when the mutation fails', () => {

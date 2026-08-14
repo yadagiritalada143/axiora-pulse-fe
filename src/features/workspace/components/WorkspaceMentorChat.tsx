@@ -1,7 +1,8 @@
 import { Loader2 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { isApiError } from '@/types/error.types';
 import type { OrchestrationRunResponse } from '@/types/orchestration.types';
 import {
   ChatBubble,
@@ -16,11 +17,7 @@ import { Button } from '@components/ui/button';
 import { IdeaValidationReport } from '@features/ideaValidation/components';
 
 import { workspaceService } from '../api';
-import {
-  useResetWorkspaceMentor,
-  useWorkspaceChat,
-  useWorkspaceState,
-} from '../hooks/useWorkspaceMentor';
+import { useWorkspaceChat, useWorkspaceState } from '../hooks/useWorkspaceMentor';
 import { getStepFromWorkspaceState } from '../utils/agentStep.utils';
 
 import { AgentStepProgress } from './AgentStepProgress';
@@ -43,6 +40,29 @@ function getAttachmentType(fileName: string): 'image' | 'pdf' | 'doc' | 'link' {
   return 'doc';
 }
 
+const ALLOWED_ATTACHMENT_EXTENSIONS = [
+  'jpg',
+  'jpeg',
+  'png',
+  'webp',
+  'gif',
+  'bmp',
+  'pdf',
+  'docx',
+  'doc',
+  'txt',
+  'md',
+  'rtf',
+  'csv',
+];
+const UNSUPPORTED_ATTACHMENT_MESSAGE =
+  'Only JPEG, PNG, WEBP, GIF, BMP images, PDFs, and DOCX, DOC, TXT, MD, RTF, CSV documents are allowed.';
+
+function isAllowedAttachment(fileName: string): boolean {
+  const ext = fileName.split('.').pop()?.toLowerCase();
+  return !!ext && ALLOWED_ATTACHMENT_EXTENSIONS.includes(ext);
+}
+
 interface WorkspaceMentorChatProps {
   workspaceId: number;
 }
@@ -50,29 +70,58 @@ interface WorkspaceMentorChatProps {
 export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
   const { data, isLoading, isError } = useWorkspaceState(workspaceId);
   const chat = useWorkspaceChat(workspaceId);
-  const resetMentor = useResetWorkspaceMentor(workspaceId);
   const [draft, setDraft] = useState('');
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
   const [typeOnAssistantMessages, setTypeOnAssistantMessages] = useState<Set<number>>(
     () => new Set(),
   );
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [reportAnchorIndex, setReportAnchorIndex] = useState<number | null>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [data?.conversation_history.length, chat.isPending]);
 
+  if (data?.validation_result && reportAnchorIndex === null) {
+    setReportAnchorIndex(data.conversation_history.length);
+  }
+
+  const readFileAsDataURL = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleAttach = async (files: FileList) => {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (!file) continue;
+
+      if (!isAllowedAttachment(file.name)) {
+        toast.error(UNSUPPORTED_ATTACHMENT_MESSAGE);
+        continue;
+      }
+
       const tempId = `temp-${Date.now()}-${i}`;
+
+      let base64Data = '';
+      try {
+        base64Data = await readFileAsDataURL(file);
+      } catch (e) {
+        console.error('Failed to read file content to base64', e);
+      }
+
       const newAttachment: ChatAttachment = {
         id: tempId,
         name: file.name,
         url: '',
         type: getAttachmentType(file.name),
         isUploading: true,
+        base64Data,
+        mimeType: file.type,
       };
 
       setAttachments((prev) => [...prev, newAttachment]);
@@ -83,17 +132,16 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
           prev.map((att) =>
             att.id === tempId
               ? {
+                  ...att,
                   id: uploaded.id,
-                  name: uploaded.name || file.name,
                   url: uploaded.url,
-                  type: getAttachmentType(uploaded.name || file.name),
                   isUploading: false,
                 }
               : att,
           ),
         );
-      } catch {
-        toast.error(`Failed to upload ${file.name}. Please try again.`);
+      } catch (error) {
+        toast.error(isApiError(error) ? error.message : `Failed to upload ${file.name}.`);
         setAttachments((prev) => prev.filter((att) => att.id !== tempId));
       }
     }
@@ -132,9 +180,19 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
       finalMessage = finalMessage ? `${finalMessage}\n\n${attachmentsText}` : attachmentsText;
     }
 
+    const payloadAttachments = attachments.map((att) => ({
+      type: att.type,
+      name: att.name,
+      url_or_data: att.base64Data ?? att.url,
+      mime_type: att.mimeType ?? null,
+    }));
+
     const nextAssistantMessageIndex = (data?.conversation_history.length ?? 0) + 1;
     setTypeOnAssistantMessages((previous) => new Set(previous).add(nextAssistantMessageIndex));
-    chat.mutate(finalMessage);
+    chat.mutate({
+      message: finalMessage,
+      attachments: payloadAttachments.length > 0 ? payloadAttachments : null,
+    });
     setDraft('');
     setAttachments([]);
   }
@@ -172,6 +230,15 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
       }
     : null;
 
+  const effectiveReportAnchor = reportAnchorIndex ?? data.conversation_history.length;
+  const reportNode = validationResponse ? (
+    <IdeaValidationReport
+      workspaceId={workspaceId}
+      ideaTitle={data.idea.idea_title ?? data.name}
+      response={validationResponse}
+    />
+  ) : null;
+
   return (
     <div className="mx-auto flex h-full min-h-[70vh] w-full max-w-6xl items-start gap-6">
       <div className="flex h-full min-w-0 flex-1 flex-col">
@@ -188,25 +255,27 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
         </div>
 
         <div className="flex-1 space-y-4 overflow-y-auto py-4">
-          {data.conversation_history.map((message, index) => {
-            if (message.role === 'user') {
-              return (
-                <ChatBubble key={index} align="right" avatarLabel="U">
+          {effectiveReportAnchor === 0 ? reportNode : null}
+
+          {data.conversation_history.map((message, index) => (
+            <Fragment key={index}>
+              {message.role === 'user' ? (
+                <ChatBubble align="right" avatarLabel="U">
                   <MarkdownRenderer content={displayMessageContent(message.content)} />
                 </ChatBubble>
-              );
-            }
+              ) : (
+                <ChatBubble align="left" avatarLabel="AI">
+                  {typeOnAssistantMessages.has(index) ? (
+                    <TypeOnMarkdown content={message.content} />
+                  ) : (
+                    <MarkdownRenderer content={message.content} />
+                  )}
+                </ChatBubble>
+              )}
 
-            return (
-              <ChatBubble key={index} align="left" avatarLabel="AI">
-                {typeOnAssistantMessages.has(index) ? (
-                  <TypeOnMarkdown content={message.content} />
-                ) : (
-                  <MarkdownRenderer content={message.content} />
-                )}
-              </ChatBubble>
-            );
-          })}
+              {effectiveReportAnchor === index + 1 ? reportNode : null}
+            </Fragment>
+          ))}
 
           {chat.isPending ? (
             <ChatBubble align="left" avatarLabel="AI">
@@ -214,14 +283,9 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
             </ChatBubble>
           ) : null}
 
-          {validationResponse ? (
-            <IdeaValidationReport
-              workspaceId={workspaceId}
-              ideaTitle={data.idea.idea_title ?? data.name}
-              response={validationResponse}
-              onRetake={() => resetMentor.mutate()}
-            />
-          ) : null}
+          {validationResponse && effectiveReportAnchor > data.conversation_history.length
+            ? reportNode
+            : null}
 
           <div ref={bottomRef} />
         </div>

@@ -28,8 +28,16 @@ export interface WorkspaceConversationMessage {
   content: string;
 }
 
+export interface AttachmentInput {
+  type: 'image' | 'pdf' | 'doc' | 'link';
+  name?: string | null;
+  url_or_data: string;
+  mime_type?: string | null;
+}
+
 export interface WorkspaceChatRequest {
   message: string;
+  attachments?: AttachmentInput[] | null;
 }
 
 export interface WorkspaceChatResponse {

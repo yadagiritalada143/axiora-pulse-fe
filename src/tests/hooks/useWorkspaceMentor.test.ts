@@ -121,7 +121,7 @@ describe('useWorkspaceChat', () => {
     });
 
     act(() => {
-      result.current.mutate('Hello mentor');
+      result.current.mutate({ message: 'Hello mentor' });
     });
 
     await waitFor(() => {
@@ -171,7 +171,7 @@ describe('useWorkspaceChat', () => {
     });
 
     act(() => {
-      result.current.mutate('Ready?');
+      result.current.mutate({ message: 'Ready?' });
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -194,7 +194,7 @@ describe('useWorkspaceChat', () => {
     });
 
     act(() => {
-      result.current.mutate('Hello mentor');
+      result.current.mutate({ message: 'Hello mentor' });
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
@@ -221,7 +221,7 @@ describe('useWorkspaceChat', () => {
     });
 
     act(() => {
-      result.current.mutate('Hello mentor');
+      result.current.mutate({ message: 'Hello mentor' });
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -240,7 +240,7 @@ describe('useWorkspaceChat', () => {
     });
 
     act(() => {
-      result.current.mutate('Hello mentor');
+      result.current.mutate({ message: 'Hello mentor' });
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));

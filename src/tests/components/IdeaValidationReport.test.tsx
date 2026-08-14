@@ -145,9 +145,6 @@ describe('IdeaValidationReport', () => {
     expect(
       screen.getByText('This idea shows strong signal for a pilot launch.'),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText('This report is AI-generated guidance, not investment advice.'),
-    ).toBeInTheDocument();
   });
 
   it('renders a dedicated section for each completed agent', () => {

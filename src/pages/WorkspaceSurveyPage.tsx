@@ -302,7 +302,7 @@ export default function WorkspaceSurveyPage() {
       <div className="mx-auto flex max-w-5xl flex-col gap-6">
         {survey.id ? (
           <Card className="border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-950/10">
-            <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <CardContent className="flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between">
               <div className="space-y-1">
                 <h3 className="text-foreground text-sm font-semibold">Your survey is live!</h3>
                 <p className="text-muted-foreground text-xs leading-normal">
@@ -310,14 +310,14 @@ export default function WorkspaceSurveyPage() {
                   gather feedback.
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="bg-background border-border text-foreground flex items-center gap-2 rounded-lg border px-3 py-1.5 font-mono text-xs select-all">
+              <div className="flex max-w-full items-center gap-2 overflow-hidden">
+                <div className="bg-background border-border text-foreground flex max-w-full items-center gap-2 truncate rounded-lg border px-3 py-1.5 font-mono text-xs break-all select-all">
                   {window.location.origin}/surveys/public/{survey.id}
                 </div>
                 <Button
                   size="icon"
                   variant="outline"
-                  className="border-[#FF4500]/20 text-[#FF4500] transition-all duration-150 hover:border-[#FF4500] hover:bg-[#FF4500]/5 hover:text-[#FF4500]"
+                  className="shrink-0 border-[#FF4500]/20 text-[#FF4500] transition-all duration-150 hover:border-[#FF4500] hover:bg-[#FF4500]/5 hover:text-[#FF4500]"
                   onClick={handleCopyLink}
                   title="Copy link"
                 >
@@ -329,7 +329,7 @@ export default function WorkspaceSurveyPage() {
         ) : null}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-80 grid-cols-2">
+          <TabsList className="grid w-full max-w-[345px] grid-cols-2">
             <TabsTrigger value="editor">Questions Editor</TabsTrigger>
             <TabsTrigger value="responses">
               Responses ({responsesData?.total_responses ?? 0})
@@ -581,7 +581,7 @@ export default function WorkspaceSurveyPage() {
 
             {selectedResponse ? (
               <div className="space-y-6 pt-4">
-                <div className="text-muted-foreground grid grid-cols-2 gap-4 border-b pb-4 text-xs">
+                <div className="text-muted-foreground grid grid-cols-1 gap-4 border-b pb-4 text-xs sm:grid-cols-2">
                   <div>
                     <span className="text-foreground block font-semibold uppercase">
                       Respondent

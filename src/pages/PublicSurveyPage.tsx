@@ -2,6 +2,7 @@ import { CheckCircle2, ClipboardList, Loader2, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 
+import { Logo } from '@components/common/Logo';
 import { Button } from '@components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@components/ui/card';
 import { Checkbox } from '@components/ui/checkbox';
@@ -130,15 +131,14 @@ export default function PublicSurveyPage() {
   return (
     <div className="bg-muted flex min-h-screen flex-col items-center px-4 py-10 sm:px-6 lg:px-8">
       {/* Branding Header */}
-      <div className="mb-8 flex items-center gap-2 text-lg font-semibold tracking-wide">
-        <Sparkles className="size-5 text-[#FF4500]" />
-        <span className="text-foreground">Axiora Pulse</span>
+      <div className="mb-8 flex items-center gap-3 text-lg font-semibold tracking-wide">
+        <Logo size="lg" />
         <span className="text-muted-foreground/50 font-normal">|</span>
         <span className="text-muted-foreground text-sm font-medium">Customer Discovery</span>
       </div>
 
       <Card className="border-border w-full max-w-2xl border shadow-md">
-        <CardHeader className="bg-card border-b p-6 sm:p-8">
+        <CardHeader className="bg-card border-b p-4 sm:p-8">
           <div className="flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-lg bg-[#FF4500]/10 text-[#FF4500]">
               <ClipboardList className="size-5" />
@@ -154,7 +154,7 @@ export default function PublicSurveyPage() {
           </div>
         </CardHeader>
 
-        <CardContent className="p-6 sm:p-8">
+        <CardContent className="p-4 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-8" noValidate>
             {/* Questions List */}
             <div className="space-y-8">
@@ -185,11 +185,15 @@ export default function PublicSurveyPage() {
                         className="flex flex-col gap-2 pt-1"
                       >
                         {q.options.map((opt, optIdx) => (
-                          <div key={optIdx} className="flex items-center gap-2">
-                            <RadioGroupItem value={opt} id={`q-${q.id}-opt-${optIdx}`} />
+                          <div key={optIdx} className="flex items-start gap-2.5 py-1">
+                            <RadioGroupItem
+                              value={opt}
+                              id={`q-${q.id}-opt-${optIdx}`}
+                              className="mt-1 shrink-0"
+                            />
                             <Label
                               htmlFor={`q-${q.id}-opt-${optIdx}`}
-                              className="cursor-pointer py-1 font-normal select-none"
+                              className="text-foreground cursor-pointer text-sm leading-relaxed font-normal select-none"
                             >
                               {opt}
                             </Label>
@@ -199,17 +203,18 @@ export default function PublicSurveyPage() {
                     ) : q.questionType === 'checkbox' ? (
                       <div className="flex flex-col gap-2.5 pt-1">
                         {q.options.map((opt, optIdx) => (
-                          <div key={optIdx} className="flex items-center gap-2">
+                          <div key={optIdx} className="flex items-start gap-2.5 py-1">
                             <Checkbox
                               id={`q-${q.id}-opt-${optIdx}`}
                               checked={isCheckedList.includes(opt)}
                               onCheckedChange={(checked) =>
                                 handleCheckboxChange(q.id, opt, !!checked)
                               }
+                              className="mt-1 shrink-0"
                             />
                             <Label
                               htmlFor={`q-${q.id}-opt-${optIdx}`}
-                              className="cursor-pointer py-0.5 font-normal select-none"
+                              className="text-foreground cursor-pointer text-sm leading-relaxed font-normal select-none"
                             >
                               {opt}
                             </Label>
