@@ -84,6 +84,7 @@ const survey: SurveyResponse = {
   id: 5,
   user_id: 1,
   workspace_id: 42,
+  public_token: 'abc123token',
   survey_link: null,
   questions: [
     { id: 1, question: 'What is your biggest challenge?', questionType: 'text', options: [] },
@@ -258,13 +259,15 @@ describe('WorkspaceSurveyPage', () => {
 
       await user.click(screen.getByTitle('Copy link'));
 
-      expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/surveys/public/5`);
+      expect(writeText).toHaveBeenCalledWith(
+        `${window.location.origin}/surveys/public/abc123token`,
+      );
       expect(mockedToast.success).toHaveBeenCalledWith('Survey link copied to clipboard!');
     });
 
     it('hides the share card when the survey has no id yet', () => {
       mockedUseSurveyByWorkspace.mockReturnValue({
-        data: { ...survey, id: 0 },
+        data: { ...survey, public_token: '' },
         isLoading: false,
         isError: false,
         error: null,

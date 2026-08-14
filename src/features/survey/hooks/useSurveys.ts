@@ -34,18 +34,18 @@ export function useUpdateWorkspaceSurveyQuestions(workspaceId: number) {
   });
 }
 
-export function usePublicSurvey(surveyId: number) {
+export function usePublicSurvey(token: string) {
   return useQuery({
-    queryKey: queryKeys.survey.public(surveyId),
-    queryFn: () => surveyService.getPublicSurvey(surveyId),
-    enabled: !!surveyId,
+    queryKey: queryKeys.survey.public(token),
+    queryFn: () => surveyService.getPublicSurvey(token),
+    enabled: !!token,
   });
 }
 
-export function useSubmitPublicSurvey(surveyId: number) {
+export function useSubmitPublicSurvey(token: string) {
   return useMutation({
     mutationFn: (payload: SubmitPublicSurveyRequest) =>
-      surveyService.submitPublicSurvey(surveyId, payload),
+      surveyService.submitPublicSurvey(token, payload),
   });
 }
 

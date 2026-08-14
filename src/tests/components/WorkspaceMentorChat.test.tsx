@@ -553,9 +553,7 @@ describe('WorkspaceMentorChat', () => {
       await attach(user, [new File(['x'], 'deck.pdf', { type: 'application/pdf' })]);
 
       await waitFor(() =>
-        expect(mockedToast.error).toHaveBeenCalledWith(
-          'Failed to upload deck.pdf. Please try again.',
-        ),
+        expect(mockedToast.error).toHaveBeenCalledWith('Failed to upload deck.pdf.'),
       );
       expect(screen.queryByText('deck.pdf')).not.toBeInTheDocument();
     });
@@ -593,14 +591,28 @@ describe('WorkspaceMentorChat', () => {
       await user.type(screen.getByLabelText('chat-input'), 'Here you go');
       await user.click(screen.getByRole('button', { name: 'Send' }));
 
-      expect(chatMutate).toHaveBeenCalledWith(
-        [
+      expect(chatMutate).toHaveBeenCalledWith({
+        message: [
           'Here you go',
           '',
           '![photo.png](https://cdn.example.test/uploads/photo.png)',
           '[📁 deck.pdf](https://cdn.example.test/uploads/deck.pdf)',
         ].join('\n'),
-      );
+        attachments: [
+          {
+            type: 'image',
+            name: 'photo.png',
+            url_or_data: 'data:image/png;base64,eA==',
+            mime_type: 'image/png',
+          },
+          {
+            type: 'pdf',
+            name: 'deck.pdf',
+            url_or_data: 'data:application/pdf;base64,eA==',
+            mime_type: 'application/pdf',
+          },
+        ],
+      });
     });
 
     it('sends attachments on their own when no message was typed', async () => {
@@ -618,12 +630,26 @@ describe('WorkspaceMentorChat', () => {
 
       await user.click(screen.getByRole('button', { name: 'Send' }));
 
-      expect(chatMutate).toHaveBeenCalledWith(
-        '[📁 spec.docx](https://cdn.example.test/uploads/spec.docx)',
-      );
+      expect(chatMutate).toHaveBeenCalledWith({
+        message: '[📁 spec.docx](https://cdn.example.test/uploads/spec.docx)',
+        attachments: [
+          {
+            type: 'doc',
+            name: 'spec.docx',
+            url_or_data: 'data:application/msword;base64,eA==',
+            mime_type: 'application/msword',
+          },
+        ],
+      });
     });
 
-    it('classifies files with an unknown or missing extension as documents', async () => {
+    it('classifies allowed files with an extension not explicitly branched as documents', async () => {
+      // 'archive.zip' and an extension-less 'README' are no longer usable fixtures here: both
+      // are rejected client-side by the extension allowlist before any upload happens (see
+      // 'rejects an unsupported file extension instantly...' above), so this now exercises
+      // getAttachmentType's fallback via allowed-but-unbranched extensions ('csv', 'md')
+      // instead - neither is an image or pdf, and neither is explicitly listed in the
+      // doc-group check, so both should still default to a 'doc' file-link render.
       const user = userEvent.setup();
       const chatMutate = jest.fn();
       setup({
@@ -631,25 +657,39 @@ describe('WorkspaceMentorChat', () => {
         chatMutate,
       });
       mockedUploadAttachment
-        .mockResolvedValueOnce(uploadedAs('archive.zip'))
-        .mockResolvedValueOnce(uploadedAs('README'));
+        .mockResolvedValueOnce(uploadedAs('data.csv'))
+        .mockResolvedValueOnce(uploadedAs('notes.md'));
 
       render(<WorkspaceMentorChat workspaceId={1} />);
       await attach(user, [
-        new File(['x'], 'archive.zip', { type: 'application/zip' }),
-        new File(['x'], 'README', { type: 'text/plain' }),
+        new File(['x'], 'data.csv', { type: 'text/csv' }),
+        new File(['x'], 'notes.md', { type: 'text/markdown' }),
       ]);
-      await screen.findByText('README');
+      await screen.findByText('notes.md');
 
       await user.click(screen.getByRole('button', { name: 'Send' }));
 
       // Neither is an image, so both are rendered as file links rather than markdown images.
-      expect(chatMutate).toHaveBeenCalledWith(
-        [
-          '[📁 archive.zip](https://cdn.example.test/uploads/archive.zip)',
-          '[📁 README](https://cdn.example.test/uploads/README)',
+      expect(chatMutate).toHaveBeenCalledWith({
+        message: [
+          '[📁 data.csv](https://cdn.example.test/uploads/data.csv)',
+          '[📁 notes.md](https://cdn.example.test/uploads/notes.md)',
         ].join('\n'),
-      );
+        attachments: [
+          {
+            type: 'doc',
+            name: 'data.csv',
+            url_or_data: 'data:text/csv;base64,eA==',
+            mime_type: 'text/csv',
+          },
+          {
+            type: 'doc',
+            name: 'notes.md',
+            url_or_data: 'data:text/markdown;base64,eA==',
+            mime_type: 'text/markdown',
+          },
+        ],
+      });
     });
   });
 });

@@ -121,8 +121,8 @@ export default function WorkspaceSurveyPage() {
   ];
 
   const handleCopyLink = () => {
-    if (!survey?.id) return;
-    const publicUrl = `${window.location.origin}/surveys/public/${survey.id}`;
+    if (!survey?.public_token) return;
+    const publicUrl = `${window.location.origin}/surveys/public/${survey.public_token}`;
     void navigator.clipboard.writeText(publicUrl);
     toast.success('Survey link copied to clipboard!');
   };
@@ -300,7 +300,7 @@ export default function WorkspaceSurveyPage() {
 
     return (
       <div className="mx-auto flex max-w-5xl flex-col gap-6">
-        {survey.id ? (
+        {survey.public_token ? (
           <Card className="border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-950/10">
             <CardContent className="flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between">
               <div className="space-y-1">
@@ -312,7 +312,7 @@ export default function WorkspaceSurveyPage() {
               </div>
               <div className="flex max-w-full items-center gap-2 overflow-hidden">
                 <div className="bg-background border-border text-foreground flex max-w-full items-center gap-2 truncate rounded-lg border px-3 py-1.5 font-mono text-xs break-all select-all">
-                  {window.location.origin}/surveys/public/{survey.id}
+                  {window.location.origin}/surveys/public/{survey.public_token}
                 </div>
                 <Button
                   size="icon"
