@@ -401,4 +401,99 @@ describe('workspaceService', () => {
       expect(result.blob.type).toBe('application/pdf');
     });
   });
+
+  describe('archive operations', () => {
+    it('fetches the archived workspace list', async () => {
+      const response: GetWorkspacesResponse = {
+        total: 1,
+        workspaces: [{ ...workspace, is_delete: true }],
+      };
+      mockedApiClient.get.mockResolvedValueOnce({ data: response });
+
+      await expect(workspaceService.getArchivedWorkspaces()).resolves.toEqual(response);
+      expect(mockedApiClient.get).toHaveBeenCalledWith(API_ENDPOINTS.WORKSPACE.ARCHIVED_LIST);
+    });
+
+    it('restores an archived workspace', async () => {
+      const response = {
+        status: 'ok',
+        message: 'restored',
+        workspace_id: 1,
+        is_delete: false,
+      };
+      mockedApiClient.patch.mockResolvedValueOnce({ data: response });
+
+      await expect(workspaceService.restoreWorkspace(1)).resolves.toEqual(response);
+      expect(mockedApiClient.patch).toHaveBeenCalledWith('/v1/workspaces/1/restore');
+    });
+
+    it('permanently deletes a workspace and resolves with nothing', async () => {
+      mockedApiClient.delete.mockResolvedValueOnce({ data: undefined });
+
+      await expect(workspaceService.permanentDeleteWorkspace(1)).resolves.toBeUndefined();
+      expect(mockedApiClient.delete).toHaveBeenCalledWith('/v1/workspaces/1/permanent');
+    });
+  });
+
+  describe('uploadAttachment', () => {
+    it('posts the file as multipart form data and maps the response to a MessageAttachment', async () => {
+      mockedApiClient.post.mockResolvedValueOnce({
+        data: {
+          id: 9,
+          user_id: 7,
+          workspace_id: 1,
+          file_name: 'deck.pdf',
+          file_type: 'document',
+          mime_type: 'application/pdf',
+          s3_key: 'ws/1/deck.pdf',
+          file_url: 'https://cdn.example.test/deck.pdf',
+          file_size_bytes: 2048,
+          created_at: '2026-01-01T00:00:00.000Z',
+          updated_at: '2026-01-01T00:00:00.000Z',
+        },
+      });
+
+      const file = new File(['pitch'], 'deck.pdf', { type: 'application/pdf' });
+      const result = await workspaceService.uploadAttachment(1, file);
+
+      expect(result).toEqual({
+        id: '9',
+        name: 'deck.pdf',
+        url: 'https://cdn.example.test/deck.pdf',
+        mimeType: 'application/pdf',
+        sizeBytes: 2048,
+      });
+
+      const [url, body, config] = mockedApiClient.post.mock.calls[0] ?? [];
+      expect(url).toBe('/v1/workspaces/1/attachments');
+      expect(body).toBeInstanceOf(FormData);
+      expect((body as FormData).get('file')).toBe(file);
+      expect(config).toEqual({ headers: { 'Content-Type': 'multipart/form-data' } });
+    });
+
+    it('defaults the attachment size to 0 when the backend omits it', async () => {
+      mockedApiClient.post.mockResolvedValueOnce({
+        data: {
+          id: 10,
+          user_id: 7,
+          workspace_id: 1,
+          file_name: 'notes.txt',
+          file_type: 'document',
+          mime_type: 'text/plain',
+          s3_key: 'ws/1/notes.txt',
+          file_url: 'https://cdn.example.test/notes.txt',
+          file_size_bytes: null,
+          created_at: '2026-01-01T00:00:00.000Z',
+          updated_at: '2026-01-01T00:00:00.000Z',
+        },
+      });
+
+      const result = await workspaceService.uploadAttachment(
+        1,
+        new File(['notes'], 'notes.txt', { type: 'text/plain' }),
+      );
+
+      expect(result.sizeBytes).toBe(0);
+    });
+  });
 });

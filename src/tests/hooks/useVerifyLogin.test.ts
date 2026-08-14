@@ -192,6 +192,51 @@ describe('useVerifyLogin', () => {
     expect(mockedToastSuccess).toHaveBeenCalledWith('Login successful.');
   });
 
+  describe('backend-driven auth_actions', () => {
+    /** Runs the mutation against a success response carrying the given next-step flags. */
+    async function verifyWithAuthActions(auth_actions: {
+      payment: boolean;
+      interactive_questions: boolean;
+    }) {
+      mockedAuthService.verifyLogin.mockResolvedValue({
+        status: 'success',
+        message: 'Login successful.',
+        access_token: 'access-token',
+        refresh_token: 'refresh-token',
+        token_type: 'Bearer',
+        expires_in_minutes: 60,
+        role: 'user',
+        auth_actions,
+      });
+
+      const { result } = renderHook(() => useVerifyLogin(), { wrapper: createWrapper() });
+
+      result.current.mutate({ emailOrMobile: 'jane@example.com', otp: 123456 });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    }
+
+    it('navigates to pricing when the backend reports no payment', async () => {
+      await verifyWithAuthActions({ payment: false, interactive_questions: true });
+
+      expect(setHasActivePlan).toHaveBeenCalledWith(false);
+      expect(mockNavigate).toHaveBeenCalledWith('/pricing');
+    });
+
+    it('navigates to the questionnaire intro when paid but the questionnaire is unanswered', async () => {
+      await verifyWithAuthActions({ payment: true, interactive_questions: false });
+
+      expect(setHasActivePlan).toHaveBeenCalledWith(true);
+      expect(mockNavigate).toHaveBeenCalledWith('/questionnaire-intro');
+    });
+
+    it('navigates to the dashboard when payment and questionnaire are both complete', async () => {
+      await verifyWithAuthActions({ payment: true, interactive_questions: true });
+
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
+    });
+  });
+
   it('shows an error toast without authenticating when the response resolves with a failed status', async () => {
     // The API contract types `status` as the literal 'success', but the mutation still
     // guards against a resolved-but-unsuccessful body at runtime - simulate that shape here.

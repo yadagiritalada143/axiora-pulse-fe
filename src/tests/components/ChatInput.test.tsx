@@ -1,30 +1,8 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 
-import { ChatInput } from '@components/chat/ChatInput';
-
-// Minimal stand-in for the browser's SpeechRecognition API (not implemented in jsdom), matching
-// the subset ChatInput actually uses.
-interface FakeSpeechRecognitionResult {
-  isFinal: boolean;
-  0: { transcript: string };
-}
-interface FakeSpeechRecognitionEvent {
-  resultIndex: number;
-  results: { length: number; [index: number]: FakeSpeechRecognitionResult };
-}
-class FakeSpeechRecognition {
-  continuous = false;
-  interimResults = false;
-  lang = '';
-  onstart: (() => void) | null = null;
-  onresult: ((event: FakeSpeechRecognitionEvent) => void) | null = null;
-  onerror: ((event: { error: string }) => void) | null = null;
-  onend: (() => void) | null = null;
-  start = jest.fn(() => this.onstart?.());
-  stop = jest.fn(() => this.onend?.());
-}
+import { ChatInput, type ChatAttachment } from '@components/chat/ChatInput';
 
 function Controlled({
   onSubmit,
@@ -156,76 +134,92 @@ describe('ChatInput', () => {
     expect(screen.getByRole('button', { name: /send/i })).toBeDisabled();
   });
 
-  describe('voice input', () => {
-    let instances: FakeSpeechRecognition[];
+  describe('attachments', () => {
+    const attachments: ChatAttachment[] = [
+      { id: 1, name: 'photo.png', url: '/photo.png', type: 'image' },
+      { id: 2, name: 'deck.pdf', url: '/deck.pdf', type: 'pdf' },
+      { id: 3, name: 'spec.doc', url: '/spec.doc', type: 'doc' },
+      { id: 4, name: 'axiora.com', url: 'https://axiora.com', type: 'link' },
+    ];
 
-    function getRecognition(): FakeSpeechRecognition {
-      const recognition = instances[0];
-      if (!recognition) throw new Error('Expected a SpeechRecognition instance to be created');
-      return recognition;
+    function renderWithAttachments(props: Partial<React.ComponentProps<typeof ChatInput>> = {}) {
+      const onSubmit = jest.fn();
+      const onRemoveAttachment = jest.fn();
+
+      render(
+        <ChatInput
+          value=""
+          onChange={jest.fn()}
+          onSubmit={onSubmit}
+          attachments={attachments}
+          onRemoveAttachment={onRemoveAttachment}
+          {...props}
+        />,
+      );
+
+      return { onSubmit, onRemoveAttachment };
     }
 
-    beforeEach(() => {
-      instances = [];
-      (window as unknown as Record<'SpeechRecognition', unknown>).SpeechRecognition = jest
-        .fn()
-        .mockImplementation(() => {
-          const instance = new FakeSpeechRecognition();
-          instances.push(instance);
-          return instance;
-        });
+    it('renders a chip per attachment', () => {
+      renderWithAttachments();
+
+      for (const attachment of attachments) {
+        expect(screen.getByText(attachment.name)).toBeInTheDocument();
+      }
     });
 
-    afterEach(() => {
-      delete (window as unknown as { SpeechRecognition?: unknown }).SpeechRecognition;
-      jest.useRealTimers();
+    it('removes an attachment through its remove button', async () => {
+      const user = userEvent.setup();
+      const { onRemoveAttachment } = renderWithAttachments();
+
+      await user.click(screen.getByRole('button', { name: 'Remove deck.pdf' }));
+
+      expect(onRemoveAttachment).toHaveBeenCalledWith(2);
     });
 
-    it('records in continuous mode and auto-stops after 20 seconds, not sooner', () => {
-      jest.useFakeTimers();
-      render(<ChatInput value="" onChange={jest.fn()} onSubmit={jest.fn()} />);
+    it('omits remove buttons when no removal handler is supplied', () => {
+      render(
+        <ChatInput value="" onChange={jest.fn()} onSubmit={jest.fn()} attachments={attachments} />,
+      );
 
-      fireEvent.click(screen.getByRole('button', { name: 'Start voice typing' }));
-      const recognition = getRecognition();
-      expect(recognition.continuous).toBe(true);
-
-      act(() => {
-        jest.advanceTimersByTime(19_999);
-      });
-      expect(recognition.stop).not.toHaveBeenCalled();
-
-      act(() => {
-        jest.advanceTimersByTime(1);
-      });
-      expect(recognition.stop).toHaveBeenCalledTimes(1);
+      expect(screen.queryByRole('button', { name: /^Remove / })).not.toBeInTheDocument();
     });
 
-    it('accumulates multiple final phrases spoken during one recording', () => {
-      const onChange = jest.fn();
-      render(<ChatInput value="" onChange={onChange} onSubmit={jest.fn()} />);
+    it('enables sending with attachments even when the message is empty', () => {
+      renderWithAttachments();
 
-      fireEvent.click(screen.getByRole('button', { name: 'Start voice typing' }));
-      const recognition = getRecognition();
+      expect(screen.getByRole('button', { name: /send/i })).toBeEnabled();
+    });
 
-      act(() => {
-        recognition.onresult?.({
-          resultIndex: 0,
-          results: { length: 1, 0: { isFinal: true, 0: { transcript: 'hello' } } },
-        });
+    it('blocks sending while an attachment is still uploading', async () => {
+      const user = userEvent.setup();
+      const { onSubmit } = renderWithAttachments({
+        attachments: [{ id: 5, name: 'big.pdf', url: '', type: 'pdf', isUploading: true }],
       });
-      expect(onChange).toHaveBeenLastCalledWith('hello');
 
-      act(() => {
-        recognition.onresult?.({
-          resultIndex: 1,
-          results: {
-            length: 2,
-            0: { isFinal: true, 0: { transcript: 'hello' } },
-            1: { isFinal: true, 0: { transcript: 'world' } },
-          },
-        });
-      });
-      expect(onChange).toHaveBeenLastCalledWith('hello world');
+      expect(screen.getByRole('button', { name: /send/i })).toBeDisabled();
+
+      await user.type(screen.getByPlaceholderText('Describe your startup idea...'), '{Enter}');
+
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('submits on Enter when attachments are present without any typed text', async () => {
+      const user = userEvent.setup();
+      const { onSubmit } = renderWithAttachments();
+
+      await user.type(screen.getByPlaceholderText('Describe your startup idea...'), '{Enter}');
+
+      expect(onSubmit).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not submit on Enter while the input is disabled', async () => {
+      const user = userEvent.setup();
+      const { onSubmit } = renderWithAttachments({ disabled: true });
+
+      await user.type(screen.getByPlaceholderText('Describe your startup idea...'), '{Enter}');
+
+      expect(onSubmit).not.toHaveBeenCalled();
     });
   });
 });

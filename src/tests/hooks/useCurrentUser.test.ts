@@ -18,6 +18,38 @@ jest.mock('@store/auth.store');
 const mockedAuthService = jest.mocked(authService);
 const mockedUseAuthStore = jest.mocked(useAuthStore);
 
+const setHasActivePlan = jest.fn();
+const setHasCompletedQuestionnaire = jest.fn();
+const setShowQuestionnaireIntro = jest.fn();
+
+const baseUser: User = {
+  id: 'usr_123',
+  email: 'user@example.com',
+  name: 'John Doe',
+  avatarUrl: null,
+  role: 'member',
+  createdAt: '2026-07-30T10:09:31.072Z',
+  updatedAt: '2026-07-30T10:09:31.072Z',
+};
+
+/** Points the mocked store at a session and wires up the setters the query writes back to. */
+function mockStore({ isAuthenticated = true } = {}) {
+  const updateUser = jest.fn();
+  const state = {
+    user: null,
+    isAuthenticated,
+    updateUser,
+    setHasActivePlan,
+    setHasCompletedQuestionnaire,
+    setShowQuestionnaireIntro,
+  } as unknown as ReturnType<typeof useAuthStore.getState>;
+
+  mockedUseAuthStore.mockImplementation((selector) => selector(state));
+  mockedUseAuthStore.getState = jest.fn().mockReturnValue(state);
+
+  return { updateUser };
+}
+
 function createWrapper() {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -62,5 +94,57 @@ describe('useCurrentUser', () => {
     expect(mockedAuthService.getCurrentUser).toHaveBeenCalledTimes(1);
     expect(mockUpdateUser).toHaveBeenCalledWith(mockUser);
     expect(result.current.data).toEqual(mockUser);
+  });
+
+  it('does not fetch when the session is unauthenticated', () => {
+    mockStore({ isAuthenticated: false });
+
+    const { result } = renderHook(() => useCurrentUser(), { wrapper: createWrapper() });
+
+    expect(result.current.fetchStatus).toBe('idle');
+    expect(mockedAuthService.getCurrentUser).not.toHaveBeenCalled();
+  });
+
+  it('mirrors backend auth_actions into the plan and questionnaire flags', async () => {
+    mockStore();
+    mockedAuthService.getCurrentUser.mockResolvedValue({
+      ...baseUser,
+      auth_actions: { payment: true, interactive_questions: false },
+    } as User);
+
+    const { result } = renderHook(() => useCurrentUser(), { wrapper: createWrapper() });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(setHasActivePlan).toHaveBeenCalledWith(true);
+    expect(setHasCompletedQuestionnaire).toHaveBeenCalledWith(false);
+    expect(setShowQuestionnaireIntro).toHaveBeenCalledWith(true);
+  });
+
+  it('falls back to the flat hasActivePlan flag when auth_actions is absent', async () => {
+    mockStore();
+    mockedAuthService.getCurrentUser.mockResolvedValue({
+      ...baseUser,
+      hasActivePlan: false,
+    } as User);
+
+    const { result } = renderHook(() => useCurrentUser(), { wrapper: createWrapper() });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(setHasActivePlan).toHaveBeenCalledWith(false);
+    expect(setHasCompletedQuestionnaire).not.toHaveBeenCalled();
+  });
+
+  it('leaves the plan flags untouched when the profile carries neither signal', async () => {
+    mockStore();
+    mockedAuthService.getCurrentUser.mockResolvedValue(baseUser);
+
+    const { result } = renderHook(() => useCurrentUser(), { wrapper: createWrapper() });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(setHasActivePlan).not.toHaveBeenCalled();
+    expect(setShowQuestionnaireIntro).not.toHaveBeenCalled();
   });
 });
