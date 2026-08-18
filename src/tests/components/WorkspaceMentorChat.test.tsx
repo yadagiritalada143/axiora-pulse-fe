@@ -128,6 +128,8 @@ jest.mock('@features/ideaValidation/components', () => ({
       </button>
     </div>
   ),
+  ResearchStreamPanel: () => <div data-testid="research-stream-panel">Research Stream</div>,
+  WebSearchDrawer: () => <div data-testid="web-search-drawer" />,
 }));
 
 jest.mock('@features/workspace/components/WorkspaceMentorIntake', () => ({
@@ -248,7 +250,10 @@ describe('WorkspaceMentorChat', () => {
 
     await user.click(screen.getByRole('button', { name: 'Submit idea' }));
 
-    expect(chatMutate).toHaveBeenCalledWith({ message: 'My idea', attachments: null });
+    expect(chatMutate).toHaveBeenCalledWith(
+      { message: 'My idea', attachments: null },
+      expect.objectContaining({ onSuccess: expect.any(Function), onError: expect.any(Function) }),
+    );
   });
 
   it('renders the conversation history in order once the conversation has started', () => {
@@ -328,16 +333,19 @@ describe('WorkspaceMentorChat', () => {
     expect(verifyDetailsButton).toBeInTheDocument();
 
     await user.click(runValidationButton);
-    expect(chatMutate).toHaveBeenCalledWith({
-      message: 'Run validation analysis',
-      attachments: null,
-    });
+    expect(chatMutate).toHaveBeenCalledWith(
+      { message: 'Run validation analysis', attachments: null },
+      expect.objectContaining({ onSuccess: expect.any(Function), onError: expect.any(Function) }),
+    );
 
     await user.click(verifyDetailsButton);
-    expect(chatMutate).toHaveBeenCalledWith({
-      message: 'Can you verify and summarize the idea details you have so far?',
-      attachments: null,
-    });
+    expect(chatMutate).toHaveBeenCalledWith(
+      {
+        message: 'Can you verify and summarize the idea details you have so far?',
+        attachments: null,
+      },
+      expect.objectContaining({ onSuccess: expect.any(Function), onError: expect.any(Function) }),
+    );
   });
 
   it('sends a typed message from the chat input and clears the draft', async () => {
@@ -354,7 +362,10 @@ describe('WorkspaceMentorChat', () => {
     await user.type(input, 'What next?');
     await user.click(screen.getByRole('button', { name: 'Send' }));
 
-    expect(chatMutate).toHaveBeenCalledWith({ message: 'What next?', attachments: null });
+    expect(chatMutate).toHaveBeenCalledWith(
+      { message: 'What next?', attachments: null },
+      expect.objectContaining({ onSuccess: expect.any(Function), onError: expect.any(Function) }),
+    );
   });
 
   it('does not call the chat mutation when submitting a blank or whitespace-only draft', async () => {
@@ -591,28 +602,31 @@ describe('WorkspaceMentorChat', () => {
       await user.type(screen.getByLabelText('chat-input'), 'Here you go');
       await user.click(screen.getByRole('button', { name: 'Send' }));
 
-      expect(chatMutate).toHaveBeenCalledWith({
-        message: [
-          'Here you go',
-          '',
-          '![photo.png](https://cdn.example.test/uploads/photo.png)',
-          '[📁 deck.pdf](https://cdn.example.test/uploads/deck.pdf)',
-        ].join('\n'),
-        attachments: [
-          {
-            type: 'image',
-            name: 'photo.png',
-            url_or_data: 'data:image/png;base64,eA==',
-            mime_type: 'image/png',
-          },
-          {
-            type: 'pdf',
-            name: 'deck.pdf',
-            url_or_data: 'data:application/pdf;base64,eA==',
-            mime_type: 'application/pdf',
-          },
-        ],
-      });
+      expect(chatMutate).toHaveBeenCalledWith(
+        {
+          message: [
+            'Here you go',
+            '',
+            '![photo.png](https://cdn.example.test/uploads/photo.png)',
+            '[📁 deck.pdf](https://cdn.example.test/uploads/deck.pdf)',
+          ].join('\n'),
+          attachments: [
+            {
+              type: 'image',
+              name: 'photo.png',
+              url_or_data: 'data:image/png;base64,eA==',
+              mime_type: 'image/png',
+            },
+            {
+              type: 'pdf',
+              name: 'deck.pdf',
+              url_or_data: 'data:application/pdf;base64,eA==',
+              mime_type: 'application/pdf',
+            },
+          ],
+        },
+        expect.objectContaining({ onSuccess: expect.any(Function), onError: expect.any(Function) }),
+      );
     });
 
     it('sends attachments on their own when no message was typed', async () => {
@@ -630,17 +644,20 @@ describe('WorkspaceMentorChat', () => {
 
       await user.click(screen.getByRole('button', { name: 'Send' }));
 
-      expect(chatMutate).toHaveBeenCalledWith({
-        message: '[📁 spec.docx](https://cdn.example.test/uploads/spec.docx)',
-        attachments: [
-          {
-            type: 'doc',
-            name: 'spec.docx',
-            url_or_data: 'data:application/msword;base64,eA==',
-            mime_type: 'application/msword',
-          },
-        ],
-      });
+      expect(chatMutate).toHaveBeenCalledWith(
+        {
+          message: '[📁 spec.docx](https://cdn.example.test/uploads/spec.docx)',
+          attachments: [
+            {
+              type: 'doc',
+              name: 'spec.docx',
+              url_or_data: 'data:application/msword;base64,eA==',
+              mime_type: 'application/msword',
+            },
+          ],
+        },
+        expect.objectContaining({ onSuccess: expect.any(Function), onError: expect.any(Function) }),
+      );
     });
 
     it('classifies allowed files with an extension not explicitly branched as documents', async () => {
@@ -670,26 +687,29 @@ describe('WorkspaceMentorChat', () => {
       await user.click(screen.getByRole('button', { name: 'Send' }));
 
       // Neither is an image, so both are rendered as file links rather than markdown images.
-      expect(chatMutate).toHaveBeenCalledWith({
-        message: [
-          '[📁 data.csv](https://cdn.example.test/uploads/data.csv)',
-          '[📁 notes.md](https://cdn.example.test/uploads/notes.md)',
-        ].join('\n'),
-        attachments: [
-          {
-            type: 'doc',
-            name: 'data.csv',
-            url_or_data: 'data:text/csv;base64,eA==',
-            mime_type: 'text/csv',
-          },
-          {
-            type: 'doc',
-            name: 'notes.md',
-            url_or_data: 'data:text/markdown;base64,eA==',
-            mime_type: 'text/markdown',
-          },
-        ],
-      });
+      expect(chatMutate).toHaveBeenCalledWith(
+        {
+          message: [
+            '[📁 data.csv](https://cdn.example.test/uploads/data.csv)',
+            '[📁 notes.md](https://cdn.example.test/uploads/notes.md)',
+          ].join('\n'),
+          attachments: [
+            {
+              type: 'doc',
+              name: 'data.csv',
+              url_or_data: 'data:text/csv;base64,eA==',
+              mime_type: 'text/csv',
+            },
+            {
+              type: 'doc',
+              name: 'notes.md',
+              url_or_data: 'data:text/markdown;base64,eA==',
+              mime_type: 'text/markdown',
+            },
+          ],
+        },
+        expect.objectContaining({ onSuccess: expect.any(Function), onError: expect.any(Function) }),
+      );
     });
   });
 });

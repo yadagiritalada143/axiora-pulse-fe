@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { MarkdownRenderer } from './MarkdownRenderer';
 
@@ -6,10 +6,16 @@ const CHARACTER_INTERVAL_MS = 4;
 
 interface TypeOnMarkdownProps {
   content: string;
+  onComplete?: () => void;
 }
 
-export function TypeOnMarkdown({ content }: TypeOnMarkdownProps) {
+export function TypeOnMarkdown({ content, onComplete }: TypeOnMarkdownProps) {
   const [visibleContent, setVisibleContent] = useState('');
+  const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   useEffect(() => {
     let characterIndex = 0;
@@ -19,6 +25,7 @@ export function TypeOnMarkdown({ content }: TypeOnMarkdownProps) {
 
       if (characterIndex >= content.length) {
         window.clearInterval(timer);
+        onCompleteRef.current?.();
       }
     }, CHARACTER_INTERVAL_MS);
 

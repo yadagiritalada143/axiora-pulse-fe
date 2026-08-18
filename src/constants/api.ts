@@ -71,6 +71,8 @@ export const API_ENDPOINTS = {
   },
   ORCHESTRATION: {
     RUN: '/v1/orchestration/run',
+    RESEARCH_STREAM: (runId: string) => `/v1/orchestration/${runId}/research-stream`,
+    RESEARCH_TRACES: (runId: string) => `/v1/orchestration/${runId}/research-traces`,
   },
 
   ONBOARDING: {

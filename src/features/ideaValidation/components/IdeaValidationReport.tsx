@@ -10,6 +10,8 @@ import { useExportWorkspaceReport } from '@features/workspace/hooks/useWorkspace
 import type { WorkspaceReportAgent } from '@features/workspace/types';
 import { cn } from '@lib/utils';
 
+import { ResearchStreamPanel } from './ResearchStreamPanel';
+
 interface IdeaValidationReportProps {
   workspaceId: number;
   ideaTitle: string;
@@ -63,6 +65,14 @@ export function IdeaValidationReport({
               </span>
             </div>
           </div>
+
+          <ResearchStreamPanel
+            runId={result.orchestration_run_id}
+            ideaTitle={ideaTitle}
+            result={result}
+            isLive={false}
+            defaultExpanded={false}
+          />
 
           <div className="grid gap-4 sm:grid-cols-2">
             <ListSection title="Strengths" items={result.strengths} />
