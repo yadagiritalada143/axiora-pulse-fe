@@ -42,12 +42,12 @@ export function RegisterForm() {
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email / Mobile Number</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input
-                  type="text"
-                  autoComplete="username"
-                  placeholder="Enter Email ID / Mobile Number"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="Enter your email"
                   className="placeholder:text-sm"
                   {...field}
                 />

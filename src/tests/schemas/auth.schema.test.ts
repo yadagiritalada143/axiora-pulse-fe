@@ -17,13 +17,13 @@ describe('loginSchema', () => {
     expect(result.success).toBe(true);
   });
 
-  it('accepts a valid phone number username', () => {
+  it('rejects a phone number username (email only)', () => {
     const result = loginSchema.safeParse({
       username: '1234567890',
       password: 'password123',
     });
 
-    expect(result.success).toBe(true);
+    expect(result.success).toBe(false);
   });
 
   it('accepts an optional remember flag', () => {

@@ -117,8 +117,8 @@ export default function WorkspaceArchivePage() {
           <DialogHeader>
             <DialogTitle>Delete Workspace Permanently</DialogTitle>
             <DialogDescription>
-              Are you sure you want to permanently delete this workspace? This action cannot be
-              undone and will delete all associated chats, surveys, and validation data.
+              All data in this workspace will be <strong>permanently deleted</strong> and cannot be
+              recovered. This action is not reversible.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4 flex justify-end gap-2">
