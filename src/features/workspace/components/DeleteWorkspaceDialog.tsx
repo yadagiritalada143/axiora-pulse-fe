@@ -28,12 +28,11 @@ export function DeleteWorkspaceDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete Workspace</AlertDialogTitle>
+          <AlertDialogTitle>Archive Workspace</AlertDialogTitle>
 
           <AlertDialogDescription>
-            Are you sure you want to delete <strong>{workspaceName}</strong>?
-            <br />
-            This action cannot be undone.
+            <strong>{workspaceName}</strong> will be moved to your Archive. No data will be lost —
+            you can restore it at any time from the Archived Workspaces section.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -41,7 +40,7 @@ export function DeleteWorkspaceDialog({
           <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
 
           <AlertDialogAction disabled={loading} onClick={onConfirm}>
-            {loading ? 'Deleting...' : 'Delete'}
+            {loading ? 'Archiving...' : 'Move to Archive'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

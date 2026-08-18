@@ -26,7 +26,8 @@ const survey: SurveyResponse = {
   id: 5,
   user_id: 1,
   workspace_id: 42,
-  survey_link: 'https://example.test/surveys/public/5',
+  public_token: 'abc123token',
+  survey_link: 'https://example.test/surveys/public/abc123token',
   questions: [{ id: 1, question: 'How often?', questionType: 'text', options: [] }],
   created_at: '2026-01-01T00:00:00.000Z',
   updated_at: '2026-01-02T00:00:00.000Z',
@@ -63,16 +64,16 @@ describe('surveyService', () => {
     expect(mockedApiClient.put).toHaveBeenCalledWith('/v1/workspaces/42/survey/questions', payload);
   });
 
-  it('fetches a public survey by id', async () => {
+  it('fetches a public survey by token', async () => {
     const response: PublicSurveyDetailResponse = {
-      surveyId: 5,
+      surveyId: 'abc123token',
       workspaceName: 'Acme',
       questions: survey.questions,
     };
     mockedApiClient.get.mockResolvedValueOnce({ data: response });
 
-    await expect(surveyService.getPublicSurvey(5)).resolves.toEqual(response);
-    expect(mockedApiClient.get).toHaveBeenCalledWith('/v1/surveys/public/5');
+    await expect(surveyService.getPublicSurvey('abc123token')).resolves.toEqual(response);
+    expect(mockedApiClient.get).toHaveBeenCalledWith('/v1/surveys/public/abc123token');
   });
 
   it('submits a public survey response', async () => {
@@ -87,8 +88,13 @@ describe('surveyService', () => {
     };
     mockedApiClient.post.mockResolvedValueOnce({ data: response });
 
-    await expect(surveyService.submitPublicSurvey(5, payload)).resolves.toEqual(response);
-    expect(mockedApiClient.post).toHaveBeenCalledWith('/v1/surveys/public/5/submit', payload);
+    await expect(surveyService.submitPublicSurvey('abc123token', payload)).resolves.toEqual(
+      response,
+    );
+    expect(mockedApiClient.post).toHaveBeenCalledWith(
+      '/v1/surveys/public/abc123token/submit',
+      payload,
+    );
   });
 
   it('fetches the collected responses for a survey', async () => {

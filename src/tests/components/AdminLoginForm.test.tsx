@@ -42,7 +42,7 @@ describe('AdminLoginForm', () => {
 
     await user.click(screen.getByRole('button', { name: /login/i }));
 
-    expect(await screen.findByText('Username is required')).toBeInTheDocument();
+    expect(await screen.findByText('Email is required')).toBeInTheDocument();
     expect(screen.getByText('Password must be at least 8 characters')).toBeInTheDocument();
     expect(mutate).not.toHaveBeenCalled();
   });
@@ -55,9 +55,7 @@ describe('AdminLoginForm', () => {
     await user.type(screen.getByLabelText('Password'), 'password123');
     await user.click(screen.getByRole('button', { name: /login/i }));
 
-    expect(
-      await screen.findByText('Enter a valid email address or mobile number'),
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Enter a valid email address')).toBeInTheDocument();
     expect(mutate).not.toHaveBeenCalled();
   });
 

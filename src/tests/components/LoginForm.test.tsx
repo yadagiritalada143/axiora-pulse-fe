@@ -42,7 +42,7 @@ describe('LoginForm', () => {
 
     await user.click(screen.getByRole('button', { name: /get started/i }));
 
-    expect(await screen.findByText('Username is required')).toBeInTheDocument();
+    expect(await screen.findByText('Email is required')).toBeInTheDocument();
     expect(screen.getByText('Password must be at least 8 characters')).toBeInTheDocument();
     expect(mutate).not.toHaveBeenCalled();
   });
@@ -51,13 +51,11 @@ describe('LoginForm', () => {
     const user = userEvent.setup();
     renderForm();
 
-    await user.type(screen.getByLabelText('Email/Mobile Number'), 'not-an-email-or-phone');
+    await user.type(screen.getByLabelText('Email'), 'not-an-email-or-phone');
     await user.type(screen.getByLabelText('Password'), 'password123');
     await user.click(screen.getByRole('button', { name: /get started/i }));
 
-    expect(
-      await screen.findByText('Enter a valid email address or mobile number'),
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Enter a valid email address')).toBeInTheDocument();
     expect(mutate).not.toHaveBeenCalled();
   });
 
@@ -65,7 +63,7 @@ describe('LoginForm', () => {
     const user = userEvent.setup();
     renderForm();
 
-    await user.type(screen.getByLabelText('Email/Mobile Number'), 'jane@example.com');
+    await user.type(screen.getByLabelText('Email'), 'jane@example.com');
     await user.type(screen.getByLabelText('Password'), 'password123');
     await user.click(screen.getByLabelText('Remember me'));
     await user.click(screen.getByRole('button', { name: /get started/i }));

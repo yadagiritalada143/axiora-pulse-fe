@@ -1,43 +1,20 @@
 import { z } from 'zod';
 
-const usernameSchema = z
-  .string()
-  .min(3, 'Username is required')
-  .refine(
-    (value) => {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const phoneRegex = /^[0-9]{10,15}$/;
-
-      return emailRegex.test(value) || phoneRegex.test(value);
-    },
-    {
-      message: 'Enter a valid email address or mobile number',
-    },
-  );
+const emailSchema = z.string().min(1, 'Email is required').email('Enter a valid email address');
 
 export const loginSchema = z.object({
-  username: usernameSchema,
+  username: emailSchema,
   password: z.string().min(8, 'Password must be at least 8 characters'),
   remember: z.boolean().optional(),
 });
 
 export const registerSchema = z.object({
-  username: usernameSchema,
+  username: emailSchema,
   password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
 export const forgotPasswordSchema = z.object({
-  emailOrMobile: z
-    .string()
-    .min(1, 'Email or mobile number is required')
-    .refine(
-      (value) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const phoneRegex = /^[0-9]{10,15}$/;
-        return emailRegex.test(value) || phoneRegex.test(value);
-      },
-      { message: 'Enter a valid email address or mobile number' },
-    ),
+  emailOrMobile: emailSchema,
 });
 
 export const verifyForgotPasswordSchema = z.object({

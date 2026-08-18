@@ -32,20 +32,20 @@ export const surveyService = {
     return data;
   },
 
-  getPublicSurvey: async (surveyId: number): Promise<PublicSurveyDetailResponse> => {
+  getPublicSurvey: async (token: string): Promise<PublicSurveyDetailResponse> => {
     const { data } = await apiClient.get<PublicSurveyDetailResponse>(
-      API_ENDPOINTS.SURVEY.GET_PUBLIC(surveyId),
+      API_ENDPOINTS.SURVEY.GET_PUBLIC(token),
     );
 
     return data;
   },
 
   submitPublicSurvey: async (
-    surveyId: number,
+    token: string,
     payload: SubmitPublicSurveyRequest,
   ): Promise<SubmitPublicSurveyResponse> => {
     const { data } = await apiClient.post<SubmitPublicSurveyResponse>(
-      API_ENDPOINTS.SURVEY.SUBMIT_PUBLIC(surveyId),
+      API_ENDPOINTS.SURVEY.SUBMIT_PUBLIC(token),
       payload,
     );
 

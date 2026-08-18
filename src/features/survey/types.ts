@@ -9,6 +9,7 @@ export interface SurveyResponse {
   id: number;
   user_id: number;
   workspace_id: number;
+  public_token: string;
   survey_link: string | null;
   questions: SurveyQuestionItem[];
   created_at: string;
@@ -37,7 +38,7 @@ export interface SubmitPublicSurveyResponse {
 }
 
 export interface PublicSurveyDetailResponse {
-  surveyId: number;
+  surveyId: string;
   workspaceName: string;
   questions: SurveyQuestionItem[];
 }

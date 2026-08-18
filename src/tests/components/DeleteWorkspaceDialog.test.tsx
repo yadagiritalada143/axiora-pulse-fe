@@ -14,7 +14,7 @@ describe('DeleteWorkspaceDialog', () => {
       />,
     );
 
-    expect(screen.queryByText('Delete Workspace')).not.toBeInTheDocument();
+    expect(screen.queryByText('Archive Workspace')).not.toBeInTheDocument();
   });
 
   it('renders the workspace name in the confirmation copy', () => {
@@ -27,7 +27,7 @@ describe('DeleteWorkspaceDialog', () => {
       />,
     );
 
-    expect(screen.getByText('Delete Workspace')).toBeInTheDocument();
+    expect(screen.getByText('Archive Workspace')).toBeInTheDocument();
     expect(screen.getByText('Rocket Idea')).toBeInTheDocument();
   });
 
@@ -44,7 +44,7 @@ describe('DeleteWorkspaceDialog', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Delete' }));
+    await user.click(screen.getByRole('button', { name: 'Move to Archive' }));
 
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });
@@ -78,7 +78,7 @@ describe('DeleteWorkspaceDialog', () => {
       />,
     );
 
-    expect(screen.getByRole('button', { name: 'Deleting...' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Archiving...' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
   });
 });

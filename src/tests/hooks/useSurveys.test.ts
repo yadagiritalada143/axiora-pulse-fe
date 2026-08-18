@@ -27,6 +27,7 @@ const survey: SurveyResponse = {
   id: 5,
   user_id: 1,
   workspace_id: 42,
+  public_token: 'abc123token',
   survey_link: null,
   questions: [{ id: 1, question: 'How often?', questionType: 'text', options: [] }],
   created_at: '2026-01-01T00:00:00.000Z',
@@ -109,22 +110,22 @@ describe('useUpdateWorkspaceSurveyQuestions', () => {
 });
 
 describe('usePublicSurvey', () => {
-  it('fetches the public survey by id', async () => {
-    const response = { surveyId: 5, workspaceName: 'Acme', questions: survey.questions };
+  it('fetches the public survey by token', async () => {
+    const response = { surveyId: 'abc123', workspaceName: 'Acme', questions: survey.questions };
     mockedApiClient.get.mockResolvedValueOnce({ data: response });
 
     const { wrapper } = createWrapper();
-    const { result } = renderHook(() => usePublicSurvey(5), { wrapper });
+    const { result } = renderHook(() => usePublicSurvey('abc123'), { wrapper });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(mockedApiClient.get).toHaveBeenCalledWith('/v1/surveys/public/5');
+    expect(mockedApiClient.get).toHaveBeenCalledWith('/v1/surveys/public/abc123');
     expect(result.current.data).toEqual(response);
   });
 
-  it('stays idle when the survey id is falsy', () => {
+  it('stays idle when the token is empty', () => {
     const { wrapper } = createWrapper();
-    const { result } = renderHook(() => usePublicSurvey(0), { wrapper });
+    const { result } = renderHook(() => usePublicSurvey(''), { wrapper });
 
     expect(result.current.fetchStatus).toBe('idle');
     expect(mockedApiClient.get).not.toHaveBeenCalled();
@@ -132,19 +133,19 @@ describe('usePublicSurvey', () => {
 });
 
 describe('useSubmitPublicSurvey', () => {
-  it('posts the answers for the given survey', async () => {
+  it('posts the answers for the given survey token', async () => {
     mockedApiClient.post.mockResolvedValueOnce({
       data: { status: 'ok', message: 'recorded', responseId: 11 },
     });
 
     const { wrapper } = createWrapper();
-    const { result } = renderHook(() => useSubmitPublicSurvey(5), { wrapper });
+    const { result } = renderHook(() => useSubmitPublicSurvey('abc123'), { wrapper });
 
     result.current.mutate({ answers: [{ questionId: 1, answer: 'Weekly' }] });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(mockedApiClient.post).toHaveBeenCalledWith('/v1/surveys/public/5/submit', {
+    expect(mockedApiClient.post).toHaveBeenCalledWith('/v1/surveys/public/abc123/submit', {
       answers: [{ questionId: 1, answer: 'Weekly' }],
     });
   });
@@ -153,7 +154,7 @@ describe('useSubmitPublicSurvey', () => {
     mockedApiClient.post.mockRejectedValueOnce(new Error('network error'));
 
     const { wrapper } = createWrapper();
-    const { result } = renderHook(() => useSubmitPublicSurvey(5), { wrapper });
+    const { result } = renderHook(() => useSubmitPublicSurvey('abc123'), { wrapper });
 
     result.current.mutate({ answers: [] });
 

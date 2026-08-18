@@ -24,7 +24,7 @@ const mockedUsePublicSurvey = usePublicSurvey as jest.Mock;
 const mockedUseSubmitPublicSurvey = useSubmitPublicSurvey as jest.Mock;
 
 const survey: PublicSurveyDetailResponse = {
-  surveyId: 5,
+  surveyId: 'abc123token',
   workspaceName: 'Acme Labs',
   questions: [
     { id: 1, question: 'What is your biggest challenge?', questionType: 'text', options: [] },
@@ -54,7 +54,7 @@ const succeedingMutate: Mutate = (_payload, options) => options?.onSuccess?.();
 
 function renderPage() {
   return render(
-    <MemoryRouter initialEntries={['/surveys/public/5']}>
+    <MemoryRouter initialEntries={['/surveys/public/abc123token']}>
       <Routes>
         <Route path="/surveys/public/:surveyId" element={<PublicSurveyPage />} />
       </Routes>
@@ -75,8 +75,8 @@ describe('PublicSurveyPage', () => {
   it('reads the survey id from the route and passes it to the hooks', () => {
     renderPage();
 
-    expect(mockedUsePublicSurvey).toHaveBeenCalledWith(5);
-    expect(mockedUseSubmitPublicSurvey).toHaveBeenCalledWith(5);
+    expect(mockedUsePublicSurvey).toHaveBeenCalledWith('abc123token');
+    expect(mockedUseSubmitPublicSurvey).toHaveBeenCalledWith('abc123token');
   });
 
   it('shows a loading state while the survey is being fetched', () => {

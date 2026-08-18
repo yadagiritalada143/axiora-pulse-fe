@@ -50,11 +50,12 @@ function RequestStep({ onSuccess }: { onSuccess: () => void }) {
           name="emailOrMobile"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email / Mobile Number</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input
-                  autoComplete="username"
-                  placeholder="Enter Email ID / Mobile Number"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="Enter your email"
                   className="placeholder:text-sm"
                   {...field}
                 />
@@ -316,7 +317,7 @@ function StepIndicator({ current }: { current: number }) {
 const STEP_META = [
   {
     heading: 'Forgot password?',
-    description: "Enter your email or mobile number and we'll send you a reset code.",
+    description: "Enter your email address and we'll send you a reset code.",
   },
   {
     heading: 'Check your inbox',

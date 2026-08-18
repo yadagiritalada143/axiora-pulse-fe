@@ -46,8 +46,8 @@ export function AdminLoginForm() {
 
               <FormControl>
                 <Input
-                  type="text"
-                  autoComplete="username"
+                  type="email"
+                  autoComplete="email"
                   placeholder="Enter admin email"
                   {...field}
                 />

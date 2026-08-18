@@ -21,10 +21,10 @@ import { usePublicSurvey, useSubmitPublicSurvey } from '@features/survey/hooks/u
 
 export default function PublicSurveyPage() {
   const { surveyId } = useParams<{ surveyId: string }>();
-  const numericSurveyId = Number(surveyId);
+  const token = surveyId ?? '';
 
-  const { data: survey, isLoading, isError } = usePublicSurvey(numericSurveyId);
-  const submitSurveyMutation = useSubmitPublicSurvey(numericSurveyId);
+  const { data: survey, isLoading, isError } = usePublicSurvey(token);
+  const submitSurveyMutation = useSubmitPublicSurvey(token);
 
   const [answers, setAnswers] = useState<Record<number, string | string[]>>({});
   const [email, setEmail] = useState('');

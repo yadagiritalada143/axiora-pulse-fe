@@ -153,7 +153,7 @@ describe('ForgotPasswordForm', () => {
 
     await user.click(screen.getByRole('button', { name: /send reset code/i }));
 
-    expect(await screen.findByText('Email or mobile number is required')).toBeInTheDocument();
+    expect(await screen.findByText('Email is required')).toBeInTheDocument();
     expect(forgotPasswordMutate).not.toHaveBeenCalled();
   });
 
@@ -161,12 +161,10 @@ describe('ForgotPasswordForm', () => {
     const user = userEvent.setup();
     renderForm();
 
-    await user.type(screen.getByLabelText('Email / Mobile Number'), 'not-valid');
+    await user.type(screen.getByLabelText('Email'), 'not-valid');
     await user.click(screen.getByRole('button', { name: /send reset code/i }));
 
-    expect(
-      await screen.findByText('Enter a valid email address or mobile number'),
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Enter a valid email address')).toBeInTheDocument();
     expect(forgotPasswordMutate).not.toHaveBeenCalled();
   });
 
@@ -184,7 +182,7 @@ describe('ForgotPasswordForm', () => {
     const { container } = renderForm();
 
     // Step 1: request the reset code.
-    await user.type(screen.getByLabelText('Email / Mobile Number'), 'jane@example.com');
+    await user.type(screen.getByLabelText('Email'), 'jane@example.com');
     await user.click(screen.getByRole('button', { name: /send reset code/i }));
 
     expect(forgotPasswordMutate).toHaveBeenCalledWith(
@@ -224,7 +222,7 @@ describe('ForgotPasswordForm', () => {
     const user = userEvent.setup();
     const { container } = renderForm();
 
-    await user.type(screen.getByLabelText('Email / Mobile Number'), 'jane@example.com');
+    await user.type(screen.getByLabelText('Email'), 'jane@example.com');
     await user.click(screen.getByRole('button', { name: /send reset code/i }));
 
     expect(await screen.findByText('Check your inbox')).toBeInTheDocument();
@@ -239,7 +237,7 @@ describe('ForgotPasswordForm', () => {
     const user = userEvent.setup();
     const { container } = renderForm();
 
-    await user.type(screen.getByLabelText('Email / Mobile Number'), 'jane@example.com');
+    await user.type(screen.getByLabelText('Email'), 'jane@example.com');
     await user.click(screen.getByRole('button', { name: /send reset code/i }));
     await user.type(getOtpInput(container), '123456');
 
@@ -258,7 +256,7 @@ describe('ForgotPasswordForm', () => {
     const user = userEvent.setup({ delay: null });
     renderForm();
 
-    await user.type(screen.getByLabelText('Email / Mobile Number'), 'jane@example.com');
+    await user.type(screen.getByLabelText('Email'), 'jane@example.com');
     await user.click(screen.getByRole('button', { name: /send reset code/i }));
     expect(await screen.findByText(/00:60/)).toBeInTheDocument();
 
@@ -310,7 +308,7 @@ describe('ForgotPasswordForm', () => {
     const user = userEvent.setup();
     const { container } = renderForm();
 
-    await user.type(screen.getByLabelText('Email / Mobile Number'), 'jane@example.com');
+    await user.type(screen.getByLabelText('Email'), 'jane@example.com');
 
     await user.click(screen.getByRole('button', { name: /send reset code/i }));
 
@@ -326,7 +324,7 @@ describe('ForgotPasswordForm', () => {
     const user = userEvent.setup();
     const { container } = renderForm();
 
-    await user.type(screen.getByLabelText('Email / Mobile Number'), 'jane@example.com');
+    await user.type(screen.getByLabelText('Email'), 'jane@example.com');
     await user.click(screen.getByRole('button', { name: /send reset code/i }));
     expect(await screen.findByText('Check your inbox')).toBeInTheDocument();
 
@@ -368,7 +366,7 @@ describe('ForgotPasswordForm', () => {
     const user = userEvent.setup();
     const { container } = renderForm();
 
-    await user.type(screen.getByLabelText('Email / Mobile Number'), 'jane@example.com');
+    await user.type(screen.getByLabelText('Email'), 'jane@example.com');
     await user.click(screen.getByRole('button', { name: /send reset code/i }));
     await user.type(getOtpInput(container), '123456');
     expect(await screen.findByText('Create new password')).toBeInTheDocument();
@@ -384,7 +382,7 @@ describe('ForgotPasswordForm', () => {
     const user = userEvent.setup();
     const { container } = renderForm();
 
-    await user.type(screen.getByLabelText('Email / Mobile Number'), 'jane@example.com');
+    await user.type(screen.getByLabelText('Email'), 'jane@example.com');
     await user.click(screen.getByRole('button', { name: /send reset code/i }));
     await user.type(getOtpInput(container), '123456');
     expect(await screen.findByText('Create new password')).toBeInTheDocument();

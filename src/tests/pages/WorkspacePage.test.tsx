@@ -129,7 +129,7 @@ describe('WorkspacePage', () => {
     await user.click(screen.getByRole('button', { name: 'Workspace actions' }));
     await user.click(await screen.findByText('Delete'));
 
-    expect(screen.getByText('Delete Workspace')).toBeInTheDocument();
+    expect(screen.getByText('Archive Workspace')).toBeInTheDocument();
   });
 
   it('opens the create dialog from the "New Workspace" button', async () => {
@@ -163,13 +163,13 @@ describe('WorkspacePage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Workspace actions' }));
     await user.click(await screen.findByText('Delete'));
-    await user.click(screen.getByRole('button', { name: 'Delete' }));
+    await user.click(screen.getByRole('button', { name: 'Move to Archive' }));
 
     expect(mutate).toHaveBeenCalledWith(
       1,
       expect.objectContaining({ onSuccess: expect.any(Function) as unknown }),
     );
-    expect(screen.queryByText('Delete Workspace')).not.toBeInTheDocument();
+    expect(screen.queryByText('Archive Workspace')).not.toBeInTheDocument();
   });
 
   it('closes the delete dialog without confirming when Cancel is clicked', async () => {
@@ -189,6 +189,6 @@ describe('WorkspacePage', () => {
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
 
     expect(mutate).not.toHaveBeenCalled();
-    expect(screen.queryByText('Delete Workspace')).not.toBeInTheDocument();
+    expect(screen.queryByText('Archive Workspace')).not.toBeInTheDocument();
   });
 });
