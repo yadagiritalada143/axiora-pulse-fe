@@ -20,7 +20,8 @@ export interface VerifyOtpRequest {
 }
 
 export interface ResendOtpRequest {
-  id: number;
+  id?: number;
+  emailOrMobile?: string;
   flow: 'register' | 'login';
 }
 
