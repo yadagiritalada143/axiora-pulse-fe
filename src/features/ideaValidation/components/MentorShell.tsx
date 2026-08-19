@@ -1,16 +1,11 @@
 import {
   Archive,
-  FileText,
   Info,
   LayoutGrid,
   LogOut,
   Menu,
   Settings,
-  ShieldCheck,
-  Sparkles,
-  TrendingUp,
   User2Icon,
-  Users,
   X,
   type LucideIcon,
 } from 'lucide-react';
@@ -42,10 +37,10 @@ export interface MentorNavItem {
 }
 
 const WORKSPACE_NAV_ITEMS: MentorNavItem[] = [
-  { label: 'Founder Intelligence', icon: Users, disabled: true },
-  { label: 'Startup Intelligence', icon: TrendingUp, disabled: true },
-  { label: 'Documents & reports', icon: FileText, disabled: true },
-  { label: 'Risk Management', icon: ShieldCheck, disabled: true },
+  // { label: 'Founder Intelligence', icon: Users, disabled: true },
+  // { label: 'Startup Intelligence', icon: TrendingUp, disabled: true },
+  // { label: 'Documents & reports', icon: FileText, disabled: true },
+  // { label: 'Risk Management', icon: ShieldCheck, disabled: true },
 ];
 
 interface MentorShellProps {
@@ -81,7 +76,7 @@ export function MentorShell({
 
   const footerItems: MentorNavItem[] = [
     { label: 'Archive', icon: Archive, href: ROUTES.WORKSPACE_ARCHIVE },
-    { label: 'Integrations', icon: Sparkles, disabled: true },
+    // { label: 'Integrations', icon: Sparkles, disabled: true },
     { label: 'Settings', icon: Settings, href: ROUTES.SETTINGS },
     { label: 'Logout', icon: LogOut, onClick: () => void handleLogout() },
   ];

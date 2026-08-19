@@ -10,6 +10,7 @@ import { useExportWorkspaceReport } from '@features/workspace/hooks/useWorkspace
 import type { WorkspaceReportAgent } from '@features/workspace/types';
 import { cn } from '@lib/utils';
 
+import { InteractiveSurveyQuestions } from './InteractiveSurveyQuestions';
 import { ResearchStreamPanel } from './ResearchStreamPanel';
 
 interface IdeaValidationReportProps {
@@ -181,28 +182,11 @@ export function IdeaValidationReport({
 
               {Array.isArray(surveyIntelligence.questions) &&
               surveyIntelligence.questions.length > 0 ? (
-                <div className="pt-2">
-                  <p className="text-foreground mb-1 text-sm font-semibold">Survey Questions</p>
-                  <ul className="text-muted-foreground list-disc space-y-1.5 pl-4 text-sm leading-relaxed">
-                    {surveyIntelligence.questions.map((question, index) => (
-                      <li key={index}>
-                        {question.question_text}
-                        <span className="text-muted-foreground/70">
-                          {' '}
-                          ({question.question_type})
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-4 flex justify-end">
-                    <Button
-                      asChild
-                      size="sm"
-                      className="gap-1.5 bg-[#FF4500] font-semibold text-white hover:bg-[#FF4500]/90"
-                    >
-                      <Link to={`/workspace/${workspaceId}/survey`}>Edit & Share Survey</Link>
-                    </Button>
-                  </div>
+                <div className="pt-3">
+                  <InteractiveSurveyQuestions
+                    questions={surveyIntelligence.questions}
+                    workspaceId={workspaceId}
+                  />
                 </div>
               ) : null}
             </AgentReportCard>

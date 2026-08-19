@@ -5,15 +5,11 @@ import {
   Bot,
   ClipboardList,
   Copy,
-  FileText,
   Link as LinkIcon,
   Loader2,
   Plus,
   Share2,
-  ShieldCheck,
   Trash2,
-  TrendingUp,
-  Users,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
@@ -117,10 +113,10 @@ export default function WorkspaceSurveyPage() {
       icon: ClipboardList,
       href: workspaceId ? buildWorkspaceSurveyRoute(workspaceId) : '#',
     },
-    { label: 'Founder Intelligence', icon: Users, disabled: true },
-    { label: 'Startup Intelligence', icon: TrendingUp, disabled: true },
-    { label: 'Documents & reports', icon: FileText, disabled: true },
-    { label: 'Risk Management', icon: ShieldCheck, disabled: true },
+    // { label: 'Founder Intelligence', icon: Users, disabled: true },
+    // { label: 'Startup Intelligence', icon: TrendingUp, disabled: true },
+    // { label: 'Documents & reports', icon: FileText, disabled: true },
+    // { label: 'Risk Management', icon: ShieldCheck, disabled: true },
   ];
 
   const handleCopyLink = () => {

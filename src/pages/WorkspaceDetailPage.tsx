@@ -1,12 +1,4 @@
-import {
-  Bot,
-  ClipboardList,
-  FileText,
-  Loader2,
-  ShieldCheck,
-  TrendingUp,
-  Users,
-} from 'lucide-react';
+import { Bot, ClipboardList, Loader2 } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 
 import { ROUTES, buildWorkspaceRoute, buildWorkspaceSurveyRoute } from '@constants/routes';
@@ -34,10 +26,10 @@ export default function WorkspaceDetailPage() {
       href: workspaceId ? buildWorkspaceSurveyRoute(workspaceId) : '#',
       disabled: !hasSurvey,
     },
-    { label: 'Founder Intelligence', icon: Users, disabled: true },
-    { label: 'Startup Intelligence', icon: TrendingUp, disabled: true },
-    { label: 'Documents & reports', icon: FileText, disabled: true },
-    { label: 'Risk Management', icon: ShieldCheck, disabled: true },
+    // { label: 'Founder Intelligence', icon: Users, disabled: true },
+    // { label: 'Startup Intelligence', icon: TrendingUp, disabled: true },
+    // { label: 'Documents & reports', icon: FileText, disabled: true },
+    // { label: 'Risk Management', icon: ShieldCheck, disabled: true },
   ];
 
   return (
