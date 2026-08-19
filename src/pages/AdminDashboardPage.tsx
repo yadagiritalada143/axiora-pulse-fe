@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 import { Button } from '@components/ui/button';
 import { ROUTES } from '@constants/routes';
+import { UserGrowthChart } from '@features/admin/components';
 import { useAuthStore } from '@store/auth.store';
 
 export default function AdminDashboardPage() {
@@ -38,6 +39,8 @@ export default function AdminDashboardPage() {
           </Link>
         </Button>
       </div>
+
+      <UserGrowthChart />
     </div>
   );
 }

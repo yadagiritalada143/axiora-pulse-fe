@@ -4,6 +4,12 @@ import { MemoryRouter } from 'react-router-dom';
 import AdminDashboardPage from '@pages/AdminDashboardPage';
 import { useAuthStore } from '@store/auth.store';
 
+// The growth chart owns its own data fetching (TanStack Query); stub it here so this
+// page test stays focused on the page's own content without needing a QueryClient.
+jest.mock('@features/admin/components', () => ({
+  UserGrowthChart: () => <div data-testid="user-growth-chart" />,
+}));
+
 function renderPage() {
   return render(
     <MemoryRouter>
