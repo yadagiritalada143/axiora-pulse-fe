@@ -283,53 +283,62 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
         <div className="flex-1 space-y-4 overflow-y-auto pt-4 pb-8">
           {effectiveReportAnchor === 0 ? reportNode : null}
 
-          {data.conversation_history.map((message, index) => (
-            <Fragment key={index}>
-              {message.role === 'user' ? (
-                <Fragment>
-                  <ChatBubble align="right" avatarLabel="U">
-                    <MarkdownRenderer content={displayMessageContent(message.content)} />
-                  </ChatBubble>
-                  {message.content === VALIDATION_TRIGGER_MESSAGE && validationResponse ? (
-                    <div className="py-2 pl-12">
-                      <WebSearchDrawer
-                        runId={validationResponse.run_id}
-                        ideaTitle={data.idea.idea_title ?? data.name}
-                        result={validationResponse.result}
-                        isLive={false}
-                        defaultExpanded={false}
-                      />
-                    </div>
-                  ) : null}
-                </Fragment>
-              ) : (
-                <ChatBubble align="left" avatarLabel="AI">
-                  {typeOnAssistantMessages.has(index) ? (
-                    <TypeOnMarkdown
-                      content={message.content}
-                      onComplete={() =>
-                        setTypingCompletedMessages((prev) => new Set(prev).add(index))
-                      }
-                    />
-                  ) : (
-                    <MarkdownRenderer content={message.content} />
-                  )}
-                </ChatBubble>
-              )}
+          {data.conversation_history.map((message, index) => {
+            const isValidationTrigger =
+              Boolean(validationResponse) &&
+              (message.content === VALIDATION_TRIGGER_MESSAGE ||
+                message.content.includes('[TRIGGER_VALIDATION]') ||
+                index === (reportAnchorIndex ?? data.conversation_history.length) - 2);
 
-              {effectiveReportAnchor === index + 1
-                ? !typeOnAssistantMessages.has(index) || typingCompletedMessages.has(index)
-                  ? reportNode
-                  : null
-                : null}
-            </Fragment>
-          ))}
+            return (
+              <Fragment key={index}>
+                {message.role === 'user' ? (
+                  <Fragment>
+                    <ChatBubble align="right" avatarLabel="U">
+                      <MarkdownRenderer content={displayMessageContent(message.content)} />
+                    </ChatBubble>
+                    {isValidationTrigger && validationResponse ? (
+                      <div className="py-2 pl-12">
+                        <WebSearchDrawer
+                          runId={validationResponse.run_id}
+                          ideaTitle={data.idea.idea_title ?? data.name}
+                          result={validationResponse.result}
+                          isLive={false}
+                          defaultExpanded={true}
+                        />
+                      </div>
+                    ) : null}
+                  </Fragment>
+                ) : (
+                  <ChatBubble align="left" avatarLabel="AI">
+                    {typeOnAssistantMessages.has(index) ? (
+                      <TypeOnMarkdown
+                        content={message.content}
+                        onComplete={() =>
+                          setTypingCompletedMessages((prev) => new Set(prev).add(index))
+                        }
+                      />
+                    ) : (
+                      <MarkdownRenderer content={message.content} />
+                    )}
+                  </ChatBubble>
+                )}
+
+                {effectiveReportAnchor === index + 1
+                  ? !typeOnAssistantMessages.has(index) || typingCompletedMessages.has(index)
+                    ? reportNode
+                    : null
+                  : null}
+              </Fragment>
+            );
+          })}
 
           {/* Live Validation / Pending Assistant Indicator */}
           {(() => {
             const lastMsg = data.conversation_history[data.conversation_history.length - 1];
             const isLastFromUser = lastMsg?.role === 'user';
-            const isValidating = data.state === 'VALIDATING' || isTriggeringValidation;
+            const isValidating =
+              (data.state === 'VALIDATING' || isTriggeringValidation) && !data.validation_result;
             const isPendingAssistant =
               chat.isPending || (isLastFromUser && !data.validation_result);
 
@@ -337,9 +346,9 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
               return (
                 <div className="py-2">
                   <WebSearchDrawer
-                    runId={data.validation_result?.orchestration_run_id ?? `run-${workspaceId}`}
+                    runId={`run-${workspaceId}`}
                     ideaTitle={data.idea.idea_title ?? data.name}
-                    result={validationResponse?.result}
+                    result={null}
                     isLive={true}
                     defaultExpanded={true}
                   />
