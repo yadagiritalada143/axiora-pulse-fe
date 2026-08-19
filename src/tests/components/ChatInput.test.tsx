@@ -32,7 +32,7 @@ describe('ChatInput', () => {
   it('renders the default placeholder', () => {
     render(<ChatInput value="" onChange={jest.fn()} onSubmit={jest.fn()} />);
 
-    expect(screen.getByPlaceholderText('Describe your startup idea...')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Describe your Idea...')).toBeInTheDocument();
   });
 
   it('renders a custom placeholder when provided', () => {
@@ -49,7 +49,7 @@ describe('ChatInput', () => {
 
     render(<ChatInput value="" onChange={onChange} onSubmit={jest.fn()} />);
 
-    await user.type(screen.getByPlaceholderText('Describe your startup idea...'), 'Hi');
+    await user.type(screen.getByPlaceholderText('Describe your Idea...'), 'Hi');
 
     expect(onChange).toHaveBeenCalledWith('H');
     expect(onChange).toHaveBeenCalledWith('i');
@@ -82,7 +82,7 @@ describe('ChatInput', () => {
 
     render(<Controlled onSubmit={onSubmit} />);
 
-    const textarea = screen.getByPlaceholderText('Describe your startup idea...');
+    const textarea = screen.getByPlaceholderText('Describe your Idea...');
     await user.type(textarea, 'Ship it{Enter}');
 
     expect(onSubmit).toHaveBeenCalledWith('Ship it');
@@ -95,7 +95,7 @@ describe('ChatInput', () => {
 
     render(<ChatInput value="Some text" onChange={jest.fn()} onSubmit={onSubmit} />);
 
-    const textarea = screen.getByPlaceholderText('Describe your startup idea...');
+    const textarea = screen.getByPlaceholderText('Describe your Idea...');
     await user.type(textarea, '{Shift>}{Enter}{/Shift}');
 
     expect(onSubmit).not.toHaveBeenCalled();
@@ -130,7 +130,7 @@ describe('ChatInput', () => {
   it('disables the textarea and send button when disabled is true', () => {
     render(<ChatInput value="Hello" onChange={jest.fn()} onSubmit={jest.fn()} disabled />);
 
-    expect(screen.getByPlaceholderText('Describe your startup idea...')).toBeDisabled();
+    expect(screen.getByPlaceholderText('Describe your Idea...')).toBeDisabled();
     expect(screen.getByRole('button', { name: /send/i })).toBeDisabled();
   });
 
@@ -199,7 +199,7 @@ describe('ChatInput', () => {
 
       expect(screen.getByRole('button', { name: /send/i })).toBeDisabled();
 
-      await user.type(screen.getByPlaceholderText('Describe your startup idea...'), '{Enter}');
+      await user.type(screen.getByPlaceholderText('Describe your Idea...'), '{Enter}');
 
       expect(onSubmit).not.toHaveBeenCalled();
     });
@@ -208,7 +208,7 @@ describe('ChatInput', () => {
       const user = userEvent.setup();
       const { onSubmit } = renderWithAttachments();
 
-      await user.type(screen.getByPlaceholderText('Describe your startup idea...'), '{Enter}');
+      await user.type(screen.getByPlaceholderText('Describe your Idea...'), '{Enter}');
 
       expect(onSubmit).toHaveBeenCalledTimes(1);
     });
@@ -217,7 +217,7 @@ describe('ChatInput', () => {
       const user = userEvent.setup();
       const { onSubmit } = renderWithAttachments({ disabled: true });
 
-      await user.type(screen.getByPlaceholderText('Describe your startup idea...'), '{Enter}');
+      await user.type(screen.getByPlaceholderText('Describe your Idea...'), '{Enter}');
 
       expect(onSubmit).not.toHaveBeenCalled();
     });

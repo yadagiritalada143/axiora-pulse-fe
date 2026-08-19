@@ -1,4 +1,4 @@
-import { Bot, Check, ChevronDown, ChevronUp, Loader2, Sparkles } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, Loader2, Sparkles, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -133,9 +133,11 @@ export function AgentStepProgress({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="flex size-7 items-center justify-center rounded-lg bg-[#FF4500]/10 text-[#FF4500]">
-                  <Bot className="size-4" />
+                  <TrendingUp className="size-4 text-green-500" />
                 </div>
-                <CardTitle className="text-sm font-bold tracking-tight">Agent Pipeline</CardTitle>
+                <CardTitle className="text-sm font-bold tracking-tight">
+                  Business Lifecycle
+                </CardTitle>
               </div>
               <Badge
                 variant="outline"

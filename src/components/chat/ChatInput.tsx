@@ -220,7 +220,7 @@ export function ChatInput({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={placeholder ?? 'Describe your startup idea...'}
+        placeholder={placeholder ?? 'Describe your Idea...'}
         rows={1}
         style={{ minHeight: '30px', maxHeight: '200px' }}
         className="w-full resize-none overflow-y-auto border-none bg-transparent p-0 text-sm shadow-none outline-none focus:ring-0"
