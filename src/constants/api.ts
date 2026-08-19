@@ -64,6 +64,9 @@ export const API_ENDPOINTS = {
   BILLING: {
     PLANS: '/billing/plans',
     SUBSCRIBE: '/billing/subscribe',
+    VERIFY: '/billing/verify',
+    SUBSCRIPTION: '/billing/subscription',
+    CANCEL: '/billing/cancel',
   },
   USER: {
     PROFILE: '/users/me',
@@ -71,6 +74,8 @@ export const API_ENDPOINTS = {
   },
   ORCHESTRATION: {
     RUN: '/v1/orchestration/run',
+    RESEARCH_STREAM: (runId: string) => `/v1/orchestration/${runId}/research-stream`,
+    RESEARCH_TRACES: (runId: string) => `/v1/orchestration/${runId}/research-traces`,
   },
 
   ONBOARDING: {
@@ -85,6 +90,7 @@ export const API_ENDPOINTS = {
 
   ADMIN: {
     USERS: '/v1/admin/users',
+    USER_GROWTH: '/v1/admin/stats/user-growth',
   },
 } as const;
 

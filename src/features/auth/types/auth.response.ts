@@ -3,6 +3,7 @@ import type { AccountRole } from '@/types/common.types';
 export interface LoginResponse {
   status: 'success';
   message: string;
+  userid?: number;
 }
 
 export interface AdminLoginResponse {

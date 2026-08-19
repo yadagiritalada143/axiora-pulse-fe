@@ -32,7 +32,7 @@ describe('ChatInput', () => {
   it('renders the default placeholder', () => {
     render(<ChatInput value="" onChange={jest.fn()} onSubmit={jest.fn()} />);
 
-    expect(screen.getByPlaceholderText('Describe your startup idea...')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Describe your Idea...')).toBeInTheDocument();
   });
 
   it('renders a custom placeholder when provided', () => {
@@ -49,7 +49,7 @@ describe('ChatInput', () => {
 
     render(<ChatInput value="" onChange={onChange} onSubmit={jest.fn()} />);
 
-    await user.type(screen.getByPlaceholderText('Describe your startup idea...'), 'Hi');
+    await user.type(screen.getByPlaceholderText('Describe your Idea...'), 'Hi');
 
     expect(onChange).toHaveBeenCalledWith('H');
     expect(onChange).toHaveBeenCalledWith('i');
@@ -82,7 +82,7 @@ describe('ChatInput', () => {
 
     render(<Controlled onSubmit={onSubmit} />);
 
-    const textarea = screen.getByPlaceholderText('Describe your startup idea...');
+    const textarea = screen.getByPlaceholderText('Describe your Idea...');
     await user.type(textarea, 'Ship it{Enter}');
 
     expect(onSubmit).toHaveBeenCalledWith('Ship it');
@@ -95,7 +95,7 @@ describe('ChatInput', () => {
 
     render(<ChatInput value="Some text" onChange={jest.fn()} onSubmit={onSubmit} />);
 
-    const textarea = screen.getByPlaceholderText('Describe your startup idea...');
+    const textarea = screen.getByPlaceholderText('Describe your Idea...');
     await user.type(textarea, '{Shift>}{Enter}{/Shift}');
 
     expect(onSubmit).not.toHaveBeenCalled();
@@ -127,10 +127,66 @@ describe('ChatInput', () => {
     expect(calledWith?.[0]?.name).toBe('notes.txt');
   });
 
+  it('opens the file types menu when attach button is clicked and shows available options', async () => {
+    const user = userEvent.setup();
+    render(<ChatInput value="" onChange={jest.fn()} onSubmit={jest.fn()} onAttach={jest.fn()} />);
+
+    const attachButton = screen.getByRole('button', { name: 'Attach files' });
+    await user.click(attachButton);
+
+    expect(screen.getByRole('menu', { name: 'Select file type to upload' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /PDF Document/i })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /Image/i })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /Document \(DOC \/ DOCX\)/i })).toBeInTheDocument();
+  });
+
+  it('restricts accept attribute when a specific file type is selected', async () => {
+    const user = userEvent.setup();
+    render(<ChatInput value="" onChange={jest.fn()} onSubmit={jest.fn()} onAttach={jest.fn()} />);
+
+    const attachButton = screen.getByRole('button', { name: 'Attach files' });
+    await user.click(attachButton);
+
+    const pdfOption = screen.getByRole('menuitem', { name: /PDF Document/i });
+    await user.click(pdfOption);
+
+    const fileInput = document.querySelector<HTMLInputElement>('input[type="file"]');
+    expect(fileInput?.getAttribute('accept')).toBe('application/pdf,.pdf');
+  });
+
+  it('renders only the file types provided by the backend configuration', async () => {
+    const user = userEvent.setup();
+    const customTypes = [
+      {
+        id: 'pdf' as const,
+        label: 'PDF Only',
+        sublabel: '.pdf',
+        accept: 'application/pdf',
+        extensions: ['pdf'],
+      },
+    ];
+
+    render(
+      <ChatInput
+        value=""
+        onChange={jest.fn()}
+        onSubmit={jest.fn()}
+        onAttach={jest.fn()}
+        supportedFileTypes={customTypes}
+      />,
+    );
+
+    const attachButton = screen.getByRole('button', { name: 'Attach files' });
+    await user.click(attachButton);
+
+    expect(screen.getByRole('menuitem', { name: /PDF Only/i })).toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: /Image/i })).not.toBeInTheDocument();
+  });
+
   it('disables the textarea and send button when disabled is true', () => {
     render(<ChatInput value="Hello" onChange={jest.fn()} onSubmit={jest.fn()} disabled />);
 
-    expect(screen.getByPlaceholderText('Describe your startup idea...')).toBeDisabled();
+    expect(screen.getByPlaceholderText('Describe your Idea...')).toBeDisabled();
     expect(screen.getByRole('button', { name: /send/i })).toBeDisabled();
   });
 
@@ -199,7 +255,7 @@ describe('ChatInput', () => {
 
       expect(screen.getByRole('button', { name: /send/i })).toBeDisabled();
 
-      await user.type(screen.getByPlaceholderText('Describe your startup idea...'), '{Enter}');
+      await user.type(screen.getByPlaceholderText('Describe your Idea...'), '{Enter}');
 
       expect(onSubmit).not.toHaveBeenCalled();
     });
@@ -208,7 +264,7 @@ describe('ChatInput', () => {
       const user = userEvent.setup();
       const { onSubmit } = renderWithAttachments();
 
-      await user.type(screen.getByPlaceholderText('Describe your startup idea...'), '{Enter}');
+      await user.type(screen.getByPlaceholderText('Describe your Idea...'), '{Enter}');
 
       expect(onSubmit).toHaveBeenCalledTimes(1);
     });
@@ -217,7 +273,7 @@ describe('ChatInput', () => {
       const user = userEvent.setup();
       const { onSubmit } = renderWithAttachments({ disabled: true });
 
-      await user.type(screen.getByPlaceholderText('Describe your startup idea...'), '{Enter}');
+      await user.type(screen.getByPlaceholderText('Describe your Idea...'), '{Enter}');
 
       expect(onSubmit).not.toHaveBeenCalled();
     });

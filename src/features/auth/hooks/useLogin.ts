@@ -15,9 +15,9 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: (payload: LoginRequest) => authService.login(payload),
-    onSuccess: (_response, variables) => {
+    onSuccess: (response, variables) => {
       setMfaData({
-        userid: 0,
+        userid: response.userid ?? 0,
         username: variables.username,
         identifier: variables.username,
         mfaVerified: false,

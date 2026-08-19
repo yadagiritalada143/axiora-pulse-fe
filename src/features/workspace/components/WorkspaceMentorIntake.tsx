@@ -76,7 +76,7 @@ export function WorkspaceMentorIntake({ onSubmit, isPending, error }: WorkspaceM
           htmlFor="idea-description"
           className="text-foreground mb-2 block text-sm font-medium"
         >
-          Describe your startup Idea….
+          Describe your Idea….
         </label>
         <Textarea
           id="idea-description"

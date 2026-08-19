@@ -21,7 +21,7 @@ describe('WorkspaceMentorIntake', () => {
     }
 
     await user.type(
-      screen.getByLabelText('Describe your startup Idea….'),
+      screen.getByLabelText('Describe your Idea….'),
       'A rocket delivery service for small parcels.',
     );
 
@@ -37,10 +37,7 @@ describe('WorkspaceMentorIntake', () => {
     render(<WorkspaceMentorIntake onSubmit={onSubmit} isPending={false} />);
 
     await user.type(screen.getByLabelText('Idea Title'), 'Acme Rocket');
-    await user.type(
-      screen.getByLabelText('Describe your startup Idea….'),
-      'A rocket delivery service.',
-    );
+    await user.type(screen.getByLabelText('Describe your Idea….'), 'A rocket delivery service.');
 
     const visibleContinueButton = screen
       .getAllByRole('button', { name: /continue/i })
@@ -58,7 +55,7 @@ describe('WorkspaceMentorIntake', () => {
     render(<WorkspaceMentorIntake onSubmit={onSubmit} isPending={false} />);
 
     await user.type(screen.getByLabelText('Idea Title'), '   ');
-    await user.type(screen.getByLabelText('Describe your startup Idea….'), '   ');
+    await user.type(screen.getByLabelText('Describe your Idea….'), '   ');
 
     for (const button of screen.getAllByRole('button', { name: /continue/i })) {
       expect(button).toBeDisabled();
@@ -70,7 +67,7 @@ describe('WorkspaceMentorIntake', () => {
     render(<WorkspaceMentorIntake onSubmit={jest.fn()} isPending />);
 
     expect(screen.getByLabelText('Idea Title')).toBeDisabled();
-    expect(screen.getByLabelText('Describe your startup Idea….')).toBeDisabled();
+    expect(screen.getByLabelText('Describe your Idea….')).toBeDisabled();
     expect(screen.getAllByText('Starting…').length).toBeGreaterThan(0);
   });
 

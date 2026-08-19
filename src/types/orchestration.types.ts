@@ -75,6 +75,28 @@ export interface OrchestrationAgentResults {
   survey_intelligence_agent?: OrchestrationAgentResult<SurveyIntelligenceAgentData>;
 }
 
+export interface ResearchQueryTrace {
+  agent_name: string;
+  query: string;
+  status: string;
+  timestamp: string;
+}
+
+export interface ResearchSourceTrace {
+  agent_name: string;
+  title?: string | null;
+  url: string;
+  snippet?: string | null;
+  timestamp: string;
+}
+
+export interface ResearchTraceResponse {
+  run_id: string;
+  queries: ResearchQueryTrace[];
+  sources: ResearchSourceTrace[];
+  is_active: boolean;
+}
+
 export interface OrchestrationResult {
   idea_id: string;
   orchestration_run_id: string;
@@ -87,6 +109,8 @@ export interface OrchestrationResult {
   recommendations: string[];
   agent_results: OrchestrationAgentResults;
   mentor_summary: string;
+  research_queries?: ResearchQueryTrace[];
+  research_sources?: ResearchSourceTrace[];
   disclaimer: string;
   created_at: string;
 }
@@ -102,3 +126,57 @@ export interface OrchestrationRunResponse {
   started_at: string;
   completed_at: string | null;
 }
+
+export interface ResearchStreamQueryEvent {
+  type?: 'query';
+  event?: 'research_query';
+  run_id?: string;
+  agent?: string;
+  agent_name?: string;
+  query: string;
+  status?: string;
+  index?: number;
+  total?: number;
+  timestamp: string;
+}
+
+export interface ResearchStreamSourceEvent {
+  type?: 'source';
+  event?: 'research_source';
+  run_id?: string;
+  agent?: string;
+  agent_name?: string;
+  query?: string;
+  title?: string | null;
+  url: string;
+  snippet?: string | null;
+  timestamp: string;
+}
+
+export interface ResearchStreamSnapshotEvent {
+  event: 'snapshot';
+  run_id: string;
+  data: ResearchTraceResponse;
+}
+
+export interface ResearchStreamCompleteEvent {
+  event: 'run_completed' | 'complete';
+  type?: 'complete';
+  run_id?: string;
+  status?: string;
+  total_queries?: number;
+  total_sources?: number;
+  timestamp: string;
+}
+
+export interface ResearchStreamPingEvent {
+  event: 'ping';
+  timestamp: string;
+}
+
+export type ResearchStreamEvent =
+  | ResearchStreamSnapshotEvent
+  | ResearchStreamQueryEvent
+  | ResearchStreamSourceEvent
+  | ResearchStreamCompleteEvent
+  | ResearchStreamPingEvent;

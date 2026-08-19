@@ -86,7 +86,11 @@ describe('useResendOtp', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(mockedAuthService.resendOTP).toHaveBeenCalledWith({ id: 42, flow: 'register' });
+    expect(mockedAuthService.resendOTP).toHaveBeenCalledWith({
+      id: 42,
+      emailOrMobile: 'jane@example.com',
+      flow: 'register',
+    });
     expect(mockedToastSuccess).toHaveBeenCalledWith('OTP has been sent to jane@example.com.');
   });
 

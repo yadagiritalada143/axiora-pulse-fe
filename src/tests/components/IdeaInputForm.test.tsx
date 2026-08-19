@@ -69,7 +69,7 @@ describe('IdeaInputForm', () => {
       expect(button).toBeDisabled();
     }
 
-    await user.type(screen.getByLabelText('Describe your startup Idea….'), 'Forecasting tool');
+    await user.type(screen.getByLabelText('Describe your Idea….'), 'Forecasting tool');
 
     expect(screen.getAllByRole('button', { name: 'Continue' })[0]).toBeEnabled();
   });
@@ -90,10 +90,7 @@ describe('IdeaInputForm', () => {
 
     await user.type(screen.getByLabelText('Idea Title'), '  Inventory AI  ');
 
-    await user.type(
-      screen.getByLabelText('Describe your startup Idea….'),
-      'Forecasting for retailers',
-    );
+    await user.type(screen.getByLabelText('Describe your Idea….'), 'Forecasting for retailers');
 
     const continueButton = screen.getAllByRole('button', {
       name: 'Continue',
@@ -134,7 +131,7 @@ describe('IdeaInputForm', () => {
     expect(screen.getAllByRole('button', { name: 'Validating…' })[0]).toBeInTheDocument();
 
     expect(screen.getByLabelText('Idea Title')).toBeDisabled();
-    expect(screen.getByLabelText('Describe your startup Idea….')).toBeDisabled();
+    expect(screen.getByLabelText('Describe your Idea….')).toBeDisabled();
   });
 
   it('renders an API error message when the mutation fails', () => {

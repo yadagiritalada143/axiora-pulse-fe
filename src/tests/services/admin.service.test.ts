@@ -1,4 +1,4 @@
-import type { AdminUsersResponse } from '@/types/admin.types';
+import type { AdminUsersResponse, UserGrowthResponse } from '@/types/admin.types';
 import { API_ENDPOINTS } from '@constants/api';
 import { adminService } from '@services/admin/admin.service';
 import { apiClient } from '@services/api';
@@ -42,6 +42,26 @@ describe('adminService', () => {
 
     expect(mockedApiClient.get).toHaveBeenCalledWith(API_ENDPOINTS.ADMIN.USERS, {
       params,
+    });
+    expect(result).toEqual(mockResponse);
+  });
+
+  it('getUserGrowth calls GET API_ENDPOINTS.ADMIN.USER_GROWTH with granularity and returns data', async () => {
+    const mockResponse: UserGrowthResponse = {
+      granularity: 'month',
+      series: [
+        { period: '2026-06', count: 3 },
+        { period: '2026-07', count: 0 },
+        { period: '2026-08', count: 5 },
+      ],
+    };
+
+    mockedApiClient.get.mockResolvedValue({ data: mockResponse });
+
+    const result = await adminService.getUserGrowth('month');
+
+    expect(mockedApiClient.get).toHaveBeenCalledWith(API_ENDPOINTS.ADMIN.USER_GROWTH, {
+      params: { granularity: 'month' },
     });
     expect(result).toEqual(mockResponse);
   });

@@ -31,6 +31,7 @@ export const queryKeys = {
 
   billing: {
     plans: () => ['billing', 'plans'] as const,
+    subscription: () => ['billing', 'subscription'] as const,
   },
 
   user: {
@@ -45,5 +46,6 @@ export const queryKeys = {
     interactiveQuestions: () => ['admin', 'interactiveQuestions'] as const,
     users: (params?: { limit?: number; offset?: number; search?: string }) =>
       ['admin', 'users', params] as const,
+    userGrowth: (granularity: 'month' | 'year') => ['admin', 'userGrowth', granularity] as const,
   },
 } as const;

@@ -1,6 +1,10 @@
 import { FileText, Image, Loader2, Mic, Paperclip, Send, X } from 'lucide-react';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 
+import {
+  BACKEND_SUPPORTED_FILE_TYPES,
+  type SupportedFileTypeOption,
+} from '@/constants/attachments';
 import { Button } from '@components/ui/button';
 import { cn } from '@lib/utils';
 
@@ -25,7 +29,10 @@ interface ChatInputProps {
   onRemoveAttachment?: (id: string | number) => void;
   disabled?: boolean;
   placeholder?: string;
+  supportedFileTypes?: SupportedFileTypeOption[];
 }
+
+const DEFAULT_ALL_ACCEPT = BACKEND_SUPPORTED_FILE_TYPES.map((t) => t.accept).join(',');
 
 export function ChatInput({
   value,
@@ -36,8 +43,13 @@ export function ChatInput({
   onRemoveAttachment,
   disabled,
   placeholder,
+  supportedFileTypes = BACKEND_SUPPORTED_FILE_TYPES,
 }: ChatInputProps) {
   const [isListening, setIsListening] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [currentAccept, setCurrentAccept] = useState<string>(DEFAULT_ALL_ACCEPT);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const attachButtonRef = useRef<HTMLButtonElement>(null);
 
   interface SpeechRecognitionAlternative {
     transcript: string;
@@ -98,6 +110,35 @@ export function ChatInput({
       clearRecordingTimeout();
     };
   }, []);
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(e.target as Node) &&
+        attachButtonRef.current &&
+        !attachButtonRef.current.contains(e.target as Node)
+      ) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (e: globalThis.KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isMenuOpen]);
 
   const toggleListening = () => {
     if (!SpeechRecognitionConstructor) return;
@@ -175,6 +216,15 @@ export function ChatInput({
     }
   };
 
+  const handleSelectFileType = (typeOption: SupportedFileTypeOption) => {
+    setIsMenuOpen(false);
+    setCurrentAccept(typeOption.accept);
+    // Open the native file picker
+    setTimeout(() => {
+      fileInputRef.current?.click();
+    }, 50);
+  };
+
   const isUploadingAny = attachments.some((att) => att.isUploading);
 
   return (
@@ -220,7 +270,7 @@ export function ChatInput({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={placeholder ?? 'Describe your startup idea...'}
+        placeholder={placeholder ?? 'Describe your Idea...'}
         rows={1}
         style={{ minHeight: '30px', maxHeight: '200px' }}
         className="w-full resize-none overflow-y-auto border-none bg-transparent p-0 text-sm shadow-none outline-none focus:ring-0"
@@ -240,11 +290,12 @@ export function ChatInput({
       <div className="mt-2 flex items-center justify-between">
         <div className="flex items-center gap-1">
           {onAttach && (
-            <>
+            <div className="relative">
               <input
                 ref={fileInputRef}
                 type="file"
                 multiple
+                accept={currentAccept}
                 className="hidden"
                 onChange={(event) => {
                   if (event.target.files?.length) onAttach(event.target.files);
@@ -252,16 +303,55 @@ export function ChatInput({
                 }}
               />
               <Button
+                ref={attachButtonRef}
                 type="button"
                 variant="ghost"
                 size="icon"
                 aria-label="Attach files"
-                onClick={() => fileInputRef.current?.click()}
+                aria-haspopup="menu"
+                aria-expanded={isMenuOpen}
+                onClick={() => setIsMenuOpen((prev) => !prev)}
                 disabled={disabled}
               >
                 <Paperclip className="size-4" />
               </Button>
-            </>
+
+              {isMenuOpen && (
+                <div
+                  ref={menuRef}
+                  role="menu"
+                  aria-label="Select file type to upload"
+                  className="bg-popover text-popover-foreground border-border/80 animate-in fade-in zoom-in-95 absolute bottom-full left-0 z-50 mb-2 min-w-[210px] overflow-hidden rounded-xl border p-1.5 shadow-lg backdrop-blur-xs duration-100 select-none"
+                >
+                  <div className="text-muted-foreground px-2.5 py-1 text-[10px] font-semibold tracking-wider uppercase">
+                    Select File Type
+                  </div>
+                  {supportedFileTypes.map((typeOption) => (
+                    <button
+                      key={typeOption.id}
+                      type="button"
+                      role="menuitem"
+                      onClick={() => handleSelectFileType(typeOption)}
+                      className="hover:bg-accent hover:text-accent-foreground flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors"
+                    >
+                      {typeOption.id === 'image' ? (
+                        <Image className="size-4 shrink-0 text-blue-500" />
+                      ) : typeOption.id === 'pdf' ? (
+                        <FileText className="size-4 shrink-0 text-red-500" />
+                      ) : (
+                        <FileText className="size-4 shrink-0 text-orange-500" />
+                      )}
+                      <div className="flex flex-col text-left">
+                        <span className="text-foreground">{typeOption.label}</span>
+                        <span className="text-muted-foreground font-mono text-[10px]">
+                          {typeOption.sublabel}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
 
           {isSpeechSupported && (

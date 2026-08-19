@@ -100,6 +100,13 @@ export default tseslint.config(
       // These wrap `{...props}` through to the underlying element, so content
       // is provided by call sites - the static a11y check can't see that.
       'jsx-a11y/anchor-has-content': 'off',
+      // The chart component threads recharts' loosely-typed payload/label props
+      // (typed as `any` upstream) straight through; the type-checked rules can't
+      // narrow them and only add churn to vendored code.
+      '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
     },
   },
   {

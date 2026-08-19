@@ -14,7 +14,7 @@ import {
 } from '@components/chat';
 import { ApiErrorMessage } from '@components/common/ApiErrorMessage';
 import { Button } from '@components/ui/button';
-import { IdeaValidationReport } from '@features/ideaValidation/components';
+import { IdeaValidationReport, WebSearchDrawer } from '@features/ideaValidation/components';
 
 import { workspaceService } from '../api';
 import { useWorkspaceChat, useWorkspaceState } from '../hooks/useWorkspaceMentor';
@@ -75,16 +75,27 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
   const [typeOnAssistantMessages, setTypeOnAssistantMessages] = useState<Set<number>>(
     () => new Set(),
   );
+  const [typingCompletedMessages, setTypingCompletedMessages] = useState<Set<number>>(
+    () => new Set(),
+  );
   const bottomRef = useRef<HTMLDivElement>(null);
-  const [reportAnchorIndex, setReportAnchorIndex] = useState<number | null>(null);
+  const [reportAnchorIndex, setReportAnchorIndex] = useState<number | null>(() => {
+    return data?.validation_result ? data.conversation_history.length : null;
+  });
+  const [prevValidationResult, setPrevValidationResult] = useState<unknown>(
+    data?.validation_result ?? null,
+  );
+  if (data?.validation_result && prevValidationResult !== data.validation_result) {
+    setPrevValidationResult(data.validation_result);
+    if (reportAnchorIndex === null) {
+      setReportAnchorIndex(data.conversation_history.length);
+    }
+  }
+  const [isTriggeringValidation, setIsTriggeringValidation] = useState(false);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [data?.conversation_history.length, chat.isPending]);
-
-  if (data?.validation_result && reportAnchorIndex === null) {
-    setReportAnchorIndex(data.conversation_history.length);
-  }
 
   const readFileAsDataURL = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -189,10 +200,25 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
 
     const nextAssistantMessageIndex = (data?.conversation_history.length ?? 0) + 1;
     setTypeOnAssistantMessages((previous) => new Set(previous).add(nextAssistantMessageIndex));
-    chat.mutate({
-      message: finalMessage,
-      attachments: payloadAttachments.length > 0 ? payloadAttachments : null,
-    });
+
+    if (finalMessage === VALIDATION_TRIGGER_MESSAGE) {
+      setIsTriggeringValidation(true);
+    }
+
+    chat.mutate(
+      {
+        message: finalMessage,
+        attachments: payloadAttachments.length > 0 ? payloadAttachments : null,
+      },
+      {
+        onSuccess: () => {
+          setIsTriggeringValidation(false);
+        },
+        onError: () => {
+          setIsTriggeringValidation(false);
+        },
+      },
+    );
     setDraft('');
     setAttachments([]);
   }
@@ -254,36 +280,99 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
           </span>
         </div>
 
-        <div className="flex-1 space-y-4 overflow-y-auto py-4">
+        <div className="flex-1 space-y-4 overflow-y-auto pt-4 pb-8">
           {effectiveReportAnchor === 0 ? reportNode : null}
 
-          {data.conversation_history.map((message, index) => (
-            <Fragment key={index}>
-              {message.role === 'user' ? (
-                <ChatBubble align="right" avatarLabel="U">
-                  <MarkdownRenderer content={displayMessageContent(message.content)} />
-                </ChatBubble>
-              ) : (
-                <ChatBubble align="left" avatarLabel="AI">
-                  {typeOnAssistantMessages.has(index) ? (
-                    <TypeOnMarkdown content={message.content} />
-                  ) : (
-                    <MarkdownRenderer content={message.content} />
-                  )}
-                </ChatBubble>
-              )}
+          {data.conversation_history.map((message, index) => {
+            const isValidationTrigger =
+              Boolean(validationResponse) &&
+              (message.content === VALIDATION_TRIGGER_MESSAGE ||
+                message.content.includes('[TRIGGER_VALIDATION]') ||
+                index === (reportAnchorIndex ?? data.conversation_history.length) - 2);
 
-              {effectiveReportAnchor === index + 1 ? reportNode : null}
-            </Fragment>
-          ))}
+            return (
+              <Fragment key={index}>
+                {message.role === 'user' ? (
+                  <Fragment>
+                    <ChatBubble align="right" avatarLabel="U">
+                      <MarkdownRenderer content={displayMessageContent(message.content)} />
+                    </ChatBubble>
+                    {isValidationTrigger && validationResponse ? (
+                      <div className="py-2 pl-12">
+                        <WebSearchDrawer
+                          runId={validationResponse.run_id}
+                          ideaTitle={data.idea.idea_title ?? data.name}
+                          result={validationResponse.result}
+                          isLive={false}
+                          defaultExpanded={true}
+                        />
+                      </div>
+                    ) : null}
+                  </Fragment>
+                ) : (
+                  <ChatBubble align="left" avatarLabel="AI">
+                    {typeOnAssistantMessages.has(index) ? (
+                      <TypeOnMarkdown
+                        content={message.content}
+                        onComplete={() =>
+                          setTypingCompletedMessages((prev) => new Set(prev).add(index))
+                        }
+                      />
+                    ) : (
+                      <MarkdownRenderer content={message.content} />
+                    )}
+                  </ChatBubble>
+                )}
 
-          {chat.isPending ? (
-            <ChatBubble align="left" avatarLabel="AI">
-              <TypingIndicator />
-            </ChatBubble>
-          ) : null}
+                {effectiveReportAnchor === index + 1
+                  ? !typeOnAssistantMessages.has(index) || typingCompletedMessages.has(index)
+                    ? reportNode
+                    : null
+                  : null}
+              </Fragment>
+            );
+          })}
 
-          {validationResponse && effectiveReportAnchor > data.conversation_history.length
+          {/* Live Validation / Pending Assistant Indicator */}
+          {(() => {
+            const lastMsg = data.conversation_history[data.conversation_history.length - 1];
+            const isLastFromUser = lastMsg?.role === 'user';
+            const isValidating =
+              (data.state === 'VALIDATING' || isTriggeringValidation) && !data.validation_result;
+            const isPendingAssistant =
+              chat.isPending || (isLastFromUser && !data.validation_result);
+
+            if (isValidating) {
+              return (
+                <div className="py-2">
+                  <WebSearchDrawer
+                    runId={`run-${workspaceId}`}
+                    ideaTitle={data.idea.idea_title ?? data.name}
+                    result={null}
+                    isLive={true}
+                    defaultExpanded={true}
+                  />
+                </div>
+              );
+            }
+
+            if (isPendingAssistant && !data.validation_result) {
+              return (
+                <div className="py-2">
+                  <ChatBubble align="left" avatarLabel="AI">
+                    <TypingIndicator />
+                  </ChatBubble>
+                </div>
+              );
+            }
+
+            return null;
+          })()}
+
+          {validationResponse &&
+          effectiveReportAnchor > data.conversation_history.length &&
+          (!typeOnAssistantMessages.has(data.conversation_history.length - 1) ||
+            typingCompletedMessages.has(data.conversation_history.length - 1))
             ? reportNode
             : null}
 

@@ -1,94 +1,41 @@
 import useEmblaCarousel from 'embla-carousel-react';
-import { Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
+import type { PricingPlan } from '@/types/api.types';
+import type { BillingPeriod } from '@/types/billing.types';
+import { ApiErrorMessage } from '@components/common/ApiErrorMessage';
 import { Button } from '@components/ui/button';
 import { ROUTES } from '@constants/routes';
+import { usePricingPlans } from '@features/pricing/hooks/usePricingPlans';
+import { useSubscribe } from '@features/pricing/hooks/useSubscribe';
 import { cn } from '@lib/utils';
 import { useAuthStore } from '@store/auth.store';
-
-// ─── Static plan data (matches the screenshot exactly) ───────────────────────
-
-interface Plan {
-  id: string;
-  name: string;
-  tagline: string;
-  priceMonthly: number;
-  priceYearly: number;
-  features: string[];
-  highlighted: boolean;
-}
-
-const PLANS: Plan[] = [
-  {
-    id: 'starter',
-    name: 'Starter Plan',
-    tagline: 'Perfect for individuals exploring startup ideas.',
-    priceMonthly: 799,
-    priceYearly: 7990,
-    highlighted: false,
-    features: [
-      'AI Co-Founder (Basic)',
-      '20 AI conversations / month',
-      'Founder Foundation',
-      '5 AI-generated documents',
-      'Basic Founder Intelligence',
-      'Community Support',
-    ],
-  },
-  {
-    id: 'professional',
-    name: 'Professional',
-    tagline: 'Perfect for individuals exploring startup ideas.',
-    priceMonthly: 999,
-    priceYearly: 9990,
-    highlighted: true,
-    features: [
-      'AI Co-Founder (Basic)',
-      '10 AI conversations / month',
-      'Founder Foundation',
-      '5 AI-generated documents',
-      'Basic Founder Intelligence',
-      'Community Support',
-    ],
-  },
-  {
-    id: 'enterprise',
-    name: 'Enterprise',
-    tagline: 'Perfect for individuals exploring startup ideas.',
-    priceMonthly: 1499,
-    priceYearly: 14990,
-    highlighted: false,
-    features: [
-      'AI Co-Founder (Basic)',
-      '20 AI conversations / month',
-      'Founder Foundation',
-      '5 AI-generated documents',
-      'Basic Founder Intelligence',
-      'Community Support',
-    ],
-  },
-];
-
-// ─── Individual plan card ─────────────────────────────────────────────────────
 
 function PlanCard({
   plan,
   billingPeriod,
   onSelect,
+  isSubmitting,
+  submittingId,
 }: {
-  plan: Plan;
-  billingPeriod: 'monthly' | 'yearly';
+  plan: PricingPlan;
+  billingPeriod: BillingPeriod;
   onSelect: (id: string) => void;
+  isSubmitting: boolean;
+  submittingId: string | null;
 }) {
+  const planId = String(plan.id);
   const price = billingPeriod === 'monthly' ? plan.priceMonthly : plan.priceYearly;
+  const isThisSubmitting = submittingId === planId;
 
   return (
     <div
       className={cn(
         'bg-card flex h-full flex-col rounded-2xl border p-6 text-left transition-shadow',
-        plan.highlighted
+        plan.popular
           ? 'border-primary shadow-primary/10 shadow-lg'
           : 'border-border hover:shadow-md',
       )}
@@ -96,10 +43,7 @@ function PlanCard({
       {/* Header */}
       <div className="mb-4">
         <h3
-          className={cn(
-            'text-lg font-semibold',
-            plan.highlighted ? 'text-primary' : 'text-foreground',
-          )}
+          className={cn('text-lg font-semibold', plan.popular ? 'text-primary' : 'text-foreground')}
         >
           {plan.name}
         </h3>
@@ -111,7 +55,9 @@ function PlanCard({
             / {billingPeriod === 'monthly' ? 'month' : 'year'}
           </span>
         </div>
-        <p className="text-muted-foreground mt-1 text-sm">{plan.tagline}</p>
+        {plan.description ? (
+          <p className="text-muted-foreground mt-1 text-sm">{plan.description}</p>
+        ) : null}
       </div>
 
       {/* Features */}
@@ -123,7 +69,7 @@ function PlanCard({
               <Check
                 className={cn(
                   'mt-0.5 size-4 shrink-0',
-                  plan.highlighted ? 'text-primary' : 'text-muted-foreground',
+                  plan.popular ? 'text-primary' : 'text-muted-foreground',
                 )}
               />
               <span className="text-muted-foreground">{f}</span>
@@ -135,10 +81,18 @@ function PlanCard({
       {/* CTA */}
       <Button
         className="w-full"
-        variant={plan.highlighted ? 'default' : 'outline'}
-        onClick={() => onSelect(plan.id)}
+        variant={plan.popular ? 'default' : 'outline'}
+        onClick={() => onSelect(planId)}
+        disabled={isSubmitting}
       >
-        Choose plan
+        {isThisSubmitting ? (
+          <>
+            <Loader2 className="size-4 animate-spin" />
+            Processing…
+          </>
+        ) : (
+          'Choose plan'
+        )}
       </Button>
     </div>
   );
@@ -155,16 +109,25 @@ function MobileCarousel({
   plans,
   billingPeriod,
   onSelect,
+  isSubmitting,
+  submittingId,
 }: {
-  plans: Plan[];
-  billingPeriod: 'monthly' | 'yearly';
+  plans: PricingPlan[];
+  billingPeriod: BillingPeriod;
   onSelect: (id: string) => void;
+  isSubmitting: boolean;
+  submittingId: string | null;
 }) {
-  const [activeIdx, setActiveIdx] = useState(1); // start on Professional (highlighted)
+  // Start on the highlighted plan if there is one, otherwise the first.
+  const initialIdx = Math.max(
+    0,
+    plans.findIndex((p) => p.popular),
+  );
+  const [activeIdx, setActiveIdx] = useState(initialIdx);
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: false,
-    startIndex: 1,
+    startIndex: initialIdx,
     align: 'center',
     containScroll: 'trimSnaps',
   });
@@ -203,14 +166,20 @@ function MobileCarousel({
       <div ref={emblaRef} className="overflow-hidden px-[10vw]">
         <div className="-ml-4 flex items-stretch">
           {plans.map((plan, idx) => (
-            <div key={plan.id} className="min-w-0 shrink-0 grow-0 basis-full pl-4">
+            <div key={String(plan.id)} className="min-w-0 shrink-0 grow-0 basis-full pl-4">
               <div
                 className={cn(
                   'h-full transition-all duration-300 ease-in-out',
                   idx === activeIdx ? 'scale-100 opacity-100' : 'scale-95 opacity-60',
                 )}
               >
-                <PlanCard plan={plan} billingPeriod={billingPeriod} onSelect={onSelect} />
+                <PlanCard
+                  plan={plan}
+                  billingPeriod={billingPeriod}
+                  onSelect={onSelect}
+                  isSubmitting={isSubmitting}
+                  submittingId={submittingId}
+                />
               </div>
             </div>
           ))}
@@ -233,7 +202,7 @@ function MobileCarousel({
         <div className="flex items-center gap-2" role="tablist" aria-label="Pricing plan slides">
           {plans.map((plan, idx) => (
             <button
-              key={plan.id}
+              key={String(plan.id)}
               type="button"
               role="tab"
               aria-label={`Go to ${plan.name}`}
@@ -267,8 +236,8 @@ function BillingToggle({
   value,
   onChange,
 }: {
-  value: 'monthly' | 'yearly';
-  onChange: (v: 'monthly' | 'yearly') => void;
+  value: BillingPeriod;
+  onChange: (v: BillingPeriod) => void;
 }) {
   return (
     <div className="border-border bg-muted mx-auto mt-6 inline-flex items-center gap-1 rounded-full border p-1">
@@ -293,18 +262,56 @@ function BillingToggle({
 // ─── Root component ───────────────────────────────────────────────────────────
 
 export function PricingPlans() {
-  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+  const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>('monthly');
   const navigate = useNavigate();
   const setHasActivePlan = useAuthStore((state) => state.setHasActivePlan);
-
   const setShowQuestionnaireIntro = useAuthStore((state) => state.setShowQuestionnaireIntro);
 
-  const handleSelect = (_planId: string) => {
+  const { data: plans, isLoading, isError, error, refetch } = usePricingPlans();
+  const subscribe = useSubscribe();
+
+  /**
+   * Advance into onboarding once a plan is secured. Called after a successful
+   * Razorpay authorization (or immediately for a free plan). Razorpay's webhook
+   * remains the authoritative source for entitlement.
+   */
+  const proceedToOnboarding = useCallback(() => {
     setHasActivePlan(true);
     setShowQuestionnaireIntro(true);
-
     void navigate(ROUTES.QUESTIONNAIRE_INTRO);
-  };
+  }, [navigate, setHasActivePlan, setShowQuestionnaireIntro]);
+
+  const handleSelect = useCallback(
+    (planId: string) => {
+      if (subscribe.isPending) return;
+
+      const selected = (plans ?? []).find((p) => String(p.id) === planId);
+      const price = selected
+        ? billingPeriod === 'monthly'
+          ? selected.priceMonthly
+          : selected.priceYearly
+        : 0;
+
+      // A free (₹0) plan needs no payment — proceed straight into onboarding.
+      if (price <= 0) {
+        proceedToOnboarding();
+        return;
+      }
+
+      subscribe.mutate(
+        { planId, billingPeriod },
+        {
+          onSuccess: () => proceedToOnboarding(),
+          onError: (err) => {
+            // A dismissed Checkout modal isn't a real failure — stay on the page quietly.
+            if (err.message === 'Checkout was dismissed.') return;
+            toast.error(err.message || 'Could not start the subscription. Please try again.');
+          },
+        },
+      );
+    },
+    [billingPeriod, plans, proceedToOnboarding, subscribe],
+  );
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 text-center sm:px-6">
@@ -315,22 +322,45 @@ export function PricingPlans() {
 
       <BillingToggle value={billingPeriod} onChange={setBillingPeriod} />
 
-      {/* Desktop: 3-column grid */}
-      <div className="mt-10 hidden gap-6 text-left sm:grid sm:grid-cols-2 lg:grid-cols-3">
-        {PLANS.map((plan) => (
-          <PlanCard
-            key={plan.id}
-            plan={plan}
-            billingPeriod={billingPeriod}
-            onSelect={handleSelect}
-          />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="mt-16 flex justify-center">
+          <Loader2 className="text-muted-foreground size-6 animate-spin" />
+        </div>
+      ) : isError ? (
+        <div className="mt-12">
+          <ApiErrorMessage error={error} />
+          <Button variant="outline" className="mt-4" onClick={() => void refetch()}>
+            Try again
+          </Button>
+        </div>
+      ) : (
+        <>
+          {/* Desktop: 3-column grid */}
+          <div className="mt-10 hidden gap-6 text-left sm:grid sm:grid-cols-2 lg:grid-cols-3">
+            {(plans ?? []).map((plan) => (
+              <PlanCard
+                key={String(plan.id)}
+                plan={plan}
+                billingPeriod={billingPeriod}
+                onSelect={handleSelect}
+                isSubmitting={subscribe.isPending}
+                submittingId={subscribe.isPending ? (subscribe.variables?.planId ?? null) : null}
+              />
+            ))}
+          </div>
 
-      {/* Mobile: full-bleed horizontal carousel */}
-      <div className="mt-10 sm:hidden">
-        <MobileCarousel plans={PLANS} billingPeriod={billingPeriod} onSelect={handleSelect} />
-      </div>
+          {/* Mobile: full-bleed horizontal carousel */}
+          <div className="mt-10 sm:hidden">
+            <MobileCarousel
+              plans={plans ?? []}
+              billingPeriod={billingPeriod}
+              onSelect={handleSelect}
+              isSubmitting={subscribe.isPending}
+              submittingId={subscribe.isPending ? (subscribe.variables?.planId ?? null) : null}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }
