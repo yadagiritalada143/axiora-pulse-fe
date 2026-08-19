@@ -132,12 +132,13 @@ describe('router', () => {
     expect(findRoute(authLayoutRoute.children, ROUTES.ADMIN_LOGIN)).toBeDefined();
   });
 
-  it('registers survey intelligence routes', () => {
+  it('registers survey intelligence and attachments routes', () => {
     const publicGroup = defined(router.routes[0]);
     const protectedGroup = defined(router.routes[2]);
 
     expect(findRoute(publicGroup.children, '/surveys/public/:surveyId')).toBeDefined();
     expect(findRoute(protectedGroup.children, ROUTES.WORKSPACE_SURVEY)).toBeDefined();
+    expect(findRoute(protectedGroup.children, ROUTES.WORKSPACE_ATTACHMENTS)).toBeDefined();
   });
 
   it('falls back to a wildcard "*" route for unmatched paths', () => {

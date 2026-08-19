@@ -116,3 +116,15 @@ export interface WorkspaceAttachmentResponse {
   created_at: string;
   updated_at: string;
 }
+
+export interface WorkspaceAttachmentListResponse {
+  total: number;
+  attachments: WorkspaceAttachmentResponse[];
+}
+
+export interface DeleteAttachmentResponse {
+  status: string;
+  message: string;
+  attachment_id: number;
+  workspace_id: number;
+}

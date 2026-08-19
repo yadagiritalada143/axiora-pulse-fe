@@ -98,6 +98,10 @@ export const router = createBrowserRouter([
         element: lazyPage(() => import('@pages/WorkspaceSurveyPage')),
       },
       {
+        path: ROUTES.WORKSPACE_ATTACHMENTS,
+        element: lazyPage(() => import('@pages/WorkspaceAttachmentsPage')),
+      },
+      {
         path: ROUTES.QUESTIONNAIRE_INTRO,
         element: lazyPage(() => import('@pages/QuestionnaireIntroPage')),
       },

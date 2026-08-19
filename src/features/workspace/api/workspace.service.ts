@@ -11,7 +11,9 @@ import type {
   RestoreWorkspaceResponse,
   UpdateWorkspaceRequest,
   Workspace,
+  WorkspaceAttachmentListResponse,
   WorkspaceAttachmentResponse,
+  DeleteAttachmentResponse,
   WorkspaceChatRequest,
   WorkspaceChatResponse,
   WorkspaceStateResponse,
@@ -132,6 +134,25 @@ export const workspaceService = {
 
   permanentDeleteWorkspace: async (id: number): Promise<void> => {
     await apiClient.delete(API_ENDPOINTS.WORKSPACE.PERMANENT_DELETE(id));
+  },
+
+  getAttachments: async (workspaceId: number): Promise<WorkspaceAttachmentListResponse> => {
+    const { data } = await apiClient.get<WorkspaceAttachmentListResponse>(
+      API_ENDPOINTS.WORKSPACE.ATTACHMENTS(workspaceId),
+    );
+
+    return data;
+  },
+
+  deleteAttachment: async (
+    workspaceId: number,
+    attachmentId: number,
+  ): Promise<DeleteAttachmentResponse> => {
+    const { data } = await apiClient.delete<DeleteAttachmentResponse>(
+      API_ENDPOINTS.WORKSPACE.ATTACHMENT_DETAIL(workspaceId, attachmentId),
+    );
+
+    return data;
   },
 
   uploadAttachment: async (workspaceId: number, file: File): Promise<MessageAttachment> => {

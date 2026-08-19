@@ -7,6 +7,7 @@ import {
   Copy,
   Link as LinkIcon,
   Loader2,
+  Paperclip,
   Plus,
   Share2,
   Trash2,
@@ -35,7 +36,12 @@ import {
   SelectValue,
 } from '@components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@components/ui/tabs';
-import { ROUTES, buildWorkspaceRoute, buildWorkspaceSurveyRoute } from '@constants/routes';
+import {
+  ROUTES,
+  buildWorkspaceAttachmentsRoute,
+  buildWorkspaceRoute,
+  buildWorkspaceSurveyRoute,
+} from '@constants/routes';
 import { MentorShell, type MentorNavItem } from '@features/ideaValidation/components';
 import {
   useSurveyByWorkspace,
@@ -112,6 +118,11 @@ export default function WorkspaceSurveyPage() {
       label: 'Survey Intelligence',
       icon: ClipboardList,
       href: workspaceId ? buildWorkspaceSurveyRoute(workspaceId) : '#',
+    },
+    {
+      label: 'Attachments',
+      icon: Paperclip,
+      href: workspaceId ? buildWorkspaceAttachmentsRoute(workspaceId) : '#',
     },
     // { label: 'Founder Intelligence', icon: Users, disabled: true },
     // { label: 'Startup Intelligence', icon: TrendingUp, disabled: true },
