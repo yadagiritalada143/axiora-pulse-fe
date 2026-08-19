@@ -24,37 +24,36 @@ export function useVerifyOtp() {
           setRole(response.role);
         }
 
+        const isRegisterFlow = variables.flow !== 'login';
+
         if (response.auth_actions) {
           const { payment, interactive_questions } = response.auth_actions;
           useAuthStore.getState().setHasActivePlan(payment);
           useAuthStore.getState().setHasCompletedQuestionnaire(interactive_questions);
           useAuthStore.getState().setShowQuestionnaireIntro(!interactive_questions);
 
-          if (!payment) {
+          if (isRegisterFlow) {
+            setOnboardingPending?.(true);
+            void navigate(ROUTES.ONBOARDING);
+          } else if (!payment) {
             void navigate(ROUTES.PRICING);
-          } else if (!interactive_questions) {
-            void navigate(ROUTES.QUESTIONNAIRE_INTRO);
           } else {
             void navigate(ROUTES.DASHBOARD);
           }
           return;
         }
 
-        if (variables.flow === 'login') {
+        if (isRegisterFlow) {
+          setOnboardingPending?.(true);
+          void navigate(ROUTES.ONBOARDING);
+        } else {
           const hasActivePlan = response.hasActivePlan ?? false;
           useAuthStore.getState().setHasActivePlan(hasActivePlan);
           if (hasActivePlan) {
-            if (!useAuthStore.getState().hasCompletedQuestionnaire) {
-              void navigate(ROUTES.QUESTIONNAIRE_INTRO);
-            } else {
-              void navigate(ROUTES.DASHBOARD);
-            }
+            void navigate(ROUTES.DASHBOARD);
           } else {
             void navigate(ROUTES.PRICING);
           }
-        } else {
-          setOnboardingPending?.(true);
-          void navigate(ROUTES.ONBOARDING);
         }
         return;
       }

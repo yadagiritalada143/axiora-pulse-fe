@@ -157,11 +157,10 @@ describe('PricingPlans', () => {
     );
     // The mock invokes onSuccess synchronously, so onboarding should advance.
     expect(setHasActivePlan).toHaveBeenCalledWith(true);
-    expect(setShowQuestionnaireIntro).toHaveBeenCalledWith(true);
-    expect(navigate).toHaveBeenCalledWith(ROUTES.QUESTIONNAIRE_INTRO);
+    expect(navigate).toHaveBeenCalledWith(ROUTES.DASHBOARD);
   });
 
-  it('skips payment for a free (₹0) plan and proceeds straight to onboarding', async () => {
+  it('skips payment for a free (₹0) plan and proceeds straight to dashboard', async () => {
     mockedUsePricingPlans.mockReturnValue({
       data: [
         {
@@ -189,6 +188,6 @@ describe('PricingPlans', () => {
 
     expect(subscribeMutate).not.toHaveBeenCalled();
     expect(setHasActivePlan).toHaveBeenCalledWith(true);
-    expect(navigate).toHaveBeenCalledWith(ROUTES.QUESTIONNAIRE_INTRO);
+    expect(navigate).toHaveBeenCalledWith(ROUTES.DASHBOARD);
   });
 });

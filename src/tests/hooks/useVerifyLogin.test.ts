@@ -223,14 +223,7 @@ describe('useVerifyLogin', () => {
       expect(mockNavigate).toHaveBeenCalledWith('/pricing');
     });
 
-    it('navigates to the questionnaire intro when paid but the questionnaire is unanswered', async () => {
-      await verifyWithAuthActions({ payment: true, interactive_questions: false });
-
-      expect(setHasActivePlan).toHaveBeenCalledWith(true);
-      expect(mockNavigate).toHaveBeenCalledWith('/questionnaire-intro');
-    });
-
-    it('navigates to the dashboard when payment and questionnaire are both complete', async () => {
+    it('navigates to the dashboard when payment is complete', async () => {
       await verifyWithAuthActions({ payment: true, interactive_questions: true });
 
       expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
@@ -330,6 +323,6 @@ describe('useVerifyLogin', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(mockNavigate).toHaveBeenCalledWith('/questionnaire-intro');
+    expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
   });
 });

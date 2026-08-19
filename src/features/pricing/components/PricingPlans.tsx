@@ -265,21 +265,21 @@ export function PricingPlans() {
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>('monthly');
   const navigate = useNavigate();
   const setHasActivePlan = useAuthStore((state) => state.setHasActivePlan);
-  const setShowQuestionnaireIntro = useAuthStore((state) => state.setShowQuestionnaireIntro);
+  const setOnboardingPending = useAuthStore((state) => state.setOnboardingPending);
 
   const { data: plans, isLoading, isError, error, refetch } = usePricingPlans();
   const subscribe = useSubscribe();
 
   /**
-   * Advance into onboarding once a plan is secured. Called after a successful
+   * Advance into dashboard once a plan is secured. Called after a successful
    * Razorpay authorization (or immediately for a free plan). Razorpay's webhook
    * remains the authoritative source for entitlement.
    */
   const proceedToOnboarding = useCallback(() => {
     setHasActivePlan(true);
-    setShowQuestionnaireIntro(true);
-    void navigate(ROUTES.QUESTIONNAIRE_INTRO);
-  }, [navigate, setHasActivePlan, setShowQuestionnaireIntro]);
+    setOnboardingPending?.(false);
+    void navigate(ROUTES.DASHBOARD);
+  }, [navigate, setHasActivePlan, setOnboardingPending]);
 
   const handleSelect = useCallback(
     (planId: string) => {

@@ -133,7 +133,7 @@ describe('useRegister', () => {
 });
 
 describe('useVerifyOtp', () => {
-  it('authenticates and navigates to the dashboard on a successful response', async () => {
+  it('authenticates and navigates to onboarding on register flow', async () => {
     verifyOTP.mockResolvedValue({
       status: 'success',
       message: '',
@@ -146,10 +146,9 @@ describe('useVerifyOtp', () => {
 
     await result.current.mutateAsync({ id: 1, otp: 111111, flow: 'register' });
     expect(useAuthStore.getState().isAuthenticated).toBe(true);
-    expect(useAuthStore.getState().showQuestionnaireIntro).toBe(true);
-    expect(useAuthStore.getState().hasCompletedQuestionnaire).toBe(false);
+    expect(useAuthStore.getState().onboardingPending).toBe(true);
 
-    expect(mockNavigate).toHaveBeenCalledWith(ROUTES.QUESTIONNAIRE_INTRO);
+    expect(mockNavigate).toHaveBeenCalledWith(ROUTES.ONBOARDING);
   });
 
   it('toasts the response message when verification is not successful', async () => {
@@ -175,7 +174,7 @@ describe('useVerifyOtp', () => {
 });
 
 describe('useVerifyLogin', () => {
-  it('authenticates and navigates to pricing when a plan is active', async () => {
+  it('authenticates and navigates to dashboard when a plan is active', async () => {
     verifyLogin.mockResolvedValue({
       status: 'success',
       access_token: 'a',
@@ -191,7 +190,7 @@ describe('useVerifyLogin', () => {
     expect(useAuthStore.getState().isAuthenticated).toBe(true);
     expect(useAuthStore.getState().hasActivePlan).toBe(true);
     expect(useAuthStore.getState().role).toBe('user');
-    expect(mockNavigate).toHaveBeenCalledWith(ROUTES.PRICING);
+    expect(mockNavigate).toHaveBeenCalledWith(ROUTES.DASHBOARD);
   });
 
   it('navigates to pricing when there is no active plan', async () => {

@@ -42,9 +42,7 @@ const setRole = jest.fn();
 const setHasActivePlan = jest.fn();
 const setHasCompletedQuestionnaire = jest.fn();
 const setShowQuestionnaireIntro = jest.fn();
-
-/** The live store object the hook reads back via `useAuthStore.getState()`. */
-let storeState: Record<string, unknown>;
+const setOnboardingPending = jest.fn();
 
 function createWrapper() {
   const queryClient = new QueryClient({
@@ -73,6 +71,7 @@ describe('useVerifyOtp', () => {
       role: null,
       hasCompletedQuestionnaire: true,
       showQuestionnaireIntro: false,
+      onboardingPending: false,
 
       setMfaData: jest.fn(),
       setAuthenticated,
@@ -85,9 +84,9 @@ describe('useVerifyOtp', () => {
       setRole,
       setHasCompletedQuestionnaire,
       setShowQuestionnaireIntro,
+      setOnboardingPending,
     };
 
-    storeState = defaultState;
     mockedUseAuthStore.mockImplementation((selector) => selector(defaultState));
     mockedUseAuthStore.getState = jest.fn().mockReturnValue(defaultState);
   });
@@ -238,7 +237,21 @@ describe('useVerifyOtp', () => {
   });
 
   describe('backend-driven auth_actions', () => {
-    it('routes to pricing when there is no active payment', async () => {
+    it('routes registration to onboarding even with auth_actions present', async () => {
+      mockedAuthService.verifyOTP.mockResolvedValue(
+        successResponse({ auth_actions: { payment: false, interactive_questions: true } }),
+      );
+
+      await verify('register');
+
+      expect(setHasActivePlan).toHaveBeenCalledWith(false);
+      expect(setHasCompletedQuestionnaire).toHaveBeenCalledWith(true);
+      expect(setShowQuestionnaireIntro).toHaveBeenCalledWith(false);
+      expect(setOnboardingPending).toHaveBeenCalledWith(true);
+      expect(mockNavigate).toHaveBeenCalledWith('/onboarding');
+    });
+
+    it('routes login to pricing when there is no active payment', async () => {
       mockedAuthService.verifyOTP.mockResolvedValue(
         successResponse({ auth_actions: { payment: false, interactive_questions: false } }),
       );
@@ -251,17 +264,7 @@ describe('useVerifyOtp', () => {
       expect(mockNavigate).toHaveBeenCalledWith('/pricing');
     });
 
-    it('routes to the questionnaire intro when paid but the questionnaire is unanswered', async () => {
-      mockedAuthService.verifyOTP.mockResolvedValue(
-        successResponse({ auth_actions: { payment: true, interactive_questions: false } }),
-      );
-
-      await verify('login');
-
-      expect(mockNavigate).toHaveBeenCalledWith('/questionnaire-intro');
-    });
-
-    it('routes to the dashboard when payment and questionnaire are both complete', async () => {
+    it('routes login to the dashboard when payment is active', async () => {
       mockedAuthService.verifyOTP.mockResolvedValue(
         successResponse({ auth_actions: { payment: true, interactive_questions: true } }),
       );
@@ -292,16 +295,7 @@ describe('useVerifyOtp', () => {
       expect(mockNavigate).toHaveBeenCalledWith('/pricing');
     });
 
-    it('routes to the questionnaire intro when the plan is active but the questionnaire is not done', async () => {
-      storeState.hasCompletedQuestionnaire = false;
-      mockedAuthService.verifyOTP.mockResolvedValue(successResponse({ hasActivePlan: true }));
-
-      await verify('login');
-
-      expect(mockNavigate).toHaveBeenCalledWith('/questionnaire-intro');
-    });
-
-    it('routes to the dashboard when the plan is active and the questionnaire is done', async () => {
+    it('routes to the dashboard when the plan is active', async () => {
       mockedAuthService.verifyOTP.mockResolvedValue(successResponse({ hasActivePlan: true }));
 
       await verify('login');
