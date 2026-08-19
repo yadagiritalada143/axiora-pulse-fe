@@ -127,6 +127,62 @@ describe('ChatInput', () => {
     expect(calledWith?.[0]?.name).toBe('notes.txt');
   });
 
+  it('opens the file types menu when attach button is clicked and shows available options', async () => {
+    const user = userEvent.setup();
+    render(<ChatInput value="" onChange={jest.fn()} onSubmit={jest.fn()} onAttach={jest.fn()} />);
+
+    const attachButton = screen.getByRole('button', { name: 'Attach files' });
+    await user.click(attachButton);
+
+    expect(screen.getByRole('menu', { name: 'Select file type to upload' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /PDF Document/i })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /Image/i })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /Document \(DOC \/ DOCX\)/i })).toBeInTheDocument();
+  });
+
+  it('restricts accept attribute when a specific file type is selected', async () => {
+    const user = userEvent.setup();
+    render(<ChatInput value="" onChange={jest.fn()} onSubmit={jest.fn()} onAttach={jest.fn()} />);
+
+    const attachButton = screen.getByRole('button', { name: 'Attach files' });
+    await user.click(attachButton);
+
+    const pdfOption = screen.getByRole('menuitem', { name: /PDF Document/i });
+    await user.click(pdfOption);
+
+    const fileInput = document.querySelector<HTMLInputElement>('input[type="file"]');
+    expect(fileInput?.getAttribute('accept')).toBe('application/pdf,.pdf');
+  });
+
+  it('renders only the file types provided by the backend configuration', async () => {
+    const user = userEvent.setup();
+    const customTypes = [
+      {
+        id: 'pdf' as const,
+        label: 'PDF Only',
+        sublabel: '.pdf',
+        accept: 'application/pdf',
+        extensions: ['pdf'],
+      },
+    ];
+
+    render(
+      <ChatInput
+        value=""
+        onChange={jest.fn()}
+        onSubmit={jest.fn()}
+        onAttach={jest.fn()}
+        supportedFileTypes={customTypes}
+      />,
+    );
+
+    const attachButton = screen.getByRole('button', { name: 'Attach files' });
+    await user.click(attachButton);
+
+    expect(screen.getByRole('menuitem', { name: /PDF Only/i })).toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: /Image/i })).not.toBeInTheDocument();
+  });
+
   it('disables the textarea and send button when disabled is true', () => {
     render(<ChatInput value="Hello" onChange={jest.fn()} onSubmit={jest.fn()} disabled />);
 
