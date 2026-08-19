@@ -27,4 +27,8 @@ export interface PricingPlan {
   priceMonthly: number;
   priceYearly: number;
   features: string[];
+  /** Short tagline shown under the price (backend `Plan.description`). */
+  description?: string | null;
+  /** Whether this plan is visually highlighted as the recommended tier. */
+  popular?: boolean;
 }

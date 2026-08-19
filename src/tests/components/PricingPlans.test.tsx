@@ -2,8 +2,11 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useNavigate } from 'react-router-dom';
 
+import type { PricingPlan } from '@/types/api.types';
 import { ROUTES } from '@constants/routes';
 import { PricingPlans } from '@features/pricing/components/PricingPlans';
+import { usePricingPlans } from '@features/pricing/hooks/usePricingPlans';
+import { useSubscribe } from '@features/pricing/hooks/useSubscribe';
 import { useAuthStore } from '@store/auth.store';
 
 jest.mock('react-router-dom', () => ({
@@ -12,6 +15,14 @@ jest.mock('react-router-dom', () => ({
 
 jest.mock('@store/auth.store', () => ({
   useAuthStore: jest.fn(),
+}));
+
+jest.mock('@features/pricing/hooks/usePricingPlans', () => ({
+  usePricingPlans: jest.fn(),
+}));
+
+jest.mock('@features/pricing/hooks/useSubscribe', () => ({
+  useSubscribe: jest.fn(),
 }));
 
 // embla-carousel-react relies on layout APIs (ResizeObserver, matchMedia) that
@@ -24,11 +35,48 @@ jest.mock('embla-carousel-react', () => ({
 
 const mockedUseNavigate = useNavigate as jest.Mock;
 const mockedUseAuthStore = useAuthStore as unknown as jest.Mock;
+const mockedUsePricingPlans = usePricingPlans as jest.Mock;
+const mockedUseSubscribe = useSubscribe as jest.Mock;
+
+const PLANS: PricingPlan[] = [
+  {
+    id: 'starter',
+    name: 'Starter Plan',
+    priceMonthly: 799,
+    priceYearly: 7990,
+    features: ['AI Co-Founder (Basic)'],
+    description: 'Perfect for individuals exploring startup ideas.',
+    popular: false,
+  },
+  {
+    id: 'professional',
+    name: 'Professional',
+    priceMonthly: 999,
+    priceYearly: 9990,
+    features: ['AI Co-Founder (Basic)'],
+    description: 'Perfect for individuals exploring startup ideas.',
+    popular: true,
+  },
+  {
+    id: 'enterprise',
+    name: 'Enterprise',
+    priceMonthly: 1499,
+    priceYearly: 14990,
+    features: ['AI Co-Founder (Basic)'],
+    description: 'Perfect for individuals exploring startup ideas.',
+    popular: false,
+  },
+];
 
 describe('PricingPlans', () => {
   const navigate = jest.fn();
   const setHasActivePlan = jest.fn();
   const setShowQuestionnaireIntro = jest.fn();
+  // A subscribe mock that immediately resolves the success path, like an
+  // authorized Checkout would.
+  const subscribeMutate = jest.fn((_vars: unknown, opts?: { onSuccess?: () => void }) =>
+    opts?.onSuccess?.(),
+  );
 
   beforeEach(() => {
     mockedUseNavigate.mockReturnValue(navigate);
@@ -45,6 +93,20 @@ describe('PricingPlans', () => {
           setShowQuestionnaireIntro,
         }),
     );
+
+    mockedUsePricingPlans.mockReturnValue({
+      data: PLANS,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    mockedUseSubscribe.mockReturnValue({
+      mutate: subscribeMutate,
+      isPending: false,
+      variables: undefined,
+    });
   });
 
   afterEach(() => {
@@ -75,12 +137,7 @@ describe('PricingPlans', () => {
     const user = userEvent.setup();
     render(<PricingPlans />);
 
-    const [firstStarterHeading] = screen.getAllByText('Starter Plan');
-    if (!firstStarterHeading) throw new Error('Starter Plan heading not found');
-
-    const desktopGrid = firstStarterHeading.closest('.sm\\:grid');
-    expect(desktopGrid).not.toBeNull();
-
+    const desktopGrid = screen.getAllByText('Starter Plan')[0]?.closest('.sm\\:grid');
     if (!desktopGrid) throw new Error('desktop grid not found');
 
     const starterCard = within(desktopGrid as HTMLElement)
@@ -89,14 +146,49 @@ describe('PricingPlans', () => {
 
     expect(starterCard).not.toBeNull();
 
-    const chooseButton = within(starterCard as HTMLElement).getByRole('button', {
-      name: 'Choose plan',
-    });
+    await user.click(
+      within(starterCard as HTMLElement).getByRole('button', { name: 'Choose plan' }),
+    );
 
-    await user.click(chooseButton);
-
+    // Paid plan → goes through Razorpay Checkout (subscribe.mutate), not a direct nav.
+    expect(subscribeMutate).toHaveBeenCalledWith(
+      { planId: 'starter', billingPeriod: 'monthly' },
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
+    );
+    // The mock invokes onSuccess synchronously, so onboarding should advance.
     expect(setHasActivePlan).toHaveBeenCalledWith(true);
     expect(setShowQuestionnaireIntro).toHaveBeenCalledWith(true);
+    expect(navigate).toHaveBeenCalledWith(ROUTES.QUESTIONNAIRE_INTRO);
+  });
+
+  it('skips payment for a free (₹0) plan and proceeds straight to onboarding', async () => {
+    mockedUsePricingPlans.mockReturnValue({
+      data: [
+        {
+          id: 'free',
+          name: 'Free',
+          priceMonthly: 0,
+          priceYearly: 0,
+          features: ['Basic'],
+          description: 'Free forever.',
+          popular: false,
+        } satisfies PricingPlan,
+      ],
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    const user = userEvent.setup();
+    render(<PricingPlans />);
+
+    const [chooseButton] = screen.getAllByRole('button', { name: 'Choose plan' });
+    if (!chooseButton) throw new Error('choose button not found');
+    await user.click(chooseButton);
+
+    expect(subscribeMutate).not.toHaveBeenCalled();
+    expect(setHasActivePlan).toHaveBeenCalledWith(true);
     expect(navigate).toHaveBeenCalledWith(ROUTES.QUESTIONNAIRE_INTRO);
   });
 });
