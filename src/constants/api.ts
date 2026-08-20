@@ -59,6 +59,8 @@ export const API_ENDPOINTS = {
     DELETE: (surveyId: number) => `/v1/surveys/${surveyId}`,
     EXPORT: (surveyId: number) => `/v1/surveys/${surveyId}/export`,
     RESPONSES: (surveyId: number) => `/v1/surveys/${surveyId}/responses`,
+    ANALYZE: (surveyId: number) => `/v1/surveys/${surveyId}/analyze`,
+    GET_ANALYSIS: (surveyId: number) => `/v1/surveys/${surveyId}/analysis`,
     UPDATE_WORKSPACE_QUESTIONS: (workspaceId: number) =>
       `/v1/workspaces/${workspaceId}/survey/questions`,
   },

@@ -27,6 +27,7 @@ export const queryKeys = {
       [...queryKeys.survey.all(), 'workspace', workspaceId] as const,
     public: (token: string) => [...queryKeys.survey.all(), 'public', token] as const,
     responses: (surveyId: number) => [...queryKeys.survey.all(), 'responses', surveyId] as const,
+    analysis: (surveyId: number) => [...queryKeys.survey.all(), 'analysis', surveyId] as const,
   },
 
   billing: {

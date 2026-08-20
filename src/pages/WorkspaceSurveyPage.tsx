@@ -12,6 +12,7 @@ import {
   Paperclip,
   Plus,
   Share2,
+  Sparkles,
   Trash2,
 } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
@@ -45,6 +46,7 @@ import {
   buildWorkspaceSurveyRoute,
 } from '@constants/routes';
 import { MentorShell, type MentorNavItem } from '@features/ideaValidation/components';
+import { SurveyAnalysisReport } from '@features/survey/components/SurveyAnalysisReport';
 import {
   useSurveyByWorkspace,
   useSurveyResponses,
@@ -511,10 +513,13 @@ export default function WorkspaceSurveyPage() {
         ) : null}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full max-w-[345px] grid-cols-2">
+          <TabsList className="grid w-full max-w-[540px] grid-cols-3">
             <TabsTrigger value="editor">Questions Editor</TabsTrigger>
             <TabsTrigger value="responses">
               Responses ({responsesData?.total_responses ?? 0})
+            </TabsTrigger>
+            <TabsTrigger value="analysis" className="gap-1.5">
+              <Sparkles className="size-3.5 text-[#FF4500]" /> AI Analysis
             </TabsTrigger>
           </TabsList>
 
@@ -846,9 +851,23 @@ export default function WorkspaceSurveyPage() {
           {/* RESPONSES TAB */}
           <TabsContent value="responses" className="mt-4">
             <Card>
-              <CardHeader>
-                <CardTitle>Collected Responses</CardTitle>
-                <CardDescription>View feedback gathered from external respondents.</CardDescription>
+              <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <CardTitle>Collected Responses</CardTitle>
+                  <CardDescription>
+                    View feedback gathered from external respondents.
+                  </CardDescription>
+                </div>
+                {(responsesData?.total_responses ?? 0) >= 1 && (
+                  <Button
+                    onClick={() => setActiveTab('analysis')}
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 border-[#FF4500]/20 font-semibold text-[#FF4500] hover:border-[#FF4500] hover:bg-[#FF4500]/5 hover:text-[#FF4500]"
+                  >
+                    <Sparkles className="size-3.5" /> View AI Analysis
+                  </Button>
+                )}
               </CardHeader>
               <CardContent>
                 {isResponsesLoading ? (
@@ -901,6 +920,14 @@ export default function WorkspaceSurveyPage() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="analysis" className="mt-4">
+            <SurveyAnalysisReport
+              survey={survey}
+              workspaceId={workspace.id}
+              totalResponses={responsesData?.total_responses ?? 0}
+            />
           </TabsContent>
         </Tabs>
 

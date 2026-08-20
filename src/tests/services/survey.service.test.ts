@@ -117,6 +117,36 @@ describe('surveyService', () => {
     expect(mockedApiClient.get).toHaveBeenCalledWith('/v1/surveys/5/responses');
   });
 
+  it('triggers post-link survey response analysis', async () => {
+    const analysisResponse = {
+      survey_id: 5,
+      status: 'success',
+      analysis_result: {
+        purpose: 'Validation test',
+        data_quality: { response_quality_score: 88 },
+      },
+    };
+    mockedApiClient.post.mockResolvedValueOnce({ data: analysisResponse });
+
+    await expect(surveyService.runSurveyAnalysis(5)).resolves.toEqual(analysisResponse);
+    expect(mockedApiClient.post).toHaveBeenCalledWith('/v1/surveys/5/analyze');
+  });
+
+  it('fetches saved post-link survey response analysis', async () => {
+    const analysisResponse = {
+      survey_id: 5,
+      status: 'success',
+      analysis_result: {
+        purpose: 'Validation test',
+        data_quality: { response_quality_score: 88 },
+      },
+    };
+    mockedApiClient.get.mockResolvedValueOnce({ data: analysisResponse });
+
+    await expect(surveyService.getSurveyAnalysis(5)).resolves.toEqual(analysisResponse);
+    expect(mockedApiClient.get).toHaveBeenCalledWith('/v1/surveys/5/analysis');
+  });
+
   it('propagates request failures to the caller', async () => {
     mockedApiClient.get.mockRejectedValueOnce(new Error('network error'));
 

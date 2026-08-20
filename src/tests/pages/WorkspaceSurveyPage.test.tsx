@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AxiosError, AxiosHeaders } from 'axios';
 import type { ReactNode } from 'react';
@@ -6,6 +6,8 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import {
+  useRunSurveyAnalysis,
+  useSurveyAnalysis,
   useSurveyByWorkspace,
   useSurveyResponses,
   useUpdateWorkspaceSurveyQuestions,
@@ -41,6 +43,8 @@ jest.mock('@features/survey/hooks/useSurveys', () => ({
   useSurveyByWorkspace: jest.fn(),
   useSurveyResponses: jest.fn(),
   useUpdateWorkspaceSurveyQuestions: jest.fn(),
+  useSurveyAnalysis: jest.fn(),
+  useRunSurveyAnalysis: jest.fn(),
 }));
 
 jest.mock('@features/workspace/hooks/useWorkspaces', () => ({
@@ -69,6 +73,8 @@ const mockedUseWorkspaceState = useWorkspaceState as jest.Mock;
 const mockedUseSurveyByWorkspace = useSurveyByWorkspace as jest.Mock;
 const mockedUseSurveyResponses = useSurveyResponses as jest.Mock;
 const mockedUseUpdateSurvey = useUpdateWorkspaceSurveyQuestions as jest.Mock;
+const mockedUseSurveyAnalysis = useSurveyAnalysis as jest.Mock;
+const mockedUseRunSurveyAnalysis = useRunSurveyAnalysis as jest.Mock;
 const mockedToast = toast as jest.Mocked<typeof toast>;
 
 const workspace: Workspace = {
@@ -139,6 +145,8 @@ describe('WorkspaceSurveyPage', () => {
       error: null,
     });
     mockedUseSurveyResponses.mockReturnValue({ data: noResponses, isLoading: false });
+    mockedUseSurveyAnalysis.mockReturnValue({ data: undefined, isLoading: false });
+    mockedUseRunSurveyAnalysis.mockReturnValue({ mutate: jest.fn(), isPending: false });
     mockUpdate();
   });
 
@@ -333,13 +341,11 @@ describe('WorkspaceSurveyPage', () => {
       });
     });
 
-    it('edits a question’s text', async () => {
-      const user = userEvent.setup();
+    it('edits a question’s text', () => {
       renderPage();
 
       const input = screen.getByDisplayValue('What is your biggest challenge?');
-      await user.clear(input);
-      await user.type(input, 'What hurts most?');
+      fireEvent.change(input, { target: { value: 'What hurts most?' } });
 
       expect(screen.getByDisplayValue('What hurts most?')).toBeInTheDocument();
     });
@@ -829,5 +835,41 @@ describe('WorkspaceSurveyPage', () => {
         2,
       );
     });
+  });
+
+  describe('ai analysis tab', () => {
+    it('renders the AI analysis tab and empty state when opened', async () => {
+      const user = userEvent.setup();
+      renderPage();
+
+      await user.click(screen.getByRole('tab', { name: /AI Analysis/i }));
+
+      expect(screen.getByText(/Survey Response Intelligence/i)).toBeInTheDocument();
+      expect(screen.getByText(/No Response Analysis Available Yet/i)).toBeInTheDocument();
+    }, 15000);
+
+    it('navigates from Responses tab to AI Analysis tab via the quick action button', async () => {
+      const user = userEvent.setup();
+      const resp = {
+        id: 11,
+        survey_id: 5,
+        respondent_email: 'person@example.test',
+        answers: [{ questionId: 1, answer: 'Weekly' }],
+        submitted_at: '2026-01-03T00:00:00.000Z',
+      };
+      mockedUseSurveyResponses.mockReturnValue({
+        data: { survey_id: 5, total_responses: 1, responses: [resp] },
+        isLoading: false,
+      });
+
+      renderPage();
+
+      await user.click(screen.getByRole('tab', { name: /Responses/ }));
+      expect(screen.getByRole('button', { name: /View AI Analysis/i })).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /View AI Analysis/i }));
+
+      expect(screen.getByText(/Survey Response Intelligence/i)).toBeInTheDocument();
+    }, 15000);
   });
 });

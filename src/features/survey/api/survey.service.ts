@@ -5,6 +5,7 @@ import type {
   PublicSurveyDetailResponse,
   SubmitPublicSurveyRequest,
   SubmitPublicSurveyResponse,
+  SurveyAnalysisResponse,
   SurveyResponse,
   SurveyResponsesListResponse,
   UpdateWorkspaceSurveyQuestionsRequest,
@@ -55,6 +56,22 @@ export const surveyService = {
   getSurveyResponses: async (surveyId: number): Promise<SurveyResponsesListResponse> => {
     const { data } = await apiClient.get<SurveyResponsesListResponse>(
       API_ENDPOINTS.SURVEY.RESPONSES(surveyId),
+    );
+
+    return data;
+  },
+
+  runSurveyAnalysis: async (surveyId: number): Promise<SurveyAnalysisResponse> => {
+    const { data } = await apiClient.post<SurveyAnalysisResponse>(
+      API_ENDPOINTS.SURVEY.ANALYZE(surveyId),
+    );
+
+    return data;
+  },
+
+  getSurveyAnalysis: async (surveyId: number): Promise<SurveyAnalysisResponse> => {
+    const { data } = await apiClient.get<SurveyAnalysisResponse>(
+      API_ENDPOINTS.SURVEY.GET_ANALYSIS(surveyId),
     );
 
     return data;

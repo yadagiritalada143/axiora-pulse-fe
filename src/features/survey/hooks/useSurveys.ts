@@ -56,3 +56,30 @@ export function useSurveyResponses(surveyId: number) {
     enabled: !!surveyId,
   });
 }
+
+export function useSurveyAnalysis(surveyId: number) {
+  return useQuery({
+    queryKey: queryKeys.survey.analysis(surveyId),
+    queryFn: () => surveyService.getSurveyAnalysis(surveyId),
+    enabled: !!surveyId,
+  });
+}
+
+export function useRunSurveyAnalysis(surveyId: number, workspaceId?: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => surveyService.runSurveyAnalysis(surveyId),
+    onSuccess: (data) => {
+      queryClient.setQueryData(queryKeys.survey.analysis(surveyId), data);
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.survey.analysis(surveyId),
+      });
+      if (workspaceId) {
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.survey.byWorkspace(workspaceId),
+        });
+      }
+    },
+  });
+}
