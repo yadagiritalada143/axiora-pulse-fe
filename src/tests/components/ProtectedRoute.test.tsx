@@ -9,6 +9,10 @@ jest.mock('@store/auth.store', () => ({
   useAuthStore: jest.fn(),
 }));
 
+jest.mock('@features/auth/hooks', () => ({
+  useCurrentUser: jest.fn(() => ({ data: null, isLoading: false })),
+}));
+
 const mockUseAuthStore = useAuthStore as unknown as jest.Mock;
 
 function renderWithAuthState(isAuthenticated: boolean, initialEntry = ROUTES.DASHBOARD) {

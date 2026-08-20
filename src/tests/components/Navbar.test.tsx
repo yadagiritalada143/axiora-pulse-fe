@@ -11,6 +11,13 @@ jest.mock('@services/api/tokenManager', () => ({
   tokenManager: { setTokens: jest.fn(), clearTokens: jest.fn() },
 }));
 
+const mockLogout = jest.fn();
+
+jest.mock('@features/auth/hooks', () => ({
+  useLogout: () => mockLogout,
+  useCurrentUser: jest.fn(() => ({ data: null, isLoading: false })),
+}));
+
 const mockUser: User = {
   id: 'user-1',
   email: 'jane@example.com',
@@ -103,8 +110,7 @@ describe('Navbar', () => {
     const logoutItem = await screen.findByText('Log out');
     await user.click(logoutItem);
 
-    expect(useAuthStore.getState().isAuthenticated).toBe(false);
-    expect(useAuthStore.getState().user).toBeNull();
+    expect(mockLogout).toHaveBeenCalled();
   });
 
   it('opens the account menu showing links to profile and settings', async () => {

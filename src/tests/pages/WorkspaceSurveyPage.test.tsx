@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AxiosError, AxiosHeaders } from 'axios';
 import type { ReactNode } from 'react';
@@ -143,6 +143,7 @@ describe('WorkspaceSurveyPage', () => {
   });
 
   afterEach(() => {
+    jest.useRealTimers();
     jest.clearAllMocks();
   });
 
@@ -319,18 +320,17 @@ describe('WorkspaceSurveyPage', () => {
     });
 
     it('scrolls the newly added question into view and focuses it', async () => {
-      jest.useFakeTimers();
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const user = userEvent.setup();
       const scrollIntoView = jest.fn();
       Element.prototype.scrollIntoView = scrollIntoView;
 
       renderPage();
 
       await user.click(screen.getByRole('button', { name: /Add Question/ }));
-      jest.runOnlyPendingTimers();
 
-      expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' });
-      jest.useRealTimers();
+      await waitFor(() => {
+        expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' });
+      });
     });
 
     it('edits a question’s text', async () => {
@@ -576,6 +576,61 @@ describe('WorkspaceSurveyPage', () => {
           ],
         },
         expect.any(Object),
+      );
+    });
+
+    it('saves optional questions with the (Optional) suffix', async () => {
+      const user = userEvent.setup();
+      const mutate = mockUpdate();
+      renderPage();
+
+      await user.click(questionCard(0).getByRole('combobox', { name: 'Requirement' }));
+      await user.click(await screen.findByRole('option', { name: 'Optional' }));
+
+      await user.click(screen.getByRole('button', { name: /Save & Publish Survey/ }));
+
+      expect(mutate).toHaveBeenCalledWith(
+        {
+          questions: [
+            {
+              question_text: 'What is your biggest challenge? (Optional)',
+              question_type: 'text',
+              options: null,
+            },
+            {
+              question_text: 'How often?',
+              question_type: 'radio',
+              options: ['Daily', 'Weekly'],
+            },
+          ],
+        },
+        expect.any(Object),
+      );
+    });
+
+    it('parses existing optional questions from backend and populates requirement dropdown', () => {
+      mockedUseSurveyByWorkspace.mockReturnValue({
+        data: {
+          ...survey,
+          questions: [
+            {
+              id: 1,
+              question: 'Tell us your thoughts (Optional)',
+              questionType: 'text',
+              options: [],
+            },
+          ],
+        },
+        isLoading: false,
+        isError: false,
+        error: null,
+      });
+
+      renderPage();
+
+      expect(screen.getByDisplayValue('Tell us your thoughts')).toBeInTheDocument();
+      expect(questionCard(0).getByRole('combobox', { name: 'Requirement' })).toHaveTextContent(
+        'Optional',
       );
     });
 
