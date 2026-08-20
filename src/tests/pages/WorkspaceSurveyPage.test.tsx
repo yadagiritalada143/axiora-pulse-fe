@@ -350,7 +350,7 @@ describe('WorkspaceSurveyPage', () => {
 
       expect(questionCard(0).queryByText('Answer Options')).not.toBeInTheDocument();
 
-      await user.click(questionCard(0).getByRole('combobox'));
+      await user.click(questionCard(0).getByRole('combobox', { name: 'Question Type' }));
       await user.click(await screen.findByRole('option', { name: 'Checkboxes (Multi Select)' }));
 
       expect(questionCard(0).getByText('Answer Options')).toBeInTheDocument();
@@ -451,7 +451,9 @@ describe('WorkspaceSurveyPage', () => {
       await user.clear(screen.getByDisplayValue('What is your biggest challenge?'));
       await user.click(screen.getByRole('button', { name: /Save & Publish Survey/ }));
 
-      expect(mockedToast.error).toHaveBeenCalledWith('Question 1 text cannot be empty.');
+      expect(mockedToast.error).toHaveBeenCalledWith(
+        expect.stringMatching(/Question 1: Question text cannot be empty/i),
+      );
       expect(mutate).not.toHaveBeenCalled();
     });
 
@@ -472,7 +474,81 @@ describe('WorkspaceSurveyPage', () => {
       await user.click(screen.getByRole('button', { name: /Save & Publish Survey/ }));
 
       expect(mockedToast.error).toHaveBeenCalledWith(
-        'Question 1 (radio) must have at least 2 options.',
+        expect.stringMatching(/Question 1: Choice-based questions must have at least 2 options/i),
+      );
+      expect(mutate).not.toHaveBeenCalled();
+    });
+
+    it('rejects a save when duplicate questions exist in the survey', async () => {
+      const user = userEvent.setup();
+      mockedUseSurveyByWorkspace.mockReturnValue({
+        data: {
+          ...survey,
+          questions: [
+            { id: 1, question: 'What is your challenge?', questionType: 'text', options: [] },
+            {
+              id: 2,
+              question: 'what is your challenge?',
+              questionType: 'radio',
+              options: ['A', 'B'],
+            },
+          ],
+        },
+        isLoading: false,
+        isError: false,
+        error: null,
+      });
+      const mutate = mockUpdate();
+      renderPage();
+
+      await user.click(screen.getByRole('button', { name: /Save & Publish Survey/ }));
+
+      expect(mockedToast.error).toHaveBeenCalledWith(expect.stringMatching(/Duplicate question/i));
+      expect(mutate).not.toHaveBeenCalled();
+    });
+
+    it('rejects a save when duplicate options exist in a question', async () => {
+      const user = userEvent.setup();
+      mockedUseSurveyByWorkspace.mockReturnValue({
+        data: {
+          ...survey,
+          questions: [
+            { id: 1, question: 'How often?', questionType: 'radio', options: ['Daily', 'daily'] },
+          ],
+        },
+        isLoading: false,
+        isError: false,
+        error: null,
+      });
+      const mutate = mockUpdate();
+      renderPage();
+
+      await user.click(screen.getByRole('button', { name: /Save & Publish Survey/ }));
+
+      expect(mockedToast.error).toHaveBeenCalledWith(expect.stringMatching(/Duplicate option/i));
+      expect(mutate).not.toHaveBeenCalled();
+    });
+
+    it('rejects a save when an option value is empty', async () => {
+      const user = userEvent.setup();
+      mockedUseSurveyByWorkspace.mockReturnValue({
+        data: {
+          ...survey,
+          questions: [
+            { id: 1, question: 'How often?', questionType: 'radio', options: ['Daily', '   '] },
+          ],
+        },
+        isLoading: false,
+        isError: false,
+        error: null,
+      });
+      const mutate = mockUpdate();
+      renderPage();
+
+      await user.click(screen.getByRole('button', { name: /Save & Publish Survey/ }));
+
+      expect(mockedToast.error).toHaveBeenCalledWith(
+        expect.stringMatching(/Option cannot be empty/i),
       );
       expect(mutate).not.toHaveBeenCalled();
     });
@@ -490,13 +566,11 @@ describe('WorkspaceSurveyPage', () => {
             {
               question_text: 'What is your biggest challenge?',
               question_type: 'text',
-              target_hypothesis: null,
               options: null,
             },
             {
               question_text: 'How often?',
               question_type: 'radio',
-              target_hypothesis: null,
               options: ['Daily', 'Weekly'],
             },
           ],

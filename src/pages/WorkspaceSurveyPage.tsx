@@ -1,5 +1,7 @@
 import axios from 'axios';
 import {
+  AlertCircle,
+  AlertTriangle,
   ArrowDown,
   ArrowUp,
   Bot,
@@ -12,7 +14,7 @@ import {
   Share2,
   Trash2,
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -51,11 +53,12 @@ import {
 import type { SingleSurveyResponseItem, WorkspaceSurveyQuestionItem } from '@features/survey/types';
 import { useWorkspaceState } from '@features/workspace/hooks/useWorkspaceMentor';
 import { useWorkspace } from '@features/workspace/hooks/useWorkspaces';
+import { cn } from '@lib/utils';
 
 interface FormQuestion {
   question_text: string;
   question_type: 'text' | 'radio' | 'checkbox' | 'dropdown';
-  target_hypothesis: string;
+  optional: boolean;
   options: string[];
 }
 
@@ -85,6 +88,7 @@ export default function WorkspaceSurveyPage() {
   const [selectedResponse, setSelectedResponse] = useState<SingleSurveyResponseItem | null>(null);
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [hasAttemptedSave, setHasAttemptedSave] = useState(false);
 
   const [hasInitialized, setHasInitialized] = useState(false);
 
@@ -94,12 +98,18 @@ export default function WorkspaceSurveyPage() {
       setHasInitialized(true);
 
       if (survey.questions && survey.questions.length > 0) {
-        const mapped: FormQuestion[] = survey.questions.map((q) => ({
-          question_text: q.question,
-          question_type: q.questionType,
-          target_hypothesis: '',
-          options: q.options || [],
-        }));
+        const mapped: FormQuestion[] = survey.questions.map((q) => {
+          const isOpt =
+            Boolean((q as { optional?: boolean }).optional) || /\(optional\)/i.test(q.question);
+          const cleanText = q.question.replace(/\s*\(optional\)\s*/gi, '').trim();
+
+          return {
+            question_text: cleanText,
+            question_type: q.questionType,
+            optional: isOpt,
+            options: q.options || [],
+          };
+        });
         setQuestions(mapped);
       } else {
         setQuestions([]);
@@ -124,11 +134,80 @@ export default function WorkspaceSurveyPage() {
       icon: Paperclip,
       href: workspaceId ? buildWorkspaceAttachmentsRoute(workspaceId) : '#',
     },
-    // { label: 'Founder Intelligence', icon: Users, disabled: true },
-    // { label: 'Startup Intelligence', icon: TrendingUp, disabled: true },
-    // { label: 'Documents & reports', icon: FileText, disabled: true },
-    // { label: 'Risk Management', icon: ShieldCheck, disabled: true },
   ];
+
+  const validationErrors = useMemo(() => {
+    const errors: Record<
+      number,
+      {
+        questionTextError?: string;
+        optionsErrors: Record<number, string>;
+        generalOptionsError?: string;
+        hasError: boolean;
+      }
+    > = {};
+
+    const trimmedQuestions = questions.map((q) => q.question_text.trim().toLowerCase());
+
+    questions.forEach((q, qIdx) => {
+      const trimmedText = q.question_text.trim();
+      let questionTextError: string | undefined;
+
+      if (!trimmedText) {
+        questionTextError = 'Question text cannot be empty.';
+      } else {
+        const duplicateCount = trimmedQuestions.filter(
+          (t, idx) => t === trimmedText.toLowerCase() && idx !== qIdx,
+        ).length;
+        if (duplicateCount > 0) {
+          questionTextError = 'Duplicate question: A question with this text already exists.';
+        }
+      }
+
+      const optionsErrors: Record<number, string> = {};
+      let generalOptionsError: string | undefined;
+
+      if (['radio', 'checkbox', 'dropdown'].includes(q.question_type)) {
+        if (q.options.length < 2) {
+          generalOptionsError = 'Choice-based questions must have at least 2 options.';
+        }
+
+        const trimmedOptions = q.options.map((opt) => opt.trim().toLowerCase());
+
+        q.options.forEach((opt, optIdx) => {
+          const trimmedOpt = opt.trim();
+          if (!trimmedOpt) {
+            optionsErrors[optIdx] = 'Option cannot be empty.';
+          } else {
+            const isDup =
+              trimmedOptions.filter((o, idx) => o === trimmedOpt.toLowerCase() && idx !== optIdx)
+                .length > 0;
+            if (isDup) {
+              optionsErrors[optIdx] = `Duplicate option "${trimmedOpt}" already exists.`;
+            }
+          }
+        });
+      }
+
+      const hasError =
+        Boolean(questionTextError) ||
+        Boolean(generalOptionsError) ||
+        Object.keys(optionsErrors).length > 0;
+
+      errors[qIdx] = {
+        questionTextError,
+        optionsErrors,
+        generalOptionsError,
+        hasError,
+      };
+    });
+
+    return errors;
+  }, [questions]);
+
+  const totalErrorsCount = useMemo(() => {
+    return Object.values(validationErrors).filter((e) => e.hasError).length;
+  }, [validationErrors]);
 
   const handleCopyLink = () => {
     if (!survey?.public_token) return;
@@ -205,7 +284,7 @@ export default function WorkspaceSurveyPage() {
       {
         question_text: '',
         question_type: 'text',
-        target_hypothesis: '',
+        optional: false,
         options: ['Option 1', 'Option 2'],
       },
     ]);
@@ -232,9 +311,19 @@ export default function WorkspaceSurveyPage() {
 
   const handleAddOption = (qIndex: number) => {
     setQuestions((prev) =>
-      prev.map((q, idx) =>
-        idx === qIndex ? { ...q, options: [...q.options, `Option ${q.options.length + 1}`] } : q,
-      ),
+      prev.map((q, idx) => {
+        if (idx !== qIndex) return q;
+
+        let counter = q.options.length + 1;
+        let newOptName = `Option ${counter}`;
+        const existingLower = new Set(q.options.map((o) => o.trim().toLowerCase()));
+        while (existingLower.has(newOptName.toLowerCase())) {
+          counter++;
+          newOptName = `Option ${counter}`;
+        }
+
+        return { ...q, options: [...q.options, newOptName] };
+      }),
     );
   };
 
@@ -276,25 +365,45 @@ export default function WorkspaceSurveyPage() {
   };
 
   const handleSave = () => {
+    setHasAttemptedSave(true);
+
+    if (questions.length === 0) {
+      toast.error('Please add at least one question before saving.');
+      return;
+    }
+
     for (let i = 0; i < questions.length; i++) {
-      const q = questions[i];
-      if (!q) continue;
-      if (!q.question_text.trim()) {
-        toast.error(`Question ${i + 1} text cannot be empty.`);
-        return;
-      }
-      if (['radio', 'checkbox', 'dropdown'].includes(q.question_type) && q.options.length < 2) {
-        toast.error(`Question ${i + 1} (${q.question_type}) must have at least 2 options.`);
+      const qErr = validationErrors[i];
+      if (qErr?.hasError) {
+        if (qErr.questionTextError) {
+          toast.error(`Question ${i + 1}: ${qErr.questionTextError}`);
+        } else if (qErr.generalOptionsError) {
+          toast.error(`Question ${i + 1}: ${qErr.generalOptionsError}`);
+        } else {
+          const firstOptErr = Object.values(qErr.optionsErrors)[0];
+          toast.error(`Question ${i + 1}: ${firstOptErr ?? 'Please resolve option errors.'}`);
+        }
+
+        // Scroll to the first invalid question card
+        const questionCards = document.querySelectorAll('[data-question-card]');
+        const card = questionCards[i];
+        card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
     }
 
-    const payloadQuestions: WorkspaceSurveyQuestionItem[] = questions.map((q) => ({
-      question_text: q.question_text.trim(),
-      question_type: q.question_type,
-      target_hypothesis: q.target_hypothesis.trim() || null,
-      options: ['radio', 'checkbox', 'dropdown'].includes(q.question_type) ? q.options : null,
-    }));
+    const payloadQuestions: WorkspaceSurveyQuestionItem[] = questions.map((q) => {
+      const cleanText = q.question_text.replace(/\s*\(optional\)\s*/gi, '').trim();
+      const finalText = q.optional ? `${cleanText} (Optional)` : cleanText;
+
+      return {
+        question_text: finalText,
+        question_type: q.question_type,
+        options: ['radio', 'checkbox', 'dropdown'].includes(q.question_type)
+          ? q.options.map((opt) => opt.trim())
+          : null,
+      };
+    });
 
     updateSurveyMutation.mutate(
       {
@@ -302,6 +411,7 @@ export default function WorkspaceSurveyPage() {
       },
       {
         onSuccess: () => {
+          setHasAttemptedSave(false);
           toast.success('Survey updated and published successfully!');
         },
         onError: () => {
@@ -412,9 +522,17 @@ export default function WorkspaceSurveyPage() {
           <TabsContent value="editor" className="mt-4 space-y-6">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-foreground text-base font-semibold">
-                  Questions ({questions.length})
-                </h3>
+                <div className="flex items-center gap-2.5">
+                  <h3 className="text-foreground text-base font-semibold">
+                    Questions ({questions.length})
+                  </h3>
+                  {totalErrorsCount > 0 && hasAttemptedSave && (
+                    <span className="bg-destructive/10 text-destructive flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium">
+                      <AlertCircle className="size-3.5" />
+                      {totalErrorsCount} {totalErrorsCount === 1 ? 'error' : 'errors'} to fix
+                    </span>
+                  )}
+                </div>
                 <div className="flex items-center gap-2">
                   {survey.public_token ? (
                     <Button
@@ -436,6 +554,31 @@ export default function WorkspaceSurveyPage() {
                 </div>
               </div>
 
+              {hasAttemptedSave && totalErrorsCount > 0 && (
+                <div className="border-destructive/30 bg-destructive/5 text-destructive flex items-start gap-3 rounded-xl border p-4">
+                  <AlertCircle className="mt-0.5 size-5 shrink-0" />
+                  <div className="space-y-1 text-xs">
+                    <p className="font-semibold">
+                      Please fix form validation errors before saving:
+                    </p>
+                    <ul className="list-disc space-y-0.5 pl-4">
+                      {questions.map((_q, idx) => {
+                        const err = validationErrors[idx];
+                        if (!err?.hasError) return null;
+                        return (
+                          <li key={idx}>
+                            <span className="font-semibold">Question {idx + 1}:</span>{' '}
+                            {err.questionTextError ??
+                              err.generalOptionsError ??
+                              Object.values(err.optionsErrors)[0]}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
               {questions.length === 0 ? (
                 <Card className="border-dashed p-8 text-center">
                   <p className="text-muted-foreground text-sm">No questions in this survey yet.</p>
@@ -448,134 +591,242 @@ export default function WorkspaceSurveyPage() {
                 </Card>
               ) : (
                 <div className="space-y-4">
-                  {questions.map((q, qIdx) => (
-                    <Card key={qIdx} data-question-card className="relative overflow-visible">
-                      <CardContent className="space-y-4 pt-6">
-                        {/* Question Action Row */}
-                        <div className="flex flex-wrap items-center justify-between gap-4">
-                          <span className="text-muted-foreground text-xs font-semibold uppercase">
-                            Question {qIdx + 1}
-                          </span>
-                          <div className="flex items-center gap-1.5">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              disabled={qIdx === 0}
-                              onClick={() => moveQuestion(qIdx, 'up')}
-                              title="Move up"
-                              className="text-muted-foreground transition-all duration-150 hover:bg-[#FF4500]/5 hover:text-[#FF4500] disabled:opacity-50"
-                            >
-                              <ArrowUp className="size-4" />
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              disabled={qIdx === questions.length - 1}
-                              onClick={() => moveQuestion(qIdx, 'down')}
-                              title="Move down"
-                              className="text-muted-foreground transition-all duration-150 hover:bg-[#FF4500]/5 hover:text-[#FF4500] disabled:opacity-50"
-                            >
-                              <ArrowDown className="size-4" />
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setDeleteIndex(qIdx)}
-                              className="text-destructive hover:bg-destructive/10"
-                              title="Delete question"
-                            >
-                              <Trash2 className="size-4" />
-                            </Button>
-                          </div>
-                        </div>
+                  {questions.map((q, qIdx) => {
+                    const qErr = validationErrors[qIdx];
+                    const hasCardError =
+                      (hasAttemptedSave || q.question_text.length > 0) && qErr?.hasError;
 
-                        {/* Question Text */}
-                        <div className="grid gap-4 md:grid-cols-3">
-                          <div className="space-y-1.5 md:col-span-2">
-                            <Label>Question Text</Label>
-                            <Input
-                              value={q.question_text}
-                              onChange={(e) =>
-                                handleQuestionChange(qIdx, { question_text: e.target.value })
-                              }
-                              placeholder="e.g. How often do you face this challenge?"
-                            />
-                          </div>
-
-                          <div className="space-y-1.5">
-                            <Label>Question Type</Label>
-                            <Select
-                              value={q.question_type}
-                              onValueChange={(val: FormQuestion['question_type']) =>
-                                handleQuestionChange(qIdx, { question_type: val })
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="text">Open Text (Comment)</SelectItem>
-                                <SelectItem value="radio">
-                                  Multiple Choice (Single Select)
-                                </SelectItem>
-                                <SelectItem value="checkbox">Checkboxes (Multi Select)</SelectItem>
-                                <SelectItem value="dropdown">Dropdown Selection</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-
-                        {/* Options Editor (Choice Types Only) */}
-                        {['radio', 'checkbox', 'dropdown'].includes(q.question_type) ? (
-                          <div className="space-y-3 border-t pt-4">
-                            <Label className="text-xs">Answer Options</Label>
-                            <div className="grid gap-3 sm:grid-cols-2">
-                              {q.options.map((opt, optIdx) => (
-                                <div key={optIdx} className="flex items-center gap-2">
-                                  <Input
-                                    value={opt}
-                                    onChange={(e) =>
-                                      handleOptionChange(qIdx, optIdx, e.target.value)
-                                    }
-                                    placeholder={`Option ${optIdx + 1}`}
-                                    className="h-8 text-xs"
-                                  />
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => handleRemoveOption(qIdx, optIdx)}
-                                    disabled={q.options.length <= 2}
-                                    className="text-muted-foreground hover:text-destructive size-8"
-                                    title="Remove option"
-                                  >
-                                    <Trash2 className="size-3.5" />
-                                  </Button>
-                                </div>
-                              ))}
+                    return (
+                      <Card
+                        key={qIdx}
+                        data-question-card
+                        className={cn(
+                          'relative overflow-visible transition-all',
+                          hasCardError && 'border-destructive/60 bg-destructive/[0.01] shadow-2xs',
+                        )}
+                      >
+                        <CardContent className="space-y-4 pt-6">
+                          {/* Question Action Row */}
+                          <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-3">
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground text-xs font-semibold uppercase">
+                                Question {qIdx + 1}
+                              </span>
+                              {hasCardError && (
+                                <span className="text-destructive bg-destructive/10 flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium">
+                                  <AlertCircle className="size-3" />
+                                  Needs attention
+                                </span>
+                              )}
                             </div>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              className="mt-2 h-7 border-[#FF4500]/20 text-[11px] font-semibold text-[#FF4500] transition-all duration-150 hover:border-[#FF4500] hover:bg-[#FF4500]/5 hover:text-[#FF4500]"
-                              onClick={() => handleAddOption(qIdx)}
-                            >
-                              <Plus className="mr-1 size-3" /> Add Option
-                            </Button>
+                            <div className="flex items-center gap-1.5">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                disabled={qIdx === 0}
+                                onClick={() => moveQuestion(qIdx, 'up')}
+                                title="Move up"
+                                className="text-muted-foreground transition-all duration-150 hover:bg-[#FF4500]/5 hover:text-[#FF4500] disabled:opacity-50"
+                              >
+                                <ArrowUp className="size-4" />
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                disabled={qIdx === questions.length - 1}
+                                onClick={() => moveQuestion(qIdx, 'down')}
+                                title="Move down"
+                                className="text-muted-foreground transition-all duration-150 hover:bg-[#FF4500]/5 hover:text-[#FF4500] disabled:opacity-50"
+                              >
+                                <ArrowDown className="size-4" />
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setDeleteIndex(qIdx)}
+                                className="text-destructive hover:bg-destructive/10"
+                                title="Delete question"
+                              >
+                                <Trash2 className="size-4" />
+                              </Button>
+                            </div>
                           </div>
-                        ) : null}
-                      </CardContent>
-                    </Card>
-                  ))}
+
+                          {/* Question Text, Type & Optional/Mandatory Dropdown */}
+                          <div className="grid gap-4 md:grid-cols-12">
+                            {/* Question Text */}
+                            <div className="space-y-1.5 md:col-span-6">
+                              <Label htmlFor={`q-text-${qIdx}`} className="text-xs font-semibold">
+                                Question Text <span className="text-destructive font-bold">*</span>
+                              </Label>
+                              <Input
+                                id={`q-text-${qIdx}`}
+                                value={q.question_text}
+                                onChange={(e) =>
+                                  handleQuestionChange(qIdx, { question_text: e.target.value })
+                                }
+                                placeholder="e.g. How often do you face this challenge?"
+                                className={cn(
+                                  (hasAttemptedSave || q.question_text.length > 0) &&
+                                    qErr?.questionTextError &&
+                                    'border-destructive focus-visible:ring-destructive',
+                                )}
+                              />
+                              {(hasAttemptedSave || q.question_text.length > 0) &&
+                                qErr?.questionTextError && (
+                                  <p className="text-destructive mt-1 flex items-center gap-1 text-[11px] font-medium">
+                                    <AlertCircle className="size-3 shrink-0" />
+                                    {qErr.questionTextError}
+                                  </p>
+                                )}
+                            </div>
+
+                            {/* Question Type */}
+                            <div className="space-y-1.5 md:col-span-3">
+                              <Label className="text-xs font-semibold">
+                                Question Type <span className="text-destructive font-bold">*</span>
+                              </Label>
+                              <Select
+                                value={q.question_type}
+                                onValueChange={(val: FormQuestion['question_type']) =>
+                                  handleQuestionChange(qIdx, { question_type: val })
+                                }
+                              >
+                                <SelectTrigger aria-label="Question Type">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="text">Open Text (Comment)</SelectItem>
+                                  <SelectItem value="radio">
+                                    Multiple Choice (Single Select)
+                                  </SelectItem>
+                                  <SelectItem value="checkbox">
+                                    Checkboxes (Multi Select)
+                                  </SelectItem>
+                                  <SelectItem value="dropdown">Dropdown Selection</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            {/* Mandatory / Optional Requirement Dropdown */}
+                            <div className="space-y-1.5 md:col-span-3">
+                              <Label className="text-xs font-semibold">
+                                Requirement <span className="text-destructive font-bold">*</span>
+                              </Label>
+                              <Select
+                                value={q.optional ? 'optional' : 'mandatory'}
+                                onValueChange={(val) =>
+                                  handleQuestionChange(qIdx, { optional: val === 'optional' })
+                                }
+                              >
+                                <SelectTrigger aria-label="Requirement">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="mandatory">Mandatory</SelectItem>
+                                  <SelectItem value="optional">Optional</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+
+                          {/* Options Editor (Choice Types Only) */}
+                          {['radio', 'checkbox', 'dropdown'].includes(q.question_type) ? (
+                            <div className="space-y-3 border-t pt-4">
+                              <div className="flex items-center justify-between">
+                                <Label className="text-xs font-semibold">
+                                  Answer Options{' '}
+                                  <span className="text-destructive font-bold">*</span>
+                                </Label>
+                              </div>
+
+                              {qErr?.generalOptionsError && (
+                                <p className="text-destructive flex items-center gap-1 text-[11px] font-medium">
+                                  <AlertCircle className="size-3 shrink-0" />
+                                  {qErr.generalOptionsError}
+                                </p>
+                              )}
+
+                              <div className="grid gap-3 sm:grid-cols-2">
+                                {q.options.map((opt, optIdx) => {
+                                  const optErr = qErr?.optionsErrors[optIdx];
+                                  const hasOptError =
+                                    (hasAttemptedSave || opt.length > 0) && Boolean(optErr);
+
+                                  return (
+                                    <div key={optIdx} className="flex flex-col gap-1">
+                                      <div className="flex items-center gap-2">
+                                        <Input
+                                          value={opt}
+                                          onChange={(e) =>
+                                            handleOptionChange(qIdx, optIdx, e.target.value)
+                                          }
+                                          placeholder={`Option ${optIdx + 1}`}
+                                          className={cn(
+                                            'h-8 text-xs',
+                                            hasOptError &&
+                                              'border-destructive focus-visible:ring-destructive',
+                                          )}
+                                        />
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="icon"
+                                          onClick={() => handleRemoveOption(qIdx, optIdx)}
+                                          disabled={q.options.length <= 2}
+                                          className="text-muted-foreground hover:text-destructive size-8 shrink-0"
+                                          title="Remove option"
+                                        >
+                                          <Trash2 className="size-3.5" />
+                                        </Button>
+                                      </div>
+                                      {hasOptError && (
+                                        <span className="text-destructive flex items-center gap-1 text-[10px] font-medium">
+                                          <AlertCircle className="size-3 shrink-0" />
+                                          {optErr}
+                                        </span>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="mt-2 h-7 border-[#FF4500]/20 text-[11px] font-semibold text-[#FF4500] transition-all duration-150 hover:border-[#FF4500] hover:bg-[#FF4500]/5 hover:text-[#FF4500]"
+                                onClick={() => handleAddOption(qIdx)}
+                              >
+                                <Plus className="mr-1 size-3" /> Add Option
+                              </Button>
+                            </div>
+                          ) : null}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               )}
             </div>
 
-            <div className="flex justify-end gap-3 border-t pt-4">
+            <div className="flex items-center justify-between border-t pt-4">
+              <div className="text-muted-foreground text-xs">
+                {totalErrorsCount > 0 && hasAttemptedSave ? (
+                  <span className="text-destructive flex items-center gap-1 font-medium">
+                    <AlertTriangle className="size-3.5" />
+                    Please fix the {totalErrorsCount} highlighted issue(s) above.
+                  </span>
+                ) : (
+                  <span>
+                    All questions and options must be filled and unique before publishing.
+                  </span>
+                )}
+              </div>
+
               <Button
                 onClick={handleSave}
                 disabled={updateSurveyMutation.isPending}
@@ -747,6 +998,7 @@ export default function WorkspaceSurveyPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
         {/* Share Survey Link Dialog */}
         <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
           <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[500px]">

@@ -95,9 +95,7 @@ export function ProfileForm() {
       <Card className="border-border bg-card border shadow-sm md:col-span-2">
         <CardHeader>
           <CardTitle className="text-foreground text-lg font-bold">Account Information</CardTitle>
-          <CardDescription>
-            Update your profile name and manage your email settings.
-          </CardDescription>
+          <CardDescription>Update your profile</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>

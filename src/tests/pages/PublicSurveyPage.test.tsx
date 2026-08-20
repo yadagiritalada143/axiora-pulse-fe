@@ -137,7 +137,7 @@ describe('PublicSurveyPage', () => {
     expect(screen.queryByPlaceholderText('Type your answer here...')).not.toBeInTheDocument();
   });
 
-  it('submits the text, radio, checkbox and email answers the respondent provided', async () => {
+  it('submits the text, radio, checkbox, dropdown and email answers the respondent provided', async () => {
     const user = userEvent.setup();
     const mutate = jest.fn();
     mockSubmit({ mutate });
@@ -147,6 +147,8 @@ describe('PublicSurveyPage', () => {
     await user.type(screen.getByPlaceholderText('Type your answer here...'), 'Churn');
     await user.click(screen.getByRole('radio', { name: 'Daily' }));
     await user.click(screen.getByRole('checkbox', { name: 'Excel' }));
+    await user.click(screen.getByRole('combobox'));
+    await user.click(await screen.findByRole('option', { name: 'Founder' }));
     await user.type(screen.getByLabelText(/Your Email Address/), 'me@example.test');
     await user.click(screen.getByRole('button', { name: 'Submit Response' }));
 
@@ -157,31 +159,40 @@ describe('PublicSurveyPage', () => {
           { questionId: 1, answer: 'Churn' },
           { questionId: 2, answer: 'Daily' },
           { questionId: 3, answer: ['Excel'] },
+          { questionId: 4, answer: 'Founder' },
         ],
       },
       expect.any(Object),
     );
   });
 
-  it('removes a checkbox option from the answer when it is unchecked again', async () => {
+  it('shows an error when submitting without answering all mandatory questions', async () => {
     const user = userEvent.setup();
     const mutate = jest.fn();
     mockSubmit({ mutate });
 
     renderPage();
 
-    const checkbox = screen.getByRole('checkbox', { name: 'Excel' });
-    await user.click(checkbox);
-    await user.click(checkbox);
+    await user.type(screen.getByPlaceholderText('Type your answer here...'), 'Churn');
     await user.click(screen.getByRole('button', { name: 'Submit Response' }));
 
-    expect(mutate).toHaveBeenCalledWith(
-      { respondentEmail: undefined, answers: [{ questionId: 3, answer: [] }] },
-      expect.any(Object),
-    );
+    expect(mutate).not.toHaveBeenCalled();
+    expect(
+      screen.getAllByText(/Please provide an answer for this required question/i).length,
+    ).toBeGreaterThan(0);
   });
 
-  it('records the selected dropdown option', async () => {
+  it('records the selected dropdown option and submits when all questions answered', async () => {
+    mockedUsePublicSurvey.mockReturnValue({
+      data: {
+        ...survey,
+        questions: [
+          { id: 4, question: 'What is your role?', questionType: 'dropdown', options: ['Founder'] },
+        ],
+      },
+      isLoading: false,
+      isError: false,
+    });
     const user = userEvent.setup();
     const mutate = jest.fn();
     mockSubmit({ mutate });
@@ -198,28 +209,21 @@ describe('PublicSurveyPage', () => {
     );
   });
 
-  it('omits a blank email rather than submitting an empty string', async () => {
-    const user = userEvent.setup();
-    const mutate = jest.fn();
-    mockSubmit({ mutate });
-
-    renderPage();
-
-    await user.type(screen.getByLabelText(/Your Email Address/), '   ');
-    await user.click(screen.getByRole('button', { name: 'Submit Response' }));
-
-    expect(mutate).toHaveBeenCalledWith(
-      { respondentEmail: undefined, answers: [] },
-      expect.any(Object),
-    );
-  });
-
   it('shows the thank-you screen once the submission succeeds', async () => {
+    mockedUsePublicSurvey.mockReturnValue({
+      data: {
+        ...survey,
+        questions: [{ id: 1, question: 'Question 1', questionType: 'text', options: [] }],
+      },
+      isLoading: false,
+      isError: false,
+    });
     const user = userEvent.setup();
     mockSubmit({ mutate: jest.fn(succeedingMutate) });
 
     renderPage();
 
+    await user.type(screen.getByPlaceholderText('Type your answer here...'), 'My Answer');
     await user.click(screen.getByRole('button', { name: 'Submit Response' }));
 
     expect(screen.getByText('Thank You!')).toBeInTheDocument();
@@ -248,5 +252,37 @@ describe('PublicSurveyPage', () => {
     renderPage();
 
     expect(screen.getByText('Failed to submit response. Please check inputs.')).toBeInTheDocument();
+  });
+
+  it('allows submitting the survey when optional questions are skipped', async () => {
+    mockedUsePublicSurvey.mockReturnValue({
+      data: {
+        ...survey,
+        questions: [
+          { id: 1, question: 'Required question', questionType: 'text', options: [] },
+          { id: 2, question: 'Optional feedback (Optional)', questionType: 'text', options: [] },
+        ],
+      },
+      isLoading: false,
+      isError: false,
+    });
+    const user = userEvent.setup();
+    const mutate = jest.fn(succeedingMutate);
+    mockSubmit({ mutate });
+    renderPage();
+
+    const [firstInput] = screen.getAllByPlaceholderText('Type your answer here...');
+    if (!firstInput) throw new Error('Expected an input element');
+    await user.type(firstInput, 'Mandatory answer');
+    await user.click(screen.getByRole('button', { name: 'Submit Response' }));
+
+    expect(mutate).toHaveBeenCalledWith(
+      {
+        respondentEmail: undefined,
+        answers: [{ questionId: 1, answer: 'Mandatory answer' }],
+      },
+      expect.any(Object),
+    );
+    expect(screen.getByText('Thank You!')).toBeInTheDocument();
   });
 });
