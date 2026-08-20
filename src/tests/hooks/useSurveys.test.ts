@@ -233,7 +233,11 @@ describe('useRunSurveyAnalysis', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(mockedApiClient.post).toHaveBeenCalledWith('/v1/surveys/5/analyze');
+    expect(mockedApiClient.post).toHaveBeenCalledWith(
+      '/v1/surveys/5/analyze',
+      {},
+      { timeout: 180_000 },
+    );
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.survey.analysis(5) });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.survey.byWorkspace(42) });
   });

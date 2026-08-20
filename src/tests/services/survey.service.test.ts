@@ -129,7 +129,11 @@ describe('surveyService', () => {
     mockedApiClient.post.mockResolvedValueOnce({ data: analysisResponse });
 
     await expect(surveyService.runSurveyAnalysis(5)).resolves.toEqual(analysisResponse);
-    expect(mockedApiClient.post).toHaveBeenCalledWith('/v1/surveys/5/analyze');
+    expect(mockedApiClient.post).toHaveBeenCalledWith(
+      '/v1/surveys/5/analyze',
+      {},
+      { timeout: 180_000 },
+    );
   });
 
   it('fetches saved post-link survey response analysis', async () => {
@@ -145,6 +149,28 @@ describe('surveyService', () => {
 
     await expect(surveyService.getSurveyAnalysis(5)).resolves.toEqual(analysisResponse);
     expect(mockedApiClient.get).toHaveBeenCalledWith('/v1/surveys/5/analysis');
+  });
+
+  it('downloads agent report for a workspace', async () => {
+    const fakeBlob = new Blob(['pdf-data'], { type: 'application/pdf' });
+    mockedApiClient.get.mockResolvedValueOnce({
+      data: fakeBlob,
+      headers: {
+        'content-disposition': 'attachment; filename="Acme_survey_report.pdf"',
+      },
+    });
+
+    const result = await surveyService.downloadAgentReport(42, 'survey_intelligence_agent', 'pdf');
+    expect(result.filename).toBe('Acme_survey_report.pdf');
+    expect(result.blob).toBe(fakeBlob);
+    expect(mockedApiClient.get).toHaveBeenCalledWith(
+      '/v1/workspaces/42/reports/survey_intelligence_agent',
+      {
+        params: { format: 'pdf' },
+        responseType: 'blob',
+        timeout: 60_000,
+      },
+    );
   });
 
   it('propagates request failures to the caller', async () => {

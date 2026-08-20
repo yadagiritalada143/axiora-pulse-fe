@@ -837,18 +837,19 @@ describe('WorkspaceSurveyPage', () => {
     });
   });
 
-  describe('ai analysis tab', () => {
-    it('renders the AI analysis tab and empty state when opened', async () => {
+  describe('arya analysis tab', () => {
+    it('renders the Arya analysis tab and empty state when opened', async () => {
       const user = userEvent.setup();
       renderPage();
 
-      await user.click(screen.getByRole('tab', { name: /AI Analysis/i }));
+      await user.click(screen.getByRole('tab', { name: /Arya Analysis/i }));
 
-      expect(screen.getByText(/Survey Response Intelligence/i)).toBeInTheDocument();
+      expect(screen.getByText('Survey Analysis')).toBeInTheDocument();
+      expect(screen.getByText(/Arya Intelligence/i)).toBeInTheDocument();
       expect(screen.getByText(/No Response Analysis Available Yet/i)).toBeInTheDocument();
     }, 15000);
 
-    it('navigates from Responses tab to AI Analysis tab via the quick action button', async () => {
+    it('navigates from Responses tab to Arya Analysis tab via the quick action button', async () => {
       const user = userEvent.setup();
       const resp = {
         id: 11,
@@ -865,11 +866,12 @@ describe('WorkspaceSurveyPage', () => {
       renderPage();
 
       await user.click(screen.getByRole('tab', { name: /Responses/ }));
-      expect(screen.getByRole('button', { name: /View AI Analysis/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /View Arya Analysis/i })).toBeInTheDocument();
 
-      await user.click(screen.getByRole('button', { name: /View AI Analysis/i }));
+      await user.click(screen.getByRole('button', { name: /View Arya Analysis/i }));
 
-      expect(screen.getByText(/Survey Response Intelligence/i)).toBeInTheDocument();
+      expect(screen.getByText('Survey Analysis')).toBeInTheDocument();
+      expect(screen.getByText(/Arya Intelligence/i)).toBeInTheDocument();
     }, 15000);
   });
 });

@@ -64,6 +64,8 @@ export const surveyService = {
   runSurveyAnalysis: async (surveyId: number): Promise<SurveyAnalysisResponse> => {
     const { data } = await apiClient.post<SurveyAnalysisResponse>(
       API_ENDPOINTS.SURVEY.ANALYZE(surveyId),
+      {},
+      { timeout: 180_000 },
     );
 
     return data;
@@ -75,5 +77,42 @@ export const surveyService = {
     );
 
     return data;
+  },
+
+  downloadAgentReport: async (
+    workspaceId: number,
+    agentName = 'survey_intelligence_agent',
+    format = 'pdf',
+  ): Promise<{ blob: Blob; filename: string }> => {
+    const response = await apiClient.get<Blob>(
+      API_ENDPOINTS.WORKSPACE.REPORT(workspaceId, agentName),
+      {
+        params: { format },
+        responseType: 'blob',
+        timeout: 60_000,
+      },
+    );
+
+    const disposition = response.headers['content-disposition'] as string | undefined;
+    let filename = '';
+    if (disposition) {
+      const filenameStarRegex = /filename\*=UTF-8''([^;]+)/i;
+      const filenameStarMatch = filenameStarRegex.exec(disposition);
+      if (filenameStarMatch?.[1]) {
+        filename = decodeURIComponent(filenameStarMatch[1]);
+      } else {
+        const filenameRegex = /filename="?([^";]+)"?/i;
+        const filenameMatch = filenameRegex.exec(disposition);
+        if (filenameMatch?.[1]) {
+          filename = filenameMatch[1];
+        }
+      }
+    }
+
+    if (!filename) {
+      filename = `survey_intelligence_report_${workspaceId}.${format}`;
+    }
+
+    return { blob: response.data, filename };
   },
 };

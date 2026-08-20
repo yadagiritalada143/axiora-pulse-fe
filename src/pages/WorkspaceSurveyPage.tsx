@@ -519,7 +519,7 @@ export default function WorkspaceSurveyPage() {
               Responses ({responsesData?.total_responses ?? 0})
             </TabsTrigger>
             <TabsTrigger value="analysis" className="gap-1.5">
-              <Sparkles className="size-3.5 text-[#FF4500]" /> AI Analysis
+              <Sparkles className="size-3.5 text-[#FF4500]" /> Arya Analysis
             </TabsTrigger>
           </TabsList>
 
@@ -865,7 +865,7 @@ export default function WorkspaceSurveyPage() {
                     size="sm"
                     className="gap-1.5 border-[#FF4500]/20 font-semibold text-[#FF4500] hover:border-[#FF4500] hover:bg-[#FF4500]/5 hover:text-[#FF4500]"
                   >
-                    <Sparkles className="size-3.5" /> View AI Analysis
+                    <Sparkles className="size-3.5" /> View Arya Analysis
                   </Button>
                 )}
               </CardHeader>
@@ -927,6 +927,8 @@ export default function WorkspaceSurveyPage() {
               survey={survey}
               workspaceId={workspace.id}
               totalResponses={responsesData?.total_responses ?? 0}
+              onNavigateTab={setActiveTab}
+              onOpenShare={() => setShareDialogOpen(true)}
             />
           </TabsContent>
         </Tabs>

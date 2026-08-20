@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { toast } from 'sonner';
 
+import { surveyService } from '@/features/survey/api/survey.service';
 import { SurveyAnalysisReport } from '@/features/survey/components/SurveyAnalysisReport';
 import { useRunSurveyAnalysis, useSurveyAnalysis } from '@/features/survey/hooks/useSurveys';
 import type { SurveyAnalysisResult, SurveyResponse } from '@/features/survey/types';
@@ -11,13 +12,20 @@ jest.mock('@/features/survey/hooks/useSurveys', () => ({
   useRunSurveyAnalysis: jest.fn(),
 }));
 
+jest.mock('@/features/survey/api/survey.service', () => ({
+  surveyService: {
+    downloadAgentReport: jest.fn(),
+  },
+}));
+
 jest.mock('sonner', () => ({
-  toast: { success: jest.fn(), error: jest.fn() },
+  toast: { success: jest.fn(), error: jest.fn(), info: jest.fn() },
 }));
 
 const mockedUseSurveyAnalysis = useSurveyAnalysis as jest.Mock;
 const mockedUseRunSurveyAnalysis = useRunSurveyAnalysis as jest.Mock;
-const mockedToast = toast as jest.Mocked<typeof toast>;
+const mockedSurveyService = surveyService as jest.Mocked<typeof surveyService>;
+const mockedToast = toast;
 
 const baseSurvey: SurveyResponse = {
   id: 5,
@@ -121,33 +129,31 @@ describe('SurveyAnalysisReport', () => {
 
     render(<SurveyAnalysisReport survey={baseSurvey} workspaceId={42} totalResponses={0} />);
 
-    expect(screen.getByText('Loading survey intelligence data...')).toBeInTheDocument();
+    expect(screen.getByText('Loading Arya analysis data...')).toBeInTheDocument();
   });
 
   it('renders the empty state and disabled button when 0 responses are collected', () => {
     render(<SurveyAnalysisReport survey={baseSurvey} workspaceId={42} totalResponses={0} />);
 
     expect(screen.getByText('No Response Analysis Available Yet')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Run AI Analysis/i })).toBeDisabled();
-    expect(screen.getByText('0 responses')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Run Arya Analysis/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Share Survey Link/i })).toBeInTheDocument();
   });
 
-  it('enables the Run AI Analysis button when responses >= 1', async () => {
+  it('enables the Run Arya Analysis button when responses >= 1', async () => {
     const user = userEvent.setup();
     const mutate = jest.fn((_payload, options) => options?.onSuccess?.());
     mockedUseRunSurveyAnalysis.mockReturnValue({ mutate, isPending: false });
 
     render(<SurveyAnalysisReport survey={baseSurvey} workspaceId={42} totalResponses={3} />);
 
-    const runBtn = screen.getByRole('button', { name: /^Run AI Analysis$/i });
+    const runBtn = screen.getByRole('button', { name: /^Run Arya Analysis$/i });
     expect(runBtn).toBeEnabled();
 
     await user.click(runBtn);
 
     expect(mutate).toHaveBeenCalled();
-    expect(mockedToast.success).toHaveBeenCalledWith(
-      'Survey response intelligence analysis completed!',
-    );
+    expect(mockedToast.success).toHaveBeenCalledWith('Arya survey analysis completed!');
   });
 
   it('shows in-flight synthesizing banner when analysis mutation is pending', () => {
@@ -155,11 +161,11 @@ describe('SurveyAnalysisReport', () => {
 
     render(<SurveyAnalysisReport survey={baseSurvey} workspaceId={42} totalResponses={3} />);
 
-    expect(screen.getByText('Synthesizing Market Intelligence...')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Analyzing Responses.../i })).toBeDisabled();
+    expect(screen.getByText('Arya is synthesizing market intelligence...')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Analyzing.../i })).toBeDisabled();
   });
 
-  it('renders full analysis metrics, validation status, pain points and GTM recommendations', () => {
+  it('renders executive decision sections: Overall Result, Key Findings, Problem & Demand Validation, Needs, and Next Steps', () => {
     mockedUseSurveyAnalysis.mockReturnValue({
       data: { survey_id: 5, status: 'success', analysis_result: fullAnalysis },
       isLoading: false,
@@ -168,240 +174,123 @@ describe('SurveyAnalysisReport', () => {
     render(<SurveyAnalysisReport survey={baseSurvey} workspaceId={42} totalResponses={10} />);
 
     // Top Header & Summary
-    expect(screen.getByText(/Survey Response Intelligence/i)).toBeInTheDocument();
+    expect(screen.getByText('Survey Analysis')).toBeInTheDocument();
+    expect(screen.getByText('Arya Intelligence')).toBeInTheDocument();
     expect(
       screen.getByText('Target customers strongly validate the core manual workflow bottleneck.'),
     ).toBeInTheDocument();
 
-    // Scorecards
-    expect(screen.getByText('92%')).toBeInTheDocument(); // Quality
-    expect(screen.getByText('94%')).toBeInTheDocument(); // Confidence
-    expect(screen.getByText('90%')).toBeInTheDocument(); // Evidence strength
-    expect(screen.getByText('88%')).toBeInTheDocument(); // Reliability
-    expect(screen.getByText('5%')).toBeInTheDocument(); // Fraud Risk
+    // 10 Core Decision Sections
+    expect(screen.getByText('Key Findings')).toBeInTheDocument();
+    expect(screen.getByText('Freshness appears important')).toBeInTheDocument();
+    expect(screen.getByText('Consistency may be a pain point')).toBeInTheDocument();
+    expect(screen.getByText('Repeat purchasing exists')).toBeInTheDocument();
+    expect(screen.getByText('Existing alternatives are satisfying')).toBeInTheDocument();
 
-    // Validated Problems
+    // Problem Validation
+    expect(screen.getByText('Problem Validation')).toBeInTheDocument();
     expect(
       screen.getByText('Manual lead data enrichment takes over 5 hours per week'),
     ).toBeInTheDocument();
-    expect(screen.getByText('85% of respondents cite lost productivity')).toBeInTheDocument();
 
-    // Persona Fit
-    expect(screen.getByText('Mid-Market SaaS Ops')).toBeInTheDocument();
-    expect(screen.getByText(/High Readiness/i)).toBeInTheDocument();
+    // Demand Validation
+    expect(screen.getByText('Demand Validation')).toBeInTheDocument();
+    expect(screen.getByText('What we observed')).toBeInTheDocument();
+    expect(screen.getByText("What we don't know")).toBeInTheDocument();
 
-    // Pain Points & Sentiment
-    expect(screen.getByText('Repetitive copy-pasting across CRMs')).toBeInTheDocument();
-    expect(
-      screen.getByText(/Team loses half a day every Friday manually synchronizing deals/i),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/High frustration with existing manual tooling/i)).toBeInTheDocument();
-    expect(screen.getByText('Migration complexity from legacy CRM')).toBeInTheDocument();
+    // Customer Needs & Value Proposition
+    expect(screen.getByText('What Customers May Need')).toBeInTheDocument();
+    expect(screen.getByText('Freshness')).toBeInTheDocument();
+    expect(screen.getByText('Consistent taste')).toBeInTheDocument();
+    expect(screen.getByText('Affordable value')).toBeInTheDocument();
+    expect(screen.getByText('Value Proposition to Test')).toBeInTheDocument();
+    expect(screen.getByText(/Save 5\+ hours weekly per rep/i)).toBeInTheDocument();
 
-    // Recommendations & GTM
-    expect(
-      screen.getByText('Position as a 1-click CRM auto-enrichment engine'),
-    ).toBeInTheDocument();
-    expect(screen.getByText('Save 5+ hours weekly per rep')).toBeInTheDocument();
+    // Still Unknown & What To Do Next
+    expect(screen.getByText('Still Unknown (Validation Gaps)')).toBeInTheDocument();
+    expect(screen.getByText('What To Do Next')).toBeInTheDocument();
+    expect(screen.getByText('Collect More Responses')).toBeInTheDocument();
+    expect(screen.getByText('Measure Switching Intent')).toBeInTheDocument();
   });
 
-  it('handles mutation error and displays toast', async () => {
-    const user = userEvent.setup();
-    const mutate = jest.fn((_payload, options) =>
-      options?.onError?.({ response: { data: { detail: 'API Rate limit exceeded' } } }),
+  it('toggles collapsible technical methodology details in the footer', () => {
+    mockedUseSurveyAnalysis.mockReturnValue({
+      data: { survey_id: 5, status: 'success', analysis_result: fullAnalysis },
+      isLoading: false,
+    });
+
+    render(<SurveyAnalysisReport survey={baseSurvey} workspaceId={42} totalResponses={1} />);
+
+    const toggleBtn = screen.getByRole('button', {
+      name: /Analysis Details & Technical Methodology/i,
+    });
+    expect(screen.queryByText('Response Completeness')).not.toBeInTheDocument();
+
+    fireEvent.click(toggleBtn);
+    expect(screen.getByText('Response Completeness')).toBeInTheDocument();
+    expect(screen.getByText('Known Limitations')).toBeInTheDocument();
+  });
+
+  it('handles navigation callback when action buttons are clicked', () => {
+    mockedUseSurveyAnalysis.mockReturnValue({
+      data: { survey_id: 5, status: 'success', analysis_result: fullAnalysis },
+      isLoading: false,
+    });
+
+    const mockNavigate = jest.fn();
+    const mockShare = jest.fn();
+
+    render(
+      <SurveyAnalysisReport
+        survey={baseSurvey}
+        workspaceId={42}
+        totalResponses={5}
+        onNavigateTab={mockNavigate}
+        onOpenShare={mockShare}
+      />,
     );
-    mockedUseRunSurveyAnalysis.mockReturnValue({ mutate, isPending: false });
 
-    render(<SurveyAnalysisReport survey={baseSurvey} workspaceId={42} totalResponses={2} />);
+    const addQuestionBtn = screen.getByRole('button', { name: /Add Question/i });
+    fireEvent.click(addQuestionBtn);
+    expect(mockNavigate).toHaveBeenCalledWith('editor');
 
-    await user.click(screen.getByRole('button', { name: /^Run AI Analysis$/i }));
-
-    expect(mockedToast.error).toHaveBeenCalledWith('API Rate limit exceeded');
+    const collectResponsesBtn = screen.getByRole('button', { name: /^Collect Responses$/i });
+    fireEvent.click(collectResponsesBtn);
+    expect(mockShare).toHaveBeenCalled();
   });
 
-  it('safely renders backend canonical insight dictionaries without React child object errors', () => {
-    const canonicalInsightAnalysis: SurveyAnalysisResult = {
-      analysis_id: 'sa-202',
-      survey_id: 5,
-      analysis_timestamp: '2026-01-04T12:00:00.000Z',
-      purpose: 'Customer Discovery',
-      executive_summary: 'Full canonical validation passed',
-      data_quality: {
-        response_quality_score: 95,
-        exclusion_reasons: [
-          {
-            insight_id: 'ex-1',
-            capability_id: 'SI.18',
-            type: 'fraud',
-            statement: 'IP similarity detected',
-            status: 'quarantined',
-          },
-        ],
-      },
-      validation: {
-        problems: [
-          {
-            insight_id: 'in-1',
-            capability_id: 'SI.34',
-            type: 'problem',
-            statement: 'High manual overhead in data reconciliation',
-            status: 'validated',
-            affected_segment: 'Enterprise Finance Ops',
-            frequency_or_magnitude: 'Daily',
-            supporting_evidence: [
-              {
-                insight_id: 'ev-1',
-                statement: '70% of respondents spend 3+ hours daily reconciling ledger errors',
-              },
-            ],
-            opposing_evidence: [
-              {
-                insight_id: 'op-1',
-                statement: 'Smaller teams use spreadsheet macros with minimal complaints',
-              },
-            ],
-            sample_basis: 15,
-            confidence_score: 91,
-            confidence_band: 'very-high',
-            limitations: ['Limited to North America sample'],
-            business_implication: 'Huge willingness to pay for automated ledger sync',
-            recommended_action: 'Prioritize automated reconciliation connectors in Q3',
-          },
-        ],
-        segments: [
-          {
-            insight_id: 'seg-1',
-            capability_id: 'SI.32',
-            statement: 'Enterprise Finance Ops',
-            status: 'validated',
-            confidence_score: 89,
-          },
-        ],
-        adoption_readiness: [
-          {
-            insight_id: 'ar-1',
-            statement: 'High Adoption Intent',
-            drivers: [
-              {
-                insight_id: 'dr-1',
-                statement: 'Time savings and error reduction',
-              },
-            ],
-            barriers: [
-              {
-                insight_id: 'ba-1',
-                statement: 'SOC2 Type II compliance requirement',
-              },
-            ],
-          },
-        ],
-        problem_solution_fit_indicators: [
-          {
-            insight_id: 'fit-1',
-            statement: 'Strong willingness to pay confirmed by 80% of segment',
-          },
-        ],
-      },
-      customer_intelligence: {
-        pain_points: [
-          {
-            insight_id: 'pp-1',
-            capability_id: 'SI.25',
-            statement: 'Repetitive reconciliation errors',
-            severity: 'Critical',
-            description: 'Manual ledger typing leads to costly reconciliation gaps',
-          },
-        ],
-        sentiment: [
-          {
-            insight_id: 'st-1',
-            capability_id: 'SI.24',
-            statement: 'Highly motivated to replace legacy manual tooling',
-          },
-        ],
-        objections: [
-          {
-            insight_id: 'obj-1',
-            capability_id: 'SI.31',
-            statement: 'Security clearance process takes 6+ weeks',
-          },
-        ],
-      },
-      recommendations: [
-        {
-          insight_id: 'rec-1',
-          capability_id: 'SI.44',
-          statement: 'Ship automated bank-to-ledger sync integration',
-          status: 'recommendation',
-          priority: 'High',
-          business_implication: 'Addresses 85% of primary objections from CFO buyers',
-          recommended_action: 'Build pilot program with 5 design partners',
-        },
-      ],
-      gtm_handoff: {
-        priority_segments: [
-          {
-            insight_id: 'gtm-1',
-            statement: 'Mid-Market & Enterprise Finance Teams',
-          },
-        ],
-        value_proposition_implications: [
-          {
-            insight_id: 'gtm-2',
-            statement: 'Eliminate 15+ manual accounting hours per week',
-          },
-        ],
-        feature_priorities: [
-          {
-            insight_id: 'gtm-3',
-            statement: 'Instant QuickBooks and NetSuite sync',
-          },
-        ],
-        adoption_barriers: [
-          {
-            insight_id: 'gtm-4',
-            statement: 'Enterprise SSO and SOC2 audits required',
-          },
-        ],
-      },
-    };
+  it('downloads the agent PDF report when Export Report is clicked', async () => {
+    const user = userEvent.setup();
+    const mockCreateObjectURL = jest.fn(() => 'blob:http://localhost/mock-uuid');
+    const mockRevokeObjectURL = jest.fn();
+    window.URL.createObjectURL = mockCreateObjectURL;
+    window.URL.revokeObjectURL = mockRevokeObjectURL;
 
     mockedUseSurveyAnalysis.mockReturnValue({
-      data: { survey_id: 5, status: 'success', analysis_result: canonicalInsightAnalysis },
+      data: { survey_id: 5, status: 'success', analysis_result: fullAnalysis },
       isLoading: false,
+    });
+
+    const fakeBlob = new Blob(['pdf-data'], { type: 'application/pdf' });
+    mockedSurveyService.downloadAgentReport.mockResolvedValueOnce({
+      blob: fakeBlob,
+      filename: 'survey_intelligence_report_42.pdf',
     });
 
     render(<SurveyAnalysisReport survey={baseSurvey} workspaceId={42} totalResponses={5} />);
 
-    // Problem statements & rich insight fields rendered without throwing
-    expect(screen.getByText('High manual overhead in data reconciliation')).toBeInTheDocument();
-    expect(
-      screen.getByText('70% of respondents spend 3+ hours daily reconciling ledger errors'),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText('Smaller teams use spreadsheet macros with minimal complaints'),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/Huge willingness to pay for automated ledger sync/i),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/Prioritize automated reconciliation connectors in Q3/i),
-    ).toBeInTheDocument();
+    const exportBtn = screen.getByRole('button', { name: /Export Report/i });
+    await user.click(exportBtn);
 
-    // Segments & readiness
-    expect(screen.getByText('Enterprise Finance Ops')).toBeInTheDocument();
-    expect(screen.getByText('High Adoption Intent')).toBeInTheDocument();
-    expect(screen.getByText(/Time savings and error reduction/i)).toBeInTheDocument();
-    expect(screen.getByText(/SOC2 Type II compliance requirement/i)).toBeInTheDocument();
-
-    // Customer Intelligence & GTM
-    expect(screen.getByText('Repetitive reconciliation errors')).toBeInTheDocument();
-    expect(
-      screen.getByText('Highly motivated to replace legacy manual tooling'),
-    ).toBeInTheDocument();
-    expect(screen.getByText('Security clearance process takes 6+ weeks')).toBeInTheDocument();
-    expect(screen.getByText('Ship automated bank-to-ledger sync integration')).toBeInTheDocument();
-    expect(screen.getByText('Mid-Market & Enterprise Finance Teams')).toBeInTheDocument();
-    expect(screen.getByText('Instant QuickBooks and NetSuite sync')).toBeInTheDocument();
+    expect(mockedSurveyService.downloadAgentReport).toHaveBeenCalledWith(
+      42,
+      'survey_intelligence_agent',
+      'pdf',
+    );
+    expect(mockCreateObjectURL).toHaveBeenCalledWith(fakeBlob);
+    expect(mockRevokeObjectURL).toHaveBeenCalledWith('blob:http://localhost/mock-uuid');
+    expect(mockedToast.success).toHaveBeenCalledWith(
+      'Survey intelligence report downloaded successfully.',
+    );
   });
 });
