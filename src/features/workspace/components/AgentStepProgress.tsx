@@ -19,15 +19,16 @@ export function AgentStepProgress({
   className,
 }: AgentStepProgressProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [expandedStep, setExpandedStep] = useState<number | null>(null);
+  const [selectedStep, setSelectedStep] = useState<number | null>(null);
 
-  const activeStepObj = AGENT_STEPS.find((s) => s.id === currentStep) ?? {
-    id: 1,
-    name: 'Idea Validation Agent',
-  };
+  const activeStepObj = AGENT_STEPS.find((s) => s.id === currentStep) ??
+    AGENT_STEPS[0] ?? {
+      id: 1,
+      name: 'Idea Validation',
+    };
 
-  const toggleDetails = (id: number) => {
-    setExpandedStep((prev) => (prev === id ? null : id));
+  const toggleStepDetails = (id: number) => {
+    setSelectedStep((prev) => (prev === id ? null : id));
   };
 
   return (
@@ -63,15 +64,26 @@ export function AgentStepProgress({
           </button>
 
           {isMobileOpen ? (
-            <CardContent className="border-border mt-1 border-t px-4 pt-0 pb-4">
+            <CardContent className="border-border mt-1 max-h-[60vh] overflow-y-auto border-t px-4 pt-0 pb-4">
               <div className="space-y-3 pt-3">
                 {AGENT_STEPS.map((step) => {
                   const isCompleted = step.id < currentStep;
                   const isActive = step.id === currentStep;
+                  const isExpanded = selectedStep === step.id;
 
                   return (
-                    <div key={step.id} className="flex flex-col gap-1">
-                      <div className="flex items-center gap-3">
+                    <div
+                      key={step.id}
+                      className={cn(
+                        'flex flex-col gap-1.5 rounded-lg p-2 transition-colors',
+                        isExpanded ? 'bg-muted/40' : 'hover:bg-muted/20',
+                      )}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => toggleStepDetails(step.id)}
+                        className="flex w-full items-center gap-3 text-left focus:outline-none"
+                      >
                         <div
                           className={cn(
                             'flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all duration-300',
@@ -88,18 +100,20 @@ export function AgentStepProgress({
                           {isCompleted ? <Check className="size-4 stroke-[3]" /> : step.id}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p
-                            className={cn(
-                              'truncate text-xs font-medium',
-                              isActive
-                                ? 'text-foreground font-semibold'
-                                : isCompleted
-                                  ? 'text-foreground/80'
-                                  : 'text-muted-foreground',
-                            )}
-                          >
-                            {step.name}
-                          </p>
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <p
+                              className={cn(
+                                'text-xs font-medium',
+                                isActive
+                                  ? 'text-foreground font-semibold'
+                                  : isCompleted
+                                    ? 'text-foreground/80'
+                                    : 'text-muted-foreground',
+                              )}
+                            >
+                              {step.name}
+                            </p>
+                          </div>
                         </div>
                         {isCompleted ? (
                           <Badge
@@ -117,7 +131,22 @@ export function AgentStepProgress({
                             Pending
                           </Badge>
                         )}
-                      </div>
+                      </button>
+
+                      {isExpanded ? (
+                        <div className="animate-in fade-in pt-1 pl-10 text-[11px] duration-200">
+                          <p className="text-muted-foreground/80 mb-1.5 text-[10px] font-medium">
+                            {step.description}
+                          </p>
+                          <ul className="text-muted-foreground space-y-1 border-l-2 border-[#FF4500]/30 pl-2.5">
+                            {step.details.map((detail, idx) => (
+                              <li key={idx} className="leading-tight">
+                                • {detail}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null}
                     </div>
                   );
                 })}
@@ -148,20 +177,28 @@ export function AgentStepProgress({
             </div>
           </CardHeader>
 
-          <CardContent className="p-4">
-            <div className="relative space-y-4">
+          <CardContent className="max-h-[calc(100vh-140px)] overflow-y-auto p-4 pr-3">
+            <div className="relative space-y-3.5">
               {AGENT_STEPS.map((step, index) => {
                 const isCompleted = step.id < currentStep;
                 const isActive = step.id === currentStep;
                 const isLast = index === AGENT_STEPS.length - 1;
-                const isExpanded = expandedStep === step.id;
+                const isExpanded = selectedStep === step.id;
 
                 return (
-                  <div key={step.id} className="group relative flex items-start gap-3">
+                  <div
+                    key={step.id}
+                    className={cn(
+                      'group relative flex items-start gap-3 rounded-xl p-2 transition-all duration-200',
+                      isExpanded
+                        ? 'bg-muted/50 ring-border/80 shadow-2xs ring-1'
+                        : 'hover:bg-muted/20',
+                    )}
+                  >
                     {!isLast && (
                       <div
                         className={cn(
-                          'absolute top-8 bottom-[-16px] left-3.5 z-0 w-[2px] transition-colors duration-500',
+                          'absolute top-8 bottom-[-14px] left-5.5 z-0 w-[2px] transition-colors duration-500',
                           isCompleted ? 'bg-emerald-500' : 'bg-border dark:bg-muted/40',
                         )}
                       />
@@ -174,7 +211,9 @@ export function AgentStepProgress({
                           ? 'animate-in zoom-in-75 bg-emerald-500 text-white shadow-emerald-500/20 duration-300'
                           : isActive
                             ? 'scale-105 bg-[#FF4500] text-white ring-4 shadow-[#FF4500]/30 ring-[#FF4500]/20'
-                            : 'border-border bg-background text-muted-foreground border-2',
+                            : isExpanded
+                              ? 'bg-background border-2 border-[#FF4500]/50 text-[#FF4500] ring-2 ring-[#FF4500]/15'
+                              : 'border-border bg-background text-muted-foreground border-2',
                       )}
                     >
                       {isCompleted ? (
@@ -185,54 +224,63 @@ export function AgentStepProgress({
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-start justify-between gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => toggleDetails(step.id)}
-                          className="text-left transition-colors group-hover:text-[#FF4500] focus:outline-none"
-                        >
-                          <p
-                            className={cn(
-                              'text-xs leading-tight font-bold transition-colors',
-                              isActive
-                                ? 'text-foreground font-bold'
-                                : isCompleted
-                                  ? 'text-foreground/90'
-                                  : 'text-muted-foreground',
-                            )}
-                          >
-                            {step.name}
-                          </p>
-                        </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleStepDetails(step.id)}
+                        className="w-full text-left focus:outline-none"
+                      >
+                        <div className="flex items-start justify-between gap-1.5">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <p
+                                className={cn(
+                                  'text-xs leading-tight font-bold transition-colors group-hover:text-[#FF4500]',
+                                  isActive
+                                    ? 'text-foreground font-bold'
+                                    : isCompleted
+                                      ? 'text-foreground/90'
+                                      : 'text-muted-foreground',
+                                )}
+                              >
+                                {step.name}
+                              </p>
+                            </div>
+                          </div>
 
-                        {isCompleted ? (
-                          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-                            Done
-                          </span>
-                        ) : isActive ? (
-                          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#FF4500]/10 px-1.5 py-0.5 text-[10px] font-semibold text-[#FF4500]">
-                            {isRunning && <Loader2 className="size-2.5 animate-spin" />}
-                            {isRunning ? 'Running' : 'Active'}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground/60 shrink-0 text-[10px]">
-                            Pending
-                          </span>
-                        )}
-                      </div>
+                          {isCompleted ? (
+                            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                              Done
+                            </span>
+                          ) : isActive ? (
+                            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#FF4500]/10 px-1.5 py-0.5 text-[10px] font-semibold text-[#FF4500]">
+                              {isRunning && <Loader2 className="size-2.5 animate-spin" />}
+                              {isRunning ? 'Running' : 'Active'}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground/60 shrink-0 text-[10px]">
+                              Pending
+                            </span>
+                          )}
+                        </div>
 
-                      <p className="text-muted-foreground mt-0.5 text-[11px] leading-snug">
-                        {step.description}
-                      </p>
+                        <p className="text-muted-foreground mt-1 text-[11px] leading-snug">
+                          {step.description}
+                        </p>
+                      </button>
 
                       {isExpanded ? (
-                        <ul className="text-muted-foreground/90 animate-in fade-in mt-2 space-y-1 border-l-2 border-[#FF4500]/30 pl-3 text-[11px] duration-200">
-                          {step.details.map((detail, idx) => (
-                            <li key={idx} className="leading-tight">
-                              • {detail}
-                            </li>
-                          ))}
-                        </ul>
+                        <div className="animate-in fade-in mt-2 border-l-2 border-[#FF4500]/30 pl-2.5 duration-200">
+                          <p className="text-muted-foreground/90 mb-1 text-[10px] font-medium tracking-wide uppercase">
+                            Key Activities & Scope
+                          </p>
+                          <ul className="text-muted-foreground space-y-1 text-[11px]">
+                            {step.details.map((detail, idx) => (
+                              <li key={idx} className="leading-tight">
+                                • {detail}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       ) : null}
                     </div>
                   </div>

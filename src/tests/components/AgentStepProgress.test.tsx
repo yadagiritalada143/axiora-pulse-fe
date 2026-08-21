@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { AgentStepProgress } from '@features/workspace/components/AgentStepProgress';
@@ -8,10 +8,10 @@ describe('AgentStepProgress', () => {
   it('defaults to step 1 when currentStep is not provided', () => {
     render(<AgentStepProgress />);
 
-    expect(screen.getByText('1/5 Steps')).toBeInTheDocument();
+    expect(screen.getByText('1/11 Steps')).toBeInTheDocument();
   });
 
-  it('renders all 5 step names from the reference design', () => {
+  it('renders all 11 step names from the lifecycle design', () => {
     render(<AgentStepProgress currentStep={2} />);
 
     AGENT_STEPS.forEach((step) => {
@@ -54,8 +54,6 @@ describe('AgentStepProgress', () => {
     };
     expect(chevron()).toHaveClass('lucide-chevron-down');
 
-    // Collapsed: the mobile per-step breakdown (with its "Completed"/"Active" badges) isn't
-    // rendered yet - only the desktop pipeline's differently-labelled "Done"/"Running" badges are.
     expect(screen.queryByText('Completed')).not.toBeInTheDocument();
 
     await user.click(toggle);
@@ -80,15 +78,13 @@ describe('AgentStepProgress', () => {
     const firstDetail = firstStep.details[0];
     if (!firstDetail) throw new Error('firstStep.details is empty');
 
-    const stepButton = screen.getByRole('button', { name: firstStep.name });
+    const stepButton = screen.getByRole('button', { name: new RegExp(firstStep.name, 'i') });
 
-    expect(screen.queryByText(firstDetail)).not.toBeInTheDocument();
+    expect(screen.queryByText(`• ${firstDetail}`)).not.toBeInTheDocument();
 
     await user.click(stepButton);
 
-    const detailList = screen.getByText(firstStep.name).closest('.min-w-0');
-    expect(detailList).not.toBeNull();
-    expect(within(detailList as HTMLElement).getByText(`• ${firstDetail}`)).toBeInTheDocument();
+    expect(screen.getByText(`• ${firstDetail}`)).toBeInTheDocument();
 
     await user.click(stepButton);
 
@@ -98,7 +94,7 @@ describe('AgentStepProgress', () => {
   it('falls back to the step-1 label when currentStep does not match a known step', () => {
     render(<AgentStepProgress currentStep={99} />);
 
-    expect(screen.getAllByText('Idea Validation Agent').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Idea Validation').length).toBeGreaterThan(0);
   });
 
   it('renders Active when isRunning is false and Running when isRunning is true', () => {
