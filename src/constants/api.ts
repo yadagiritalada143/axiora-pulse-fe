@@ -75,6 +75,7 @@ export const API_ENDPOINTS = {
   USER: {
     PROFILE: '/users/me',
     UPDATE_PROFILE: '/users/me',
+    DETAILS: '/users/me/details',
   },
   ORCHESTRATION: {
     RUN: '/v1/orchestration/run',

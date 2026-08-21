@@ -56,6 +56,7 @@ interface MentorShellProps {
   overviewItem?: MentorNavItem;
   navItems?: MentorNavItem[];
   navSectionLabel?: string;
+  mainClassName?: string;
 }
 
 export function MentorShell({
@@ -63,6 +64,7 @@ export function MentorShell({
   overviewItem,
   navItems = WORKSPACE_NAV_ITEMS,
   navSectionLabel = 'Workspace',
+  mainClassName,
 }: MentorShellProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const { data: currentUser } = useCurrentUser();
@@ -145,7 +147,7 @@ export function MentorShell({
           </div>
         </aside>
 
-        <div className="flex flex-1 flex-col overflow-hidden">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           <header className="border-border flex h-14 shrink-0 items-center gap-2 border-b px-3 sm:h-16 sm:gap-4 sm:px-6">
             <button
               type="button"
@@ -233,7 +235,14 @@ export function MentorShell({
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">{children}</main>
+          <main
+            className={cn(
+              'min-h-0 min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8',
+              mainClassName,
+            )}
+          >
+            {children}
+          </main>
         </div>
       </div>
     </div>

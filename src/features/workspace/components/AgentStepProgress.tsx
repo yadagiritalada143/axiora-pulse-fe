@@ -156,9 +156,9 @@ export function AgentStepProgress({
         </Card>
       </div>
 
-      <div className="hidden lg:block">
-        <Card className="border-border bg-card/60 sticky top-4 overflow-hidden rounded-2xl shadow-xs backdrop-blur-xs">
-          <CardHeader className="border-border bg-muted/20 border-b p-4 pb-3">
+      <div className="hidden h-full lg:block">
+        <Card className="border-border bg-card/60 flex h-full flex-col overflow-hidden rounded-2xl shadow-xs backdrop-blur-xs">
+          <CardHeader className="border-border bg-muted/20 shrink-0 border-b p-4 pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="flex size-7 items-center justify-center rounded-lg bg-[#FF4500]/10 text-[#FF4500]">
@@ -177,7 +177,7 @@ export function AgentStepProgress({
             </div>
           </CardHeader>
 
-          <CardContent className="max-h-[calc(100vh-140px)] overflow-y-auto p-4 pr-3">
+          <CardContent className="min-h-0 flex-1 overflow-y-auto p-4 pr-3">
             <div className="relative space-y-3.5">
               {AGENT_STEPS.map((step, index) => {
                 const isCompleted = step.id < currentStep;

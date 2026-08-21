@@ -37,6 +37,7 @@ export const queryKeys = {
 
   user: {
     profile: () => ['user', 'profile'] as const,
+    details: () => ['user', 'details'] as const,
   },
 
   onboarding: {

@@ -266,21 +266,21 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
   ) : null;
 
   return (
-    <div className="mx-auto flex h-full min-h-[70vh] w-full max-w-6xl items-start gap-6">
-      <div className="flex h-full min-w-0 flex-1 flex-col">
+    <div className="mx-auto flex h-full min-h-0 w-full max-w-6xl min-w-0 flex-1 items-stretch gap-6 overflow-hidden">
+      <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
         <AgentStepProgress
           currentStep={currentStep}
           isRunning={data.state === 'VALIDATING'}
-          className="mb-4 block lg:hidden"
+          className="mb-4 block shrink-0 lg:hidden"
         />
 
-        <div className="border-border flex items-center gap-6 border-b text-sm">
+        <div className="border-border flex shrink-0 items-center gap-6 border-b text-sm">
           <span className="text-primary border-primary -mb-px border-b-2 pb-2 font-medium">
             Arya
           </span>
         </div>
 
-        <div className="flex-1 space-y-4 overflow-y-auto pt-4 pb-8">
+        <div className="min-h-0 flex-1 space-y-4 overflow-x-hidden overflow-y-auto pt-4 pr-1 pb-4">
           {effectiveReportAnchor === 0 ? reportNode : null}
 
           {data.conversation_history.map((message, index) => {
@@ -380,7 +380,7 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
         </div>
 
         {showQuickActions ? (
-          <div className="flex flex-wrap gap-2 pb-3">
+          <div className="flex shrink-0 flex-wrap gap-2 pb-3">
             <Button
               type="button"
               variant="outline"
@@ -402,22 +402,28 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
           </div>
         ) : null}
 
-        {chat.error ? <ApiErrorMessage error={chat.error} className="mb-3" /> : null}
+        {chat.error ? <ApiErrorMessage error={chat.error} className="mb-3 shrink-0" /> : null}
 
-        <ChatInput
-          value={draft}
-          onChange={setDraft}
-          onSubmit={() => send(draft)}
-          disabled={chat.isPending}
-          placeholder="Type your answer here…."
-          attachments={attachments}
-          onAttach={handleAttach}
-          onRemoveAttachment={handleRemoveAttachment}
-        />
+        <div className="w-full shrink-0 pt-2">
+          <ChatInput
+            value={draft}
+            onChange={setDraft}
+            onSubmit={() => send(draft)}
+            disabled={chat.isPending}
+            placeholder="Type your answer here…."
+            attachments={attachments}
+            onAttach={handleAttach}
+            onRemoveAttachment={handleRemoveAttachment}
+          />
+        </div>
       </div>
 
-      <div className="hidden w-72 shrink-0 lg:block">
-        <AgentStepProgress currentStep={currentStep} isRunning={data.state === 'VALIDATING'} />
+      <div className="hidden h-full w-72 shrink-0 overflow-hidden lg:block">
+        <AgentStepProgress
+          currentStep={currentStep}
+          isRunning={data.state === 'VALIDATING'}
+          className="h-full"
+        />
       </div>
     </div>
   );
