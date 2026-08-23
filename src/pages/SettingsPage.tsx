@@ -1,44 +1,54 @@
-import { Moon, Sun, SunMoon } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 
-import { PageHeader } from '@components/common/PageHeader';
-import { Button } from '@components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@components/ui/card';
-import { THEMES } from '@constants/theme';
-import { useTheme } from '@hooks/useTheme';
-import { cn } from '@lib/utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@components/ui/tabs';
+import { AccountTab, ProfileTab } from '@features/settings/components';
 
-const THEME_ICONS = { light: Sun, dark: Moon, system: SunMoon } as const;
+interface SettingsPageProps {
+  defaultTab?: 'profile' | 'account';
+}
 
-export default function SettingsPage() {
-  const { theme, setTheme } = useTheme();
+export default function SettingsPage({ defaultTab = 'profile' }: SettingsPageProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') ?? defaultTab;
+
+  const handleTabChange = (val: string) => {
+    setSearchParams({ tab: val }, { replace: true });
+  };
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Settings" description="Manage your workspace preferences." />
+    <div className="mx-auto w-full max-w-5xl space-y-6 pb-12">
+      {/* Page Header matching reference */}
+      <div>
+        <h1 className="text-foreground text-2xl font-bold tracking-tight">Settings</h1>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Manage your preferences, account and security.
+        </p>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Appearance</CardTitle>
-          <CardDescription>Choose how Axiora Pulse looks on this device.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex gap-2">
-          {THEMES.map((option) => {
-            const Icon = THEME_ICONS[option];
-            return (
-              <Button
-                key={option}
-                variant={theme === option ? 'default' : 'outline'}
-                size="sm"
-                className={cn('gap-2 capitalize')}
-                onClick={() => setTheme(option)}
-              >
-                <Icon className="size-4" />
-                {option}
-              </Button>
-            );
-          })}
-        </CardContent>
-      </Card>
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full space-y-6">
+        <TabsList className="border-border h-auto w-full justify-start gap-6 rounded-none border-b bg-transparent p-0">
+          <TabsTrigger
+            value="profile"
+            className="text-muted-foreground cursor-pointer rounded-none border-b-2 border-transparent px-1 pt-1 pb-2.5 text-sm font-semibold transition-colors data-[state=active]:border-b-[#FF4500] data-[state=active]:text-[#FF4500] data-[state=active]:shadow-none"
+          >
+            Profile
+          </TabsTrigger>
+          <TabsTrigger
+            value="account"
+            className="text-muted-foreground cursor-pointer rounded-none border-b-2 border-transparent px-1 pt-1 pb-2.5 text-sm font-semibold transition-colors data-[state=active]:border-b-[#FF4500] data-[state=active]:text-[#FF4500] data-[state=active]:shadow-none"
+          >
+            Account
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="profile" className="space-y-6 pt-1 focus-visible:outline-none">
+          <ProfileTab />
+        </TabsContent>
+
+        <TabsContent value="account" className="space-y-6 pt-1 focus-visible:outline-none">
+          <AccountTab />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

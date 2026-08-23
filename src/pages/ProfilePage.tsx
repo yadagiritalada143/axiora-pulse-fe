@@ -1,11 +1,5 @@
-import { PageHeader } from '@components/common/PageHeader';
-import { ProfileForm } from '@features/settings/components/ProfileForm';
+import SettingsPage from './SettingsPage';
 
 export default function ProfilePage() {
-  return (
-    <div className="space-y-6">
-      <PageHeader title="Profile" description="Manage your personal information." />
-      <ProfileForm />
-    </div>
-  );
+  return <SettingsPage defaultTab="profile" />;
 }

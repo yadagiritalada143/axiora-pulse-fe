@@ -1,6 +1,7 @@
-import { CheckCircle2, ClipboardList, Loader2, Sparkles } from 'lucide-react';
+import { AlertCircle, CheckCircle2, ClipboardList, Loader2, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 
 import { Logo } from '@components/common/Logo';
 import { Button } from '@components/ui/button';
@@ -18,6 +19,9 @@ import {
 } from '@components/ui/select';
 import { Textarea } from '@components/ui/textarea';
 import { usePublicSurvey, useSubmitPublicSurvey } from '@features/survey/hooks/useSurveys';
+import { cn } from '@lib/utils';
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function PublicSurveyPage() {
   const { surveyId } = useParams<{ surveyId: string }>();
@@ -29,6 +33,7 @@ export default function PublicSurveyPage() {
   const [answers, setAnswers] = useState<Record<number, string | string[]>>({});
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
   const handleTextChange = (qId: number, value: string) => {
     setAnswers((prev) => ({ ...prev, [qId]: value }));
@@ -52,8 +57,53 @@ export default function PublicSurveyPage() {
     setAnswers((prev) => ({ ...prev, [qId]: value }));
   };
 
+  const isQuestionOptional = (questionText: string) => {
+    return /\(optional\)/i.test(questionText);
+  };
+
+  const getCleanQuestionText = (questionText: string) => {
+    return questionText.replace(/\s*\(optional\)\s*/gi, '').trim();
+  };
+
+  const isQuestionAnswered = (qId: number, qType: string) => {
+    const val = answers[qId];
+    if (qType === 'checkbox') {
+      return Array.isArray(val) && val.length > 0;
+    }
+    return typeof val === 'string' && val.trim().length > 0;
+  };
+
+  const isEmailValid = () => {
+    const trimmed = email.trim();
+    if (!trimmed) return true;
+    return EMAIL_REGEX.test(trimmed);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setHasAttemptedSubmit(true);
+
+    if (!survey || !survey.questions) return;
+
+    if (!isEmailValid()) {
+      toast.error('Please enter a valid email address.');
+      return;
+    }
+
+    const unansweredMandatoryQuestions = survey.questions.filter(
+      (q) => !isQuestionOptional(q.question) && !isQuestionAnswered(q.id, q.questionType),
+    );
+
+    if (unansweredMandatoryQuestions.length > 0) {
+      toast.error(
+        `Please answer all mandatory questions (${unansweredMandatoryQuestions.length} remaining).`,
+      );
+      const firstUnanswered = document.querySelector(
+        `[data-survey-question="${unansweredMandatoryQuestions[0]?.id}"]`,
+      );
+      firstUnanswered?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
 
     const formattedAnswers = Object.entries(answers).map(([qId, val]) => ({
       questionId: Number(qId),
@@ -159,15 +209,35 @@ export default function PublicSurveyPage() {
             {/* Questions List */}
             <div className="space-y-8">
               {survey.questions.map((q, idx) => {
+                const isOptional = isQuestionOptional(q.question);
+                const cleanQuestionText = getCleanQuestionText(q.question);
                 const currentAnswer = answers[q.id];
                 const isCheckedList = Array.isArray(currentAnswer) ? currentAnswer : [];
+                const answered = isQuestionAnswered(q.id, q.questionType);
+                const showUnansweredError = hasAttemptedSubmit && !isOptional && !answered;
 
                 return (
-                  <div key={q.id} className="space-y-3">
-                    <Label className="text-foreground flex items-start gap-1.5 text-base font-semibold">
-                      <span className="text-[#FF4500] select-none">{idx + 1}.</span>
-                      {q.question}
-                    </Label>
+                  <div
+                    key={q.id}
+                    data-survey-question={q.id}
+                    className={cn(
+                      'space-y-3 rounded-xl p-3 transition-all sm:p-4',
+                      showUnansweredError && 'bg-destructive/5 border-destructive/30 border',
+                    )}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <Label className="text-foreground flex items-start gap-1.5 text-base font-semibold">
+                        <span className="text-[#FF4500] select-none">{idx + 1}.</span>
+                        <span>{cleanQuestionText}</span>
+                        {isOptional ? (
+                          <span className="text-muted-foreground ml-1 text-xs font-normal select-none">
+                            (Optional)
+                          </span>
+                        ) : (
+                          <span className="text-destructive text-sm font-bold select-none">*</span>
+                        )}
+                      </Label>
+                    </div>
 
                     {/* RENDER ACCORDING TO TYPE */}
                     {q.questionType === 'text' ? (
@@ -176,7 +246,11 @@ export default function PublicSurveyPage() {
                         onChange={(e) => handleTextChange(q.id, e.target.value)}
                         placeholder="Type your answer here..."
                         rows={3}
-                        className="bg-background"
+                        className={cn(
+                          'bg-background',
+                          showUnansweredError &&
+                            'border-destructive focus-visible:ring-destructive',
+                        )}
                       />
                     ) : q.questionType === 'radio' ? (
                       <RadioGroup
@@ -226,7 +300,13 @@ export default function PublicSurveyPage() {
                         value={typeof currentAnswer === 'string' ? currentAnswer : ''}
                         onValueChange={(val) => handleDropdownChange(q.id, val)}
                       >
-                        <SelectTrigger className="bg-background w-full">
+                        <SelectTrigger
+                          className={cn(
+                            'bg-background w-full',
+                            showUnansweredError &&
+                              'border-destructive focus-visible:ring-destructive',
+                          )}
+                        >
                           <SelectValue placeholder="Select an option" />
                         </SelectTrigger>
                         <SelectContent>
@@ -238,6 +318,13 @@ export default function PublicSurveyPage() {
                         </SelectContent>
                       </Select>
                     ) : null}
+
+                    {showUnansweredError && (
+                      <p className="text-destructive mt-1 flex items-center gap-1 text-xs font-medium">
+                        <AlertCircle className="size-3.5 shrink-0" />
+                        Please provide an answer for this required question.
+                      </p>
+                    )}
                   </div>
                 );
               })}
@@ -245,22 +332,35 @@ export default function PublicSurveyPage() {
 
             {/* Email Input (Optional) */}
             <div className="border-border space-y-2 border-t pt-8">
-              <Label htmlFor="respondent-email" className="text-sm font-semibold">
-                Your Email Address{' '}
-                <span className="text-muted-foreground font-normal">(Optional)</span>
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="respondent-email" className="text-sm font-semibold">
+                  Your Email Address{' '}
+                  <span className="text-muted-foreground ml-1 text-xs font-normal">(Optional)</span>
+                </Label>
+              </div>
               <Input
                 id="respondent-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="e.g. customer@example.com"
-                className="bg-background max-w-md"
+                className={cn(
+                  'bg-background max-w-md',
+                  hasAttemptedSubmit &&
+                    !isEmailValid() &&
+                    'border-destructive focus-visible:ring-destructive',
+                )}
               />
-              <p className="text-muted-foreground/75 text-xs leading-normal">
-                Leave your email if you would like the founding team to keep you updated about the
-                product launch and milestones.
-              </p>
+              {hasAttemptedSubmit && !isEmailValid() ? (
+                <p className="text-destructive flex items-center gap-1 text-xs font-medium">
+                  <AlertCircle className="size-3.5" /> Please enter a valid email address.
+                </p>
+              ) : (
+                <p className="text-muted-foreground/75 text-xs leading-normal">
+                  Leave your email if you would like the founding team to keep you updated about the
+                  product launch and milestones.
+                </p>
+              )}
             </div>
 
             {submitSurveyMutation.error ? (

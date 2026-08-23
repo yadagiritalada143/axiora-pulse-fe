@@ -6,7 +6,57 @@ export interface User extends Timestamps {
   email: string;
   name: string;
   avatarUrl: string | null;
+  avatar_url?: string | null;
   role: Role;
+  profileId?: string | null;
+  profile_id?: string | null;
+  firstName?: string | null;
+  first_name?: string | null;
+  lastName?: string | null;
+  last_name?: string | null;
+  mobileNumber?: string | null;
+  mobile_number?: string | null;
+  dateOfBirth?: string | null;
+  date_of_birth?: string | null;
+  gender?: string | null;
+  profileStatus?: string | null;
+  profile_status?: string | null;
+  nationality?: string | null;
+  communicationPreferences?: string[] | null;
+  communication_preferences?: string[] | null;
+  lastLoginDate?: string | null;
+  last_login_date?: string | null;
+}
+
+export interface UserDetails {
+  profile_id: string;
+  user_id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  mobile_number: string;
+  avatar_url?: string | null;
+  avatarUrl?: string | null;
+  date_of_birth?: string | null;
+  gender?: string | null;
+  profile_status: string;
+  nationality?: string | null;
+  communication_preferences: string[];
+  last_login_date?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UpdateUserDetailsPayload {
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  mobile_number?: string;
+  avatar_url?: string | null;
+  date_of_birth?: string | null;
+  gender?: string | null;
+  nationality?: string | null;
+  communication_preferences?: ('Email' | 'SMS' | 'Push')[];
 }
 
 export interface AuthSession {

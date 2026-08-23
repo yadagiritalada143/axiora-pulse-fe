@@ -8,6 +8,7 @@ import { MentorShell } from '@features/ideaValidation/components/MentorShell';
 
 jest.mock('@features/auth/hooks', () => ({
   useLogout: jest.fn(),
+  useCurrentUser: jest.fn(() => ({ data: null, isLoading: false })),
 }));
 
 const mockedUseLogout = jest.mocked(useLogout);

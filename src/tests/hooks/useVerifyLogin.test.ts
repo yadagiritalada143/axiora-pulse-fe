@@ -24,7 +24,14 @@ jest.mock('sonner', () => ({
 }));
 
 jest.mock('@services/auth', () => ({
-  authService: { verifyLogin: jest.fn() },
+  authService: {
+    verifyLogin: jest.fn(),
+    getCurrentUser: jest.fn().mockResolvedValue({
+      id: 'user-1',
+      name: 'Jane Doe',
+      email: 'jane@example.com',
+    }),
+  },
 }));
 
 jest.mock('@store/auth.store');

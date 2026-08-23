@@ -32,7 +32,7 @@ interface AuthState {
 interface AuthActions {
   setMfaData: (data: MFAData) => void;
   setAuthenticated: (accessToken: string, refreshToken?: string) => void;
-  updateUser: (user: User) => void;
+  updateUser: (user: Partial<User> | User) => void;
   clearSession: () => void;
 
   setResetEmailOrMobile: (emailOrMobile: string) => void;
@@ -82,10 +82,10 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         });
       },
 
-      updateUser: (user) => {
-        set({
-          user,
-        });
+      updateUser: (updatedFields) => {
+        set((state) => ({
+          user: state.user ? { ...state.user, ...updatedFields } : (updatedFields as User),
+        }));
       },
 
       clearSession: () => {

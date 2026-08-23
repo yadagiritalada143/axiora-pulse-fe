@@ -20,6 +20,15 @@ export function useVerifyLogin() {
       if (response.status === 'success') {
         setAuthenticated(response.access_token, response.refresh_token);
         setRole(response.role);
+
+        void authService
+          .getCurrentUser()
+          .then((user) => {
+            useAuthStore.getState().updateUser(user);
+            return user;
+          })
+          .catch(() => null);
+
         toast.success(response.message || 'Login successful.');
 
         if (response.role === 'admin') {

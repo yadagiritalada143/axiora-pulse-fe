@@ -23,7 +23,7 @@ import {
 } from '@components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@components/ui/tooltip';
 import { ROUTES } from '@constants/routes';
-import { useLogout } from '@features/auth/hooks';
+import { useCurrentUser, useLogout } from '@features/auth/hooks';
 import { cn } from '@lib/utils';
 import { useAuthStore } from '@store/auth.store';
 
@@ -43,11 +43,20 @@ const WORKSPACE_NAV_ITEMS: MentorNavItem[] = [
   // { label: 'Risk Management', icon: ShieldCheck, disabled: true },
 ];
 
+function getDisplayName(user?: { name?: string | null; email?: string | null } | null): string {
+  const name = user?.name?.trim();
+  if (name) return name;
+  const emailPrefix = user?.email?.split('@')[0]?.trim();
+  if (emailPrefix) return emailPrefix;
+  return 'Account';
+}
+
 interface MentorShellProps {
   children: ReactNode;
   overviewItem?: MentorNavItem;
   navItems?: MentorNavItem[];
   navSectionLabel?: string;
+  mainClassName?: string;
 }
 
 export function MentorShell({
@@ -55,9 +64,13 @@ export function MentorShell({
   overviewItem,
   navItems = WORKSPACE_NAV_ITEMS,
   navSectionLabel = 'Workspace',
+  mainClassName,
 }: MentorShellProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
-  const user = useAuthStore((state) => state.user);
+  const { data: currentUser } = useCurrentUser();
+  const storeUser = useAuthStore((state) => state.user);
+  const user = storeUser ?? currentUser;
+  const displayName = getDisplayName(user);
   const role = useAuthStore((state) => state.role);
   const handleLogout = useLogout();
 
@@ -134,7 +147,7 @@ export function MentorShell({
           </div>
         </aside>
 
-        <div className="flex flex-1 flex-col overflow-hidden">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           <header className="border-border flex h-14 shrink-0 items-center gap-2 border-b px-3 sm:h-16 sm:gap-4 sm:px-6">
             <button
               type="button"
@@ -194,16 +207,16 @@ export function MentorShell({
                   >
                     <Avatar className="size-8">
                       <AvatarFallback>
-                        {user?.name ? (
-                          user.name.charAt(0).toUpperCase()
+                        {user?.name?.trim() ? (
+                          user.name.trim().charAt(0).toUpperCase()
+                        ) : user?.email?.trim() ? (
+                          user.email.trim().charAt(0).toUpperCase()
                         ) : (
                           <User2Icon className="size-4" />
                         )}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="hidden text-sm font-medium sm:inline">
-                      {user?.name ?? 'Account'}
-                    </span>
+                    <span className="hidden text-sm font-medium sm:inline">{displayName}</span>
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -222,7 +235,14 @@ export function MentorShell({
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">{children}</main>
+          <main
+            className={cn(
+              'min-h-0 min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8',
+              mainClassName,
+            )}
+          >
+            {children}
+          </main>
         </div>
       </div>
     </div>

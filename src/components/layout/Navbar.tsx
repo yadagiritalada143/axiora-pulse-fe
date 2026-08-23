@@ -13,9 +13,17 @@ import {
   DropdownMenuTrigger,
 } from '@components/ui/dropdown-menu';
 import { ROUTES } from '@constants/routes';
-import { useLogout } from '@features/auth/hooks';
+import { useCurrentUser, useLogout } from '@features/auth/hooks';
 import { useAuthStore } from '@store/auth.store';
 import { useUIStore } from '@store/ui.store';
+
+function getDisplayName(user?: { name?: string | null; email?: string | null } | null): string {
+  const name = user?.name?.trim();
+  if (name) return name;
+  const emailPrefix = user?.email?.split('@')[0]?.trim();
+  if (emailPrefix) return emailPrefix;
+  return 'Account';
+}
 
 interface NavbarProps {
   onSearch?: (query: string) => void;
@@ -24,7 +32,10 @@ interface NavbarProps {
 
 export function Navbar({ onSearch, actions }: NavbarProps) {
   const toggleSidebar = useUIStore((state) => state.toggleSidebar);
-  const user = useAuthStore((state) => state.user);
+  const { data: currentUser } = useCurrentUser();
+  const storeUser = useAuthStore((state) => state.user);
+  const user = storeUser ?? currentUser;
+  const displayName = getDisplayName(user);
   const logout = useLogout();
 
   return (
@@ -51,11 +62,11 @@ export function Navbar({ onSearch, actions }: NavbarProps) {
             <Button variant="ghost" className="gap-2 px-2">
               <Avatar className="size-7">
                 <AvatarImage src={user?.avatarUrl ?? undefined} alt="" />
-                <AvatarFallback>{(user?.name ?? 'U').charAt(0)}</AvatarFallback>
+                <AvatarFallback>
+                  {(user?.name?.trim() ?? user?.email?.trim() ?? 'U').charAt(0).toUpperCase()}
+                </AvatarFallback>
               </Avatar>
-              <span className="hidden text-sm font-medium sm:inline">
-                {user?.name ?? 'Account'}
-              </span>
+              <span className="hidden text-sm font-medium sm:inline">{displayName}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

@@ -28,6 +28,11 @@ jest.mock('sonner', () => ({
 jest.mock('@services/auth', () => ({
   authService: {
     verifyOTP: jest.fn(),
+    getCurrentUser: jest.fn().mockResolvedValue({
+      id: 'user-1',
+      name: 'Jane Doe',
+      email: 'jane@example.com',
+    }),
   },
 }));
 

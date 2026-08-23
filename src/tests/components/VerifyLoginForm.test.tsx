@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type * as ReactRouterDom from 'react-router-dom';
 import { toast } from 'sonner';
@@ -175,31 +175,26 @@ describe('VerifyLoginForm', () => {
     expect(verifyLoginMutate).not.toHaveBeenCalled();
   });
 
-  it('auto-submits with the correctly-shaped payload once 6 digits are entered', async () => {
+  it('enables the Verify Login button without automatically submitting when 6 digits are entered', async () => {
     const user = userEvent.setup();
     const { container } = render(<VerifyLoginForm />);
 
+    const button = screen.getByRole('button', { name: /verify login/i });
+    expect(button).toBeDisabled();
+
     await user.type(getOtpInput(container), '111222');
 
-    await waitFor(() =>
-      expect(verifyLoginMutate).toHaveBeenCalledWith({
-        emailOrMobile: 'jane@example.com',
-        otp: 111222,
-      }),
-    );
+    expect(button).toBeEnabled();
+    expect(verifyLoginMutate).not.toHaveBeenCalled();
   });
 
-  it('also submits via the Verify Login button once it is enabled', async () => {
+  it('submits via the Verify Login button when clicked after entering 6 digits', async () => {
     const user = userEvent.setup();
     const { container } = render(<VerifyLoginForm />);
 
     await user.type(getOtpInput(container), '111222');
-    verifyLoginMutate.mockClear();
+    expect(verifyLoginMutate).not.toHaveBeenCalled();
 
-    // handleVerify's own isPending/length guards mirror the disabled-button state exactly
-    // (the button is only ever enabled once otp.length === 6 and isPending is false), so this
-    // exercises handleVerify's call-through path via a direct click rather than only the
-    // OtpInput's auto-submit-on-change path covered above.
     await user.click(screen.getByRole('button', { name: /verify login/i }));
 
     expect(verifyLoginMutate).toHaveBeenCalledWith({

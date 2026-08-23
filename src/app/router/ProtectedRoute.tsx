@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
 import { ROUTES } from '@constants/routes';
+import { useCurrentUser } from '@features/auth/hooks';
 import { useAuthStore } from '@store/auth.store';
 
 /** Redirects to `/login` when there's no session, and strictly redirects based on payment and questionnaire status. */
@@ -10,6 +11,8 @@ export function ProtectedRoute() {
   const onboardingPending = useAuthStore((state) => state.onboardingPending);
   const role = useAuthStore((state) => state.role);
   const location = useLocation();
+
+  useCurrentUser();
 
   if (!isAuthenticated) {
     return <Navigate to={ROUTES.LOGIN} state={{ from: location }} replace />;

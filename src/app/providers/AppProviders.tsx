@@ -1,4 +1,8 @@
+import { MantineProvider } from '@mantine/core';
 import type { ReactNode } from 'react';
+
+import '@mantine/core/styles.css';
+import '@mantine/dates/styles.css';
 
 import { Toaster } from '@components/ui/sonner';
 import { TooltipProvider } from '@components/ui/tooltip';
@@ -15,14 +19,16 @@ import { ThemeProvider } from './ThemeProvider';
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider>
-      <QueryProvider>
-        <AuthProvider>
-          <TooltipProvider delayDuration={200}>
-            {children}
-            <Toaster position="top-right" richColors closeButton />
-          </TooltipProvider>
-        </AuthProvider>
-      </QueryProvider>
+      <MantineProvider defaultColorScheme="auto">
+        <QueryProvider>
+          <AuthProvider>
+            <TooltipProvider delayDuration={200}>
+              {children}
+              <Toaster position="top-right" richColors closeButton />
+            </TooltipProvider>
+          </AuthProvider>
+        </QueryProvider>
+      </MantineProvider>
     </ThemeProvider>
   );
 }

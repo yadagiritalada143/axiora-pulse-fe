@@ -84,19 +84,7 @@ export function VerifyLoginForm() {
           Login OTP
         </label>
 
-        <OtpInput
-          value={otp}
-          onChange={(value) => {
-            setOtp(value);
-
-            if (value.length === 6 && !verifyLogin.isPending) {
-              verifyLogin.mutate({
-                emailOrMobile: identifier,
-                otp: Number(value),
-              });
-            }
-          }}
-        />
+        <OtpInput value={otp} onChange={setOtp} />
       </div>
 
       <Button

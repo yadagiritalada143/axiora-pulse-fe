@@ -5,7 +5,9 @@ import { createElement, type ReactNode } from 'react';
 import { queryKeys } from '@constants/queryKeys';
 import {
   usePublicSurvey,
+  useRunSurveyAnalysis,
   useSubmitPublicSurvey,
+  useSurveyAnalysis,
   useSurveyByWorkspace,
   useSurveyResponses,
   useUpdateWorkspaceSurveyQuestions,
@@ -183,5 +185,60 @@ describe('useSurveyResponses', () => {
 
     expect(result.current.fetchStatus).toBe('idle');
     expect(mockedApiClient.get).not.toHaveBeenCalled();
+  });
+});
+
+describe('useSurveyAnalysis', () => {
+  it('fetches survey analysis for the given survey id', async () => {
+    const response = {
+      survey_id: 5,
+      status: 'success',
+      analysis_result: { purpose: 'Test' },
+    };
+    mockedApiClient.get.mockResolvedValueOnce({ data: response });
+
+    const { wrapper } = createWrapper();
+    const { result } = renderHook(() => useSurveyAnalysis(5), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(mockedApiClient.get).toHaveBeenCalledWith('/v1/surveys/5/analysis');
+    expect(result.current.data).toEqual(response);
+  });
+
+  it('stays idle when the survey id is falsy', () => {
+    const { wrapper } = createWrapper();
+    const { result } = renderHook(() => useSurveyAnalysis(0), { wrapper });
+
+    expect(result.current.fetchStatus).toBe('idle');
+    expect(mockedApiClient.get).not.toHaveBeenCalled();
+  });
+});
+
+describe('useRunSurveyAnalysis', () => {
+  it('triggers response analysis and invalidates cache', async () => {
+    const response = {
+      survey_id: 5,
+      status: 'success',
+      analysis_result: { purpose: 'Analyzed' },
+    };
+    mockedApiClient.post.mockResolvedValueOnce({ data: response });
+
+    const { wrapper, queryClient } = createWrapper();
+    const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries');
+
+    const { result } = renderHook(() => useRunSurveyAnalysis(5, 42), { wrapper });
+
+    result.current.mutate();
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(mockedApiClient.post).toHaveBeenCalledWith(
+      '/v1/surveys/5/analyze',
+      {},
+      { timeout: 180_000 },
+    );
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.survey.analysis(5) });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.survey.byWorkspace(42) });
   });
 });

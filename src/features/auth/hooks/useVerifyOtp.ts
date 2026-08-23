@@ -24,6 +24,14 @@ export function useVerifyOtp() {
           setRole(response.role);
         }
 
+        void authService
+          .getCurrentUser()
+          .then((user) => {
+            useAuthStore.getState().updateUser(user);
+            return user;
+          })
+          .catch(() => null);
+
         const isRegisterFlow = variables.flow !== 'login';
 
         if (response.auth_actions) {
