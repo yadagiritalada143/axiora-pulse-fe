@@ -45,19 +45,19 @@ export default function AdminUserDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <nav
           aria-label="Breadcrumb"
-          className="text-muted-foreground flex items-center gap-2 text-sm"
+          className="text-muted-foreground flex min-w-0 items-center gap-2 text-sm"
         >
           <Link
             to={ROUTES.ADMIN_USERS}
-            className="hover:text-foreground flex cursor-pointer items-center gap-1.5 font-medium transition-colors"
+            className="hover:text-foreground flex shrink-0 cursor-pointer items-center gap-1.5 font-medium transition-colors"
           >
             <Users className="size-4" />
             Users
           </Link>
-          <ChevronRight className="text-muted-foreground/60 size-4" />
+          <ChevronRight className="text-muted-foreground/60 size-4 shrink-0" />
           <span className="text-foreground max-w-xs truncate font-semibold sm:max-w-md">
             {data.name ? data.name : `User #${data.user_id}`}
           </span>

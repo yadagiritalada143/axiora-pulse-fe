@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   Copy,
   FileText,
-  Hash,
   Loader2,
   Mail,
   User,
@@ -104,27 +103,27 @@ export function AdminResponseDetailModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="flex max-h-[88vh] max-w-2xl flex-col overflow-hidden rounded-2xl p-0 shadow-xl">
-        <DialogHeader className="border-border bg-muted/30 shrink-0 border-b p-5 pb-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+      <DialogContent className="flex max-h-[88vh] w-[95vw] max-w-2xl flex-col overflow-hidden rounded-2xl p-0 shadow-xl">
+        <DialogHeader className="border-border bg-muted/30 shrink-0 border-b p-4 pb-3 sm:p-5 sm:pb-4">
+          <div className="flex items-center justify-between gap-2.5 sm:gap-4">
+            <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onClose}
-                className="text-muted-foreground hover:text-foreground size-8 cursor-pointer rounded-lg p-0"
+                className="text-muted-foreground hover:text-foreground size-8 shrink-0 cursor-pointer rounded-lg p-0"
                 aria-label="Back to responses"
               >
                 <ArrowLeft className="size-4" />
               </Button>
-              <div className="flex size-9 items-center justify-center rounded-xl bg-orange-500/10 font-semibold text-orange-600 dark:text-orange-400">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-orange-500/10 font-semibold text-orange-600 sm:size-9 dark:text-orange-400">
                 <FileText className="size-4" />
               </div>
-              <div>
-                <DialogTitle className="text-foreground text-base font-bold">
+              <div className="min-w-0 flex-1">
+                <DialogTitle className="text-foreground truncate text-sm font-bold sm:text-base">
                   Response Details
                 </DialogTitle>
-                <DialogDescription className="text-muted-foreground mt-0.5 text-xs">
+                <DialogDescription className="text-muted-foreground mt-0.5 truncate text-xs">
                   {surveyTitle ?? response?.workspace_name ?? 'Survey Response'}
                 </DialogDescription>
               </div>
@@ -135,16 +134,18 @@ export function AdminResponseDetailModal({
                 variant="outline"
                 size="sm"
                 onClick={() => handleCopyCode(response.response_code)}
-                className="h-8 cursor-pointer gap-1.5 font-mono text-xs"
+                className="h-8 shrink-0 cursor-pointer gap-1.5 px-2.5 font-mono text-xs"
               >
                 <Copy className="size-3" />
-                {response.response_code}
+                <span className="xs:max-w-none max-w-[90px] truncate">
+                  {response.response_code}
+                </span>
               </Button>
             )}
           </div>
         </DialogHeader>
 
-        <div className="flex-1 space-y-6 overflow-y-auto p-6">
+        <div className="flex-1 space-y-5 overflow-y-auto p-4 sm:p-6">
           {isLoading && (
             <div className="flex flex-col items-center justify-center gap-3 py-20">
               <Loader2 className="text-primary size-8 animate-spin" />
@@ -164,10 +165,7 @@ export function AdminResponseDetailModal({
             <>
               <div className="bg-muted/40 border-border grid grid-cols-2 gap-3 rounded-xl border p-4 text-xs sm:grid-cols-4">
                 <div className="space-y-1">
-                  <span className="text-muted-foreground flex items-center gap-1">
-                    <Hash className="size-3" />
-                    Code
-                  </span>
+                  <span className="text-muted-foreground flex items-center gap-1">Code</span>
                   <p className="text-foreground truncate font-mono font-bold">
                     {response.response_code ? response.response_code : `#${response.id}`}
                   </p>

@@ -85,7 +85,7 @@ export function AdminUsersTable() {
           {!isLoading && !isError && (
             <>
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-left text-sm">
+                <table className="w-full min-w-[620px] border-collapse text-left text-sm sm:min-w-0">
                   <thead className="bg-muted/95 sticky top-0 z-10 border-b backdrop-blur-xs">
                     <tr className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                       <th className="px-4 py-3.5 text-left">User</th>
@@ -98,7 +98,7 @@ export function AdminUsersTable() {
                   <tbody className="divide-border divide-y">
                     {users.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="text-muted-foreground py-12 text-center">
+                        <td colSpan={5} className="text-muted-foreground py-12 text-center text-xs">
                           No users found matching your query.
                         </td>
                       </tr>

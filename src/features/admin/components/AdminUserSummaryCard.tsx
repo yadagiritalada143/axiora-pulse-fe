@@ -56,26 +56,26 @@ export function AdminUserSummaryCard({ summary }: AdminUserSummaryCardProps) {
 
   return (
     <Card className="border-border bg-card overflow-hidden shadow-xs">
-      <CardContent className="p-6">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-start gap-4">
-            <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-orange-500/10 text-lg font-bold text-orange-600 ring-1 ring-orange-500/20 dark:text-orange-400">
+      <CardContent className="p-4 sm:p-6">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 flex-1 items-center gap-3 sm:items-start sm:gap-4">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-orange-500/10 text-base font-bold text-orange-600 ring-1 ring-orange-500/20 sm:size-14 sm:text-lg dark:text-orange-400">
               {initials}
             </div>
 
-            <div className="space-y-1">
-              <div className="flex flex-wrap items-center gap-2.5">
-                <h1 className="text-foreground text-xl font-bold tracking-tight">
+            <div className="min-w-0 flex-1 space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-foreground truncate text-lg font-bold tracking-tight sm:text-xl">
                   {summary.name || 'User'}
                 </h1>
                 <Badge
                   variant={isActive ? 'default' : 'secondary'}
                   className={
                     isActive
-                      ? 'gap-1.5 border-emerald-500/20 bg-emerald-500/10 font-medium text-emerald-600 hover:bg-emerald-500/20 dark:text-emerald-400'
+                      ? 'shrink-0 gap-1.5 border-emerald-500/20 bg-emerald-500/10 text-xs font-medium text-emerald-600 hover:bg-emerald-500/20 dark:text-emerald-400'
                       : isSuspended
-                        ? 'gap-1.5 border-red-500/20 bg-red-500/10 font-medium text-red-600 hover:bg-red-500/20 dark:text-red-400'
-                        : 'bg-muted text-muted-foreground gap-1.5 font-medium'
+                        ? 'shrink-0 gap-1.5 border-red-500/20 bg-red-500/10 text-xs font-medium text-red-600 hover:bg-red-500/20 dark:text-red-400'
+                        : 'bg-muted text-muted-foreground shrink-0 gap-1.5 text-xs font-medium'
                   }
                 >
                   <span
@@ -91,17 +91,19 @@ export function AdminUserSummaryCard({ summary }: AdminUserSummaryCardProps) {
                 </Badge>
               </div>
 
-              <p className="text-muted-foreground text-sm font-medium">{summary.email}</p>
+              <p className="text-muted-foreground truncate text-xs font-medium sm:text-sm">
+                {summary.email}
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="shrink-0">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
                   size="icon"
-                  className="size-9 rounded-lg"
+                  className="size-8 cursor-pointer rounded-lg sm:size-9"
                   aria-label="User Options"
                 >
                   <MoreVertical className="size-4" />
@@ -162,7 +164,7 @@ export function AdminUserSummaryCard({ summary }: AdminUserSummaryCardProps) {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <MessageSquare className="size-5" />
             </div>
             <div>

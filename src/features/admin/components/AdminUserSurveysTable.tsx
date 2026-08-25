@@ -200,14 +200,14 @@ export function AdminUserSurveysTable({ userId, userName }: AdminUserSurveysTabl
           {!isLoading && !isError && (
             <>
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-left text-sm">
+                <table className="w-full min-w-[620px] border-collapse text-left text-sm sm:min-w-0">
                   <thead className="bg-muted/95 sticky top-0 z-10 border-b backdrop-blur-xs">
                     <tr className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-                      <th className="px-6 py-3.5 text-left">Survey</th>
-                      <th className="px-6 py-3.5 text-center">Status</th>
-                      <th className="px-6 py-3.5 text-center">Responses</th>
-                      <th className="px-6 py-3.5 text-center">Created On</th>
-                      <th className="px-6 py-3.5 text-center">Actions</th>
+                      <th className="px-5 py-3.5 text-left sm:px-6">Survey</th>
+                      <th className="px-5 py-3.5 text-center sm:px-6">Status</th>
+                      <th className="px-5 py-3.5 text-center sm:px-6">Responses</th>
+                      <th className="px-5 py-3.5 text-center sm:px-6">Created On</th>
+                      <th className="px-5 py-3.5 text-center sm:px-6">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-border divide-y">

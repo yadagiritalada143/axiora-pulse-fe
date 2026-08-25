@@ -52,16 +52,18 @@ export function AdminSurveyResponsesModal({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="flex max-h-[85vh] max-w-5xl flex-col overflow-hidden p-0 lg:max-w-2xl">
-          <DialogHeader className="border-border bg-muted/20 shrink-0 border-b p-6 pb-4">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <DialogContent className="flex max-h-[88vh] w-[55vw] max-w-5xl flex-col overflow-hidden rounded-2xl p-0 lg:max-w-6xl">
+          <DialogHeader className="border-border bg-muted/20 shrink-0 border-b p-4 pb-3 sm:p-6 sm:pb-4">
+            <div className="flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
               <div className="flex items-center gap-3">
                 <div className="flex size-9 items-center justify-center rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400">
                   <MessageSquare className="size-4" />
                 </div>
-                <div>
-                  <DialogTitle className="text-lg font-bold">Survey Responses</DialogTitle>
-                  <DialogDescription className="text-muted-foreground mt-0.5 text-xs">
+                <div className="min-w-0 flex-1">
+                  <DialogTitle className="truncate text-base font-bold sm:text-lg">
+                    Survey Responses
+                  </DialogTitle>
+                  <DialogDescription className="text-muted-foreground mt-0.5 truncate text-xs">
                     {surveyTitle ?? `Survey #${surveyId}`} • {total} total responses collected
                   </DialogDescription>
                 </div>
@@ -100,7 +102,7 @@ export function AdminSurveyResponsesModal({
             {!isLoading && !isError && (
               <>
                 <div className="overflow-x-auto">
-                  <table className="w-full border-collapse text-left text-xs">
+                  <table className="w-full min-w-[580px] border-collapse text-left text-xs">
                     <thead>
                       <tr className="bg-muted/50 text-muted-foreground border-b font-semibold tracking-wider uppercase">
                         <th className="px-5 py-3 text-center">Response Code</th>
