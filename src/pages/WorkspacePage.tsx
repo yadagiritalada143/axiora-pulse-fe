@@ -54,7 +54,7 @@ export default function WorkspacePage() {
     <div className="mx-auto w-full max-w-6xl">
       <div className="mb-8 flex items-center justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Workspaces</h1>
+          <h1 className="text-foreground text-2xl font-semibold tracking-tight">Workspaces</h1>
           <p className="text-muted-foreground text-sm">
             Organize your ideas, chats, and reports into workspaces.
           </p>

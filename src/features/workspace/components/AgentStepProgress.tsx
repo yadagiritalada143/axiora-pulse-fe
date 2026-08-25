@@ -165,7 +165,7 @@ export function AgentStepProgress({
                   <TrendingUp className="size-4 text-green-500" />
                 </div>
                 <CardTitle className="text-sm font-bold tracking-tight">
-                  Business Lifecycle
+                  Entrepreneur Journey
                 </CardTitle>
               </div>
               <Badge

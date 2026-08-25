@@ -273,7 +273,7 @@ export function ChatInput({
         placeholder={placeholder ?? 'Describe your Idea...'}
         rows={1}
         style={{ minHeight: '30px', maxHeight: '200px' }}
-        className="w-full resize-none overflow-y-auto border-none bg-transparent p-0 text-sm shadow-none outline-none focus:ring-0"
+        className="text-foreground placeholder:text-muted-foreground w-full resize-none overflow-y-auto border-none bg-transparent p-0 text-sm font-normal shadow-none outline-none focus:ring-0"
         disabled={disabled}
       />
 
@@ -288,7 +288,7 @@ export function ChatInput({
       )}
 
       <div className="mt-2 flex items-center justify-between">
-        <div className="flex items-center gap-1">
+        <div className="text-foreground flex items-center gap-1">
           {onAttach && (
             <div className="relative">
               <input
