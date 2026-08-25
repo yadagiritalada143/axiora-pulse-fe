@@ -96,6 +96,12 @@ export const API_ENDPOINTS = {
   ADMIN: {
     USERS: '/v1/admin/users',
     USER_GROWTH: '/v1/admin/stats/user-growth',
+    USER_SURVEYS: '/v1/admin/users/surveys',
+    USER_SURVEY_SUMMARY: (userId: number) => `/v1/admin/users/${userId}/survey-summary`,
+    SURVEY_RESPONSES: (surveyId: number) => `/v1/admin/surveys/${surveyId}/responses`,
+    SURVEY_RESPONSE_DETAIL: (surveyId: number, responseId: number) =>
+      `/v1/admin/surveys/${surveyId}/responses/${responseId}`,
+    SET_USER_STATUS: (userId: number) => `/v1/admin/user-details/${userId}/status`,
   },
 } as const;
 

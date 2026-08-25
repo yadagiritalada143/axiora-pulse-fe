@@ -152,6 +152,10 @@ export const router = createBrowserRouter([
                 path: ROUTES.ADMIN_USERS,
                 element: lazyPage(() => import('@pages/AdminUsersPage')),
               },
+              {
+                path: ROUTES.ADMIN_USER_DETAIL,
+                element: lazyPage(() => import('@pages/AdminUserDetailPage')),
+              },
             ],
           },
         ],
