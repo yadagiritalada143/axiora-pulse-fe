@@ -382,7 +382,7 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
         </div>
 
         {showQuickActions ? (
-          <div className="flex shrink-0 flex-wrap gap-2 pb-3">
+          <div className="text-foreground flex shrink-0 flex-wrap gap-2 pb-3">
             <Button
               type="button"
               variant="outline"
