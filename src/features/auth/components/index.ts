@@ -1,4 +1,5 @@
 export { LoginForm } from './LoginForm';
+export { GoogleLoginButton } from './GoogleLoginButton';
 export { AdminLoginForm } from './AdminLoginForm';
 export { RegisterForm } from './RegisterForm';
 export { ForgotPasswordForm } from './ForgotPasswordForm';

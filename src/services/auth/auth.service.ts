@@ -3,6 +3,7 @@ import type {
   RegisterRequest,
   VerifyOtpRequest,
   VerifyLoginRequest,
+  GoogleLoginRequest,
   ResendOtpRequest,
   ForgotPasswordRequest,
   VerifyForgotPasswordRequest,
@@ -12,6 +13,7 @@ import type {
   RegisterResponse,
   VerifyOtpResponse,
   VerifyLoginResponse,
+  GoogleLoginResponse,
   ResendOtpResponse,
   ForgotPasswordResponse,
   VerifyForgotPasswordResponse,
@@ -35,6 +37,13 @@ export const authService = {
       API_ENDPOINTS.AUTH.VERIFY_LOGIN,
       payload,
     );
+    tokenManager.setTokens(data.access_token, data.refresh_token);
+
+    return data;
+  },
+
+  async googleLogin(payload: GoogleLoginRequest): Promise<GoogleLoginResponse> {
+    const { data } = await apiClient.post<GoogleLoginResponse>(API_ENDPOINTS.AUTH.GOOGLE, payload);
     tokenManager.setTokens(data.access_token, data.refresh_token);
 
     return data;

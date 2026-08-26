@@ -30,6 +30,11 @@ export interface VerifyLoginRequest {
   otp: number;
 }
 
+export interface GoogleLoginRequest {
+  /** The ID token (JWT) returned by Google Identity Services on the client. */
+  credential: string;
+}
+
 export interface ForgotPasswordRequest {
   emailOrMobile: string;
 }

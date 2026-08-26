@@ -54,6 +54,19 @@ export interface VerifyLoginResponse {
   auth_actions?: AuthActionsData | null;
 }
 
+export interface GoogleLoginResponse {
+  status: 'success';
+  message: string;
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+  expires_in_minutes: number;
+  role: AccountRole;
+  auth_actions?: AuthActionsData | null;
+  /** True when this Google sign-in created a brand-new account. */
+  is_new_user: boolean;
+}
+
 export interface ResendOtpResponse {
   userid: number;
   username: string;

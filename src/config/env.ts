@@ -3,6 +3,7 @@ interface EnvConfig {
   appName: string;
   enableLogger: boolean;
   aiStreaming: boolean;
+  googleClientId: string;
   isDev: boolean;
   isProd: boolean;
 }
@@ -20,6 +21,7 @@ function readEnv(): EnvConfig {
     appName: env.VITE_APP_NAME ?? 'Axiora Pulse',
     enableLogger: toBoolean(env.VITE_ENABLE_LOGGER, env.DEV),
     aiStreaming: toBoolean(env.VITE_AI_STREAMING, true),
+    googleClientId: env.VITE_GOOGLE_CLIENT_ID ?? '',
     isDev: env.DEV,
     isProd: env.PROD,
   };

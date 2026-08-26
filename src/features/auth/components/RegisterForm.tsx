@@ -17,6 +17,8 @@ import { ROUTES } from '@constants/routes';
 import { useRegister } from '@features/auth/hooks';
 import { registerSchema, type RegisterFormValues } from '@schemas/auth.schema';
 
+import { GoogleLoginButton } from './GoogleLoginButton';
+
 export function RegisterForm() {
   const register = useRegister();
   const form = useForm<RegisterFormValues>({
@@ -80,6 +82,8 @@ export function RegisterForm() {
           {register.isPending && <ButtonLoader className="mr-2" />}
           Create account
         </Button>
+
+        <GoogleLoginButton text="signup_with" />
 
         <p className="text-center text-sm">
           <span className="text-muted-foreground">Already have an account? </span>
