@@ -3,6 +3,13 @@ import type { AccountRole } from '@/types/common.types';
 export interface LoginResponse {
   status: 'success';
   message: string;
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+  expires_in_minutes: number;
+  role: AccountRole;
+  actions?: string[];
+  auth_actions?: AuthActionsData | null;
   userid?: number;
 }
 

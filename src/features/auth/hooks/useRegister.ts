@@ -23,8 +23,8 @@ export function useRegister() {
         mfaVerified: false,
         flow: 'register',
       });
-      toast.success('OTP sent successfully.');
-      void navigate(ROUTES.VERIFY_OTP);
+      toast.success('Registration successful. Please verify your OTP.');
+      void navigate(ROUTES.VERIFY_LOGIN);
     },
     onError: (error) => {
       toast.error(

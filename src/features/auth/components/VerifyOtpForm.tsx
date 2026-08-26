@@ -49,6 +49,7 @@ export function VerifyOtpForm({ heading, description }: { heading: string; descr
 
     verifyOtp.mutate({
       id: mfaData.userid,
+      emailOrMobile: mfaData.identifier || mfaData.username,
       otp: Number(otp),
       flow: mfaData.flow,
     });
@@ -82,6 +83,7 @@ export function VerifyOtpForm({ heading, description }: { heading: string; descr
             if (value.length === 6 && !verifyOtp.isPending) {
               verifyOtp.mutate({
                 id: mfaData.userid,
+                emailOrMobile: mfaData.identifier || mfaData.username,
                 otp: Number(value),
                 flow: mfaData.flow,
               });

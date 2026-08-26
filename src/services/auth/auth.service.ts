@@ -30,6 +30,9 @@ import { tokenManager } from '@services/api/tokenManager';
 export const authService = {
   async login(payload: LoginRequest): Promise<LoginResponse> {
     const { data } = await apiClient.post<LoginResponse>(API_ENDPOINTS.AUTH.LOGIN, payload);
+    if (data.access_token && data.refresh_token) {
+      tokenManager.setTokens(data.access_token, data.refresh_token);
+    }
     return data;
   },
   async verifyLogin(payload: VerifyLoginRequest): Promise<VerifyLoginResponse> {
@@ -70,6 +73,9 @@ export const authService = {
       API_ENDPOINTS.AUTH.VERIFY_OTP,
       payload,
     );
+    if (data.status === 'success' && data.access_token && data.refresh_token) {
+      tokenManager.setTokens(data.access_token, data.refresh_token);
+    }
     return data;
   },
 

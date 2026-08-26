@@ -48,8 +48,16 @@ describe('authService', () => {
     jest.clearAllMocks();
   });
 
-  it('login posts credentials and returns the raw response body', async () => {
-    const responseBody: LoginResponse = { status: 'success', message: 'OTP sent' };
+  it('login posts credentials, stores tokens, and returns the response body', async () => {
+    const responseBody: LoginResponse = {
+      status: 'success',
+      message: 'Login successful.',
+      access_token: 'login-access-1',
+      refresh_token: 'login-refresh-1',
+      token_type: 'bearer',
+      expires_in_minutes: 60,
+      role: 'user',
+    };
     mockedApiClient.post.mockResolvedValue({ data: responseBody });
 
     const result = await authService.login({ username: 'jane', password: 'secret' });
@@ -58,6 +66,7 @@ describe('authService', () => {
       username: 'jane',
       password: 'secret',
     });
+    expect(mockedTokenManager.setTokens).toHaveBeenCalledWith('login-access-1', 'login-refresh-1');
     expect(result).toBe(responseBody);
   });
 

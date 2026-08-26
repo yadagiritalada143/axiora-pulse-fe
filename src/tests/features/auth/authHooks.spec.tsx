@@ -75,15 +75,24 @@ beforeEach(() => {
 });
 
 describe('useLogin', () => {
-  it('stores MFA data, toasts, and navigates on success', async () => {
-    login.mockResolvedValue({ status: 'success', message: 'ok' });
+  it('authenticates, toasts, and navigates directly on success', async () => {
+    login.mockResolvedValue({
+      status: 'success',
+      message: 'Signed in successfully.',
+      access_token: 'acc-token',
+      refresh_token: 'ref-token',
+      token_type: 'bearer',
+      expires_in_minutes: 60,
+      role: 'user',
+      auth_actions: { payment: true, interactive_questions: true },
+    });
     const { result } = renderHook(() => useLogin(), { wrapper: createWrapper() });
 
     await result.current.mutateAsync({ username: 'user@example.com', password: 'password1' });
 
-    expect(useAuthStore.getState().mfaData?.username).toBe('user@example.com');
-    expect(toast.success).toHaveBeenCalledWith('OTP sent successfully.');
-    expect(mockNavigate).toHaveBeenCalledWith(ROUTES.VERIFY_LOGIN);
+    expect(useAuthStore.getState().isAuthenticated).toBe(true);
+    expect(toast.success).toHaveBeenCalledWith('Signed in successfully.');
+    expect(mockNavigate).toHaveBeenCalledWith(ROUTES.DASHBOARD);
   });
 
   it('toasts the API error message on failure', async () => {
@@ -110,14 +119,14 @@ describe('useLogin', () => {
 });
 
 describe('useRegister', () => {
-  it('stores MFA data from the response and navigates on success', async () => {
+  it('stores MFA data from the response and navigates to verify-login on success', async () => {
     register.mockResolvedValue({ userid: 7, username: 'newuser', registerMFA: true });
     const { result } = renderHook(() => useRegister(), { wrapper: createWrapper() });
 
     await result.current.mutateAsync({ username: 'user@example.com', password: 'password1' });
 
     expect(useAuthStore.getState().mfaData?.userid).toBe(7);
-    expect(mockNavigate).toHaveBeenCalledWith(ROUTES.VERIFY_OTP);
+    expect(mockNavigate).toHaveBeenCalledWith(ROUTES.VERIFY_LOGIN);
   });
 
   it('toasts a generic error on failure', async () => {

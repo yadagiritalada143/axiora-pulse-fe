@@ -170,7 +170,12 @@ describe('VerifyOtpForm', () => {
     await user.type(getOtpInput(container), '654321');
 
     await waitFor(() =>
-      expect(verifyOtpMutate).toHaveBeenCalledWith({ id: 42, otp: 654321, flow: 'register' }),
+      expect(verifyOtpMutate).toHaveBeenCalledWith({
+        id: 42,
+        emailOrMobile: 'jane@example.com',
+        otp: 654321,
+        flow: 'register',
+      }),
     );
   });
 
@@ -187,7 +192,12 @@ describe('VerifyOtpForm', () => {
     // OtpInput's auto-submit-on-change path covered above.
     await user.click(screen.getByRole('button', { name: /verify otp/i }));
 
-    expect(verifyOtpMutate).toHaveBeenCalledWith({ id: 42, otp: 654321, flow: 'register' });
+    expect(verifyOtpMutate).toHaveBeenCalledWith({
+      id: 42,
+      emailOrMobile: 'jane@example.com',
+      otp: 654321,
+      flow: 'register',
+    });
   });
 
   it('disables the verify button and shows a loader while pending', () => {

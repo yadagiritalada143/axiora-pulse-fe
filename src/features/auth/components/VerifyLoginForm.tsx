@@ -9,19 +9,19 @@ import { ROUTES } from '@constants/routes';
 import { useAuthStore } from '@store/auth.store';
 
 import { useResendOtp } from '../hooks/useResendOtp';
-import { useVerifyLogin } from '../hooks/useVerifyLogin';
+import { useVerifyOtp } from '../hooks/useVerifyOtp';
 
 export function VerifyLoginForm() {
   const navigate = useNavigate();
-  const verifyLogin = useVerifyLogin();
+  const verifyOtp = useVerifyOtp();
   const resendOtp = useResendOtp();
   const mfaData = useAuthStore((state) => state.mfaData);
   const [otp, setOtp] = useState('');
   const [seconds, setSeconds] = useState(60);
 
   useEffect(() => {
-    if (mfaData?.flow !== 'login') {
-      toast.error('Login verification session expired.');
+    if (!mfaData) {
+      toast.error('Verification session expired.');
       void navigate(ROUTES.LOGIN);
     }
   }, [mfaData, navigate]);
@@ -40,9 +40,11 @@ export function VerifyLoginForm() {
     return null;
   }
 
-  const identifier = mfaData.identifier;
+  const identifier = mfaData.identifier || mfaData.username;
+  const isRegister = mfaData.flow === 'register';
+
   const handleVerify = () => {
-    if (verifyLogin.isPending) {
+    if (verifyOtp.isPending) {
       return;
     }
 
@@ -51,9 +53,11 @@ export function VerifyLoginForm() {
       return;
     }
 
-    verifyLogin.mutate({
+    verifyOtp.mutate({
+      id: mfaData.userid,
       emailOrMobile: identifier,
       otp: Number(otp),
+      flow: mfaData.flow || 'register',
     });
   };
 
@@ -69,11 +73,14 @@ export function VerifyLoginForm() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Verify Login OTP</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          {isRegister ? 'Verify Your Account' : 'Verify Login OTP'}
+        </h1>
 
         <p className="text-muted-foreground mt-2 text-sm">
-          Enter the 6-digit OTP sent to <span className="font-medium">{identifier}</span> to
-          complete sign in.
+          Enter the 6-digit OTP sent to{' '}
+          <span className="text-foreground font-medium">{identifier}</span> to complete{' '}
+          {isRegister ? 'registration' : 'sign in'}.
         </p>
 
         <div className="mt-6 border-b" />
@@ -81,19 +88,19 @@ export function VerifyLoginForm() {
 
       <div className="space-y-3">
         <label htmlFor="login-otp" className="block text-sm font-medium">
-          Login OTP
+          Enter Code
         </label>
 
         <OtpInput value={otp} onChange={setOtp} />
       </div>
 
       <Button
-        className="w-full"
+        className="w-full text-white"
         onClick={handleVerify}
-        disabled={verifyLogin.isPending || otp.length !== 6}
+        disabled={verifyOtp.isPending || otp.length !== 6}
       >
-        {verifyLogin.isPending && <ButtonLoader className="mr-2" />}
-        Verify Login
+        {verifyOtp.isPending && <ButtonLoader className="mr-2" />}
+        {isRegister ? 'Verify & Continue' : 'Verify Login'}
       </Button>
 
       <div className="text-center text-sm">
