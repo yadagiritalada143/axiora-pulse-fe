@@ -8,6 +8,7 @@ import {
   FileEdit,
   Globe,
   IdCard,
+  Loader2,
   Mail,
   MessageSquare,
   Phone,
@@ -26,6 +27,8 @@ import { Card, CardContent } from '@components/ui/card';
 import { useCurrentUser } from '@features/auth/hooks';
 import { useAuthStore } from '@store/auth.store';
 
+import { useUpdateProfile } from '../hooks/useUpdateProfile';
+import { useUploadAvatar } from '../hooks/useUploadAvatar';
 import { useUserDetails } from '../hooks/useUserDetails';
 
 import { EditProfileDialog } from './EditProfileDialog';
@@ -36,10 +39,11 @@ export function ProfileTab() {
 
   const { data: currentUser } = useCurrentUser();
   const storeUser = useAuthStore((state) => state.user);
-  const updateUser = useAuthStore((state) => state.updateUser);
   const user = currentUser ?? storeUser;
 
   const { data: userDetails } = useUserDetails();
+  const uploadAvatarMutation = useUploadAvatar();
+  const updateProfileMutation = useUpdateProfile();
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
@@ -49,26 +53,39 @@ export function ProfileTab() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    if (!allowedTypes.includes(file.type) && !['jpg', 'jpeg', 'png'].includes(ext ?? '')) {
+      toast.error('Only JPG, JPEG, and PNG image files are allowed.');
+      return;
+    }
+
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Image size must be less than 5MB.');
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
-      updateUser({ avatarUrl: dataUrl, avatar_url: dataUrl });
-      toast.success('Profile photo updated.');
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleRemovePhoto = () => {
-    updateUser({ avatarUrl: null, avatar_url: null });
+    uploadAvatarMutation.mutate(file);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-    toast.info('Profile photo removed.');
+  };
+
+  const handleRemovePhoto = () => {
+    updateProfileMutation.mutate(
+      {
+        name: user?.name ?? 'User',
+        email: user?.email ?? '',
+        avatarUrl: '',
+      },
+      {
+        onSuccess: () => {
+          if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+          }
+        },
+      },
+    );
   };
 
   const profileId =
@@ -177,10 +194,16 @@ export function ProfileTab() {
                       {initialLetter}
                     </AvatarFallback>
                   </Avatar>
+                  {uploadAvatarMutation.isPending && (
+                    <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-xs">
+                      <Loader2 className="size-5 animate-spin text-[#FF4500]" />
+                    </div>
+                  )}
                   <button
                     type="button"
                     onClick={handleUploadClick}
-                    className="ring-background absolute -right-1 -bottom-1 flex size-6 cursor-pointer items-center justify-center rounded-full bg-[#FF4500] text-white shadow-md ring-2 transition-transform hover:bg-[#FF4500]/90 active:scale-95 sm:size-7"
+                    disabled={uploadAvatarMutation.isPending}
+                    className="ring-background absolute -right-1 -bottom-1 flex size-6 cursor-pointer items-center justify-center rounded-full bg-[#FF4500] text-white shadow-md ring-2 transition-transform hover:bg-[#FF4500]/90 active:scale-95 disabled:opacity-50 sm:size-7"
                     title="Change Photo"
                   >
                     <Camera className="size-3 sm:size-3.5" />
@@ -205,13 +228,13 @@ export function ProfileTab() {
               <div>
                 <p className="text-foreground text-xs font-semibold sm:text-sm">Change Photo</p>
                 <p className="text-muted-foreground mt-0.5 text-xs">
-                  JPG, PNG or GIF. Max size 5MB.
+                  JPG, JPEG or PNG. Max size 5MB.
                 </p>
                 <div className="mt-3 flex items-center gap-2.5">
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/png,image/jpeg,image/gif"
+                    accept="image/png,image/jpeg,image/jpg"
                     className="hidden"
                     onChange={handleFileChange}
                   />
@@ -219,6 +242,7 @@ export function ProfileTab() {
                     type="button"
                     variant="outline"
                     size="sm"
+                    disabled={updateProfileMutation.isPending || uploadAvatarMutation.isPending}
                     onClick={handleRemovePhoto}
                     className="text-muted-foreground hover:text-foreground h-8.5 cursor-pointer px-3 text-xs font-medium"
                   >
@@ -228,11 +252,21 @@ export function ProfileTab() {
                     type="button"
                     variant="outline"
                     size="sm"
+                    disabled={uploadAvatarMutation.isPending}
                     onClick={handleUploadClick}
                     className="h-8.5 cursor-pointer gap-1.5 border-[#FF4500]/40 px-3.5 text-xs font-semibold text-[#FF4500] shadow-2xs hover:bg-[#FF4500]/10 hover:text-[#FF4500]"
                   >
-                    <Upload className="size-3.5 text-[#FF4500]" />
-                    Upload Photo
+                    {uploadAvatarMutation.isPending ? (
+                      <>
+                        <Loader2 className="size-3.5 animate-spin text-[#FF4500]" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="size-3.5 text-[#FF4500]" />
+                        Upload Photo
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>
@@ -274,8 +308,14 @@ export function ProfileTab() {
             <UserIcon className="size-4.5" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-muted-foreground text-[11px] font-medium tracking-wider uppercase">
-              First Name
+            <p className="text-muted-foreground flex items-center text-[11px] font-medium tracking-wider uppercase">
+              <span>First Name</span>
+              <span
+                className="ml-1 inline-block text-xs font-bold text-red-500 select-none"
+                aria-hidden="true"
+              >
+                *
+              </span>
             </p>
             <p className="text-foreground mt-0.5 truncate text-xs font-bold sm:text-sm">
               {firstName}
@@ -288,8 +328,14 @@ export function ProfileTab() {
             <UserIcon className="size-4.5" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-muted-foreground text-[11px] font-medium tracking-wider uppercase">
-              Last Name
+            <p className="text-muted-foreground flex items-center text-[11px] font-medium tracking-wider uppercase">
+              <span>Last Name</span>
+              <span
+                className="ml-1 inline-block text-xs font-bold text-red-500 select-none"
+                aria-hidden="true"
+              >
+                *
+              </span>
             </p>
             <p className="text-foreground mt-0.5 truncate text-xs font-bold sm:text-sm">
               {lastName}
@@ -314,8 +360,14 @@ export function ProfileTab() {
             <Phone className="size-4.5" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-muted-foreground text-[11px] font-medium tracking-wider uppercase">
-              Mobile Number
+            <p className="text-muted-foreground flex items-center text-[11px] font-medium tracking-wider uppercase">
+              <span>Mobile Number</span>
+              <span
+                className="ml-1 inline-block text-xs font-bold text-red-500 select-none"
+                aria-hidden="true"
+              >
+                *
+              </span>
             </p>
             <p className="text-foreground mt-0.5 truncate text-xs font-bold sm:text-sm">
               {mobileNumber}

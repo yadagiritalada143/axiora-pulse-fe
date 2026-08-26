@@ -72,6 +72,30 @@ describe('userService', () => {
     expect(result).toEqual(mockDetails);
   });
 
+  it('calls POST /users/me/avatar on uploadAvatar with FormData', async () => {
+    const mockFile = new File(['dummy content'], 'avatar.png', { type: 'image/png' });
+    const mockUser = {
+      id: '1',
+      email: 'john@example.com',
+      name: 'John Doe',
+      avatarUrl: 'http://localhost:8000/api/users/1/avatar',
+    };
+    mockedApiClient.post.mockResolvedValueOnce({ data: { data: mockUser } });
+
+    const result = await userService.uploadAvatar(mockFile);
+
+    expect(mockedApiClient.post).toHaveBeenCalledWith(
+      API_ENDPOINTS.USER.AVATAR,
+      expect.any(FormData),
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      },
+    );
+    expect(result).toEqual(mockUser);
+  });
+
   it('calls POST /v1/auth/change-password on changePassword', async () => {
     const payload = {
       current_password: 'OldPassword123!',

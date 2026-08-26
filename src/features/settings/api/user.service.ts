@@ -20,10 +20,33 @@ export const userService = {
     return data;
   },
 
-  async updateProfile(payload: { name: string; email: string }): Promise<User> {
+  async updateProfile(payload: {
+    name: string;
+    email: string;
+    avatarUrl?: string | null;
+  }): Promise<User> {
     const response = await apiClient.patch<ApiResponse<User> | User>(
       API_ENDPOINTS.USER.UPDATE_PROFILE,
       payload,
+    );
+    const resData = response.data;
+    if (resData && typeof resData === 'object' && 'data' in resData && resData.data) {
+      return resData.data;
+    }
+    return resData as User;
+  },
+
+  async uploadAvatar(file: File): Promise<User> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await apiClient.post<ApiResponse<User> | User>(
+      API_ENDPOINTS.USER.AVATAR,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      },
     );
     const resData = response.data;
     if (resData && typeof resData === 'object' && 'data' in resData && resData.data) {

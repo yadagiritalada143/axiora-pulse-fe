@@ -75,6 +75,20 @@ jest.mock('@features/settings/hooks/useUpdateUserDetails', () => ({
   }),
 }));
 
+jest.mock('@features/settings/hooks/useUploadAvatar', () => ({
+  useUploadAvatar: () => ({
+    mutate: jest.fn(),
+    isPending: false,
+  }),
+}));
+
+jest.mock('@features/settings/hooks/useUpdateProfile', () => ({
+  useUpdateProfile: () => ({
+    mutate: jest.fn(),
+    isPending: false,
+  }),
+}));
+
 jest.mock('@features/settings/hooks/useChangePassword', () => ({
   useChangePassword: () => ({
     mutate: jest.fn(),

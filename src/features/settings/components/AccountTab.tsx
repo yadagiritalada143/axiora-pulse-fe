@@ -96,8 +96,14 @@ export function AccountTab() {
                   <Phone className="size-4.5" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-muted-foreground text-[11px] font-medium tracking-wider uppercase">
-                    Mobile Number
+                  <p className="text-muted-foreground flex items-center text-[11px] font-medium tracking-wider uppercase">
+                    <span>Mobile Number</span>
+                    <span
+                      className="ml-1 inline-block text-xs font-bold text-red-500 select-none"
+                      aria-hidden="true"
+                    >
+                      *
+                    </span>
                   </p>
                   <p className="text-foreground mt-0.5 truncate text-xs font-bold sm:text-sm">
                     {mobileNumber}

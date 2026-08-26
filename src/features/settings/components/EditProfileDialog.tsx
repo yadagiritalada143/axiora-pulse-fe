@@ -134,10 +134,17 @@ export function EditProfileDialog({
                 className="flex items-center gap-1.5 text-xs font-semibold"
               >
                 <User className="size-3.5 text-blue-500" />
-                First Name
+                First Name{' '}
+                <span
+                  className="ml-1 inline-block text-sm font-bold text-red-500 select-none"
+                  aria-hidden="true"
+                >
+                  *
+                </span>
               </Label>
               <Input
                 id="firstName"
+                aria-label="First Name"
                 placeholder="John"
                 className="h-9.5 text-sm"
                 {...register('firstName', { required: 'First name is required' })}
@@ -150,10 +157,17 @@ export function EditProfileDialog({
             <div className="space-y-1.5">
               <Label htmlFor="lastName" className="flex items-center gap-1.5 text-xs font-semibold">
                 <User className="size-3.5 text-indigo-500" />
-                Last Name
+                Last Name{' '}
+                <span
+                  className="ml-1 inline-block text-sm font-bold text-red-500 select-none"
+                  aria-hidden="true"
+                >
+                  *
+                </span>
               </Label>
               <Input
                 id="lastName"
+                aria-label="Last Name"
                 placeholder="Doe"
                 className="h-9.5 text-sm"
                 {...register('lastName', { required: 'Last name is required' })}
@@ -171,10 +185,17 @@ export function EditProfileDialog({
                 className="flex items-center gap-1.5 text-xs font-semibold"
               >
                 <Phone className="size-3.5 text-emerald-500" />
-                Mobile Number
+                Mobile Number{' '}
+                <span
+                  className="ml-1 inline-block text-sm font-bold text-red-500 select-none"
+                  aria-hidden="true"
+                >
+                  *
+                </span>
               </Label>
               <Input
                 id="mobileNumber"
+                aria-label="Mobile Number"
                 placeholder="9876543210"
                 className="h-9.5 text-sm"
                 {...register('mobileNumber', {

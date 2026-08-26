@@ -78,6 +78,8 @@ export const API_ENDPOINTS = {
     PROFILE: '/users/me',
     UPDATE_PROFILE: '/users/me',
     DETAILS: '/users/me/details',
+    AVATAR: '/users/me/avatar',
+    GET_AVATAR: (userId: number | string) => `/users/${userId}/avatar`,
   },
   ORCHESTRATION: {
     RUN: '/v1/orchestration/run',

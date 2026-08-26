@@ -95,11 +95,18 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
               className="flex items-center gap-1.5 text-xs font-semibold"
             >
               <Lock className="size-3.5 text-orange-500" />
-              Current Password
+              Current Password{' '}
+              <span
+                className="ml-1 inline-block text-sm font-bold text-red-500 select-none"
+                aria-hidden="true"
+              >
+                *
+              </span>
             </Label>
             <div className="relative">
               <Input
                 id="currentPassword"
+                aria-label="Current Password"
                 type={showCurrent ? 'text' : 'password'}
                 placeholder="Enter current password"
                 className="h-9.5 pr-10 text-sm"
@@ -128,11 +135,18 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
               className="flex items-center gap-1.5 text-xs font-semibold"
             >
               <ShieldCheck className="size-3.5 text-blue-500" />
-              New Password
+              New Password{' '}
+              <span
+                className="ml-1 inline-block text-sm font-bold text-red-500 select-none"
+                aria-hidden="true"
+              >
+                *
+              </span>
             </Label>
             <div className="relative">
               <Input
                 id="newPassword"
+                aria-label="New Password"
                 type={showNew ? 'text' : 'password'}
                 placeholder="Enter new password (min. 8 characters)"
                 className="h-9.5 pr-10 text-sm"
@@ -175,11 +189,18 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
               className="flex items-center gap-1.5 text-xs font-semibold"
             >
               <CheckCircle2 className="size-3.5 text-emerald-500" />
-              Confirm New Password
+              Confirm New Password{' '}
+              <span
+                className="ml-1 inline-block text-sm font-bold text-red-500 select-none"
+                aria-hidden="true"
+              >
+                *
+              </span>
             </Label>
             <div className="relative">
               <Input
                 id="confirmPassword"
+                aria-label="Confirm New Password"
                 type={showConfirm ? 'text' : 'password'}
                 placeholder="Re-enter new password"
                 className="h-9.5 pr-10 text-sm"

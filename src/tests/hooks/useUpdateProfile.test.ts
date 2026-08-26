@@ -66,11 +66,11 @@ describe('useUpdateProfile', () => {
     jest.clearAllMocks();
   });
 
-  it('updates the auth store, invalidates the profile query, and toasts on success', async () => {
+  it('updates the auth store, sets the profile query data, and toasts on success', async () => {
     mockedApiClient.patch.mockResolvedValueOnce({ data: { data: user } });
 
     const { Wrapper, queryClient } = createWrapper();
-    const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries');
+    const setQueryDataSpy = jest.spyOn(queryClient, 'setQueryData');
 
     const { result } = renderHook(() => useUpdateProfile(), { wrapper: Wrapper });
 
@@ -83,8 +83,8 @@ describe('useUpdateProfile', () => {
       email: 'jane@example.com',
     });
     expect(updateUser).toHaveBeenCalledWith(user);
-    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.user.profile() });
-    expect(mockedToast.success).toHaveBeenCalledWith('Profile updated.');
+    expect(setQueryDataSpy).toHaveBeenCalledWith(queryKeys.user.profile(), user);
+    expect(mockedToast.success).toHaveBeenCalledWith('Profile updated successfully.');
   });
 
   it('toasts the API error message when the request fails with a normalized error', async () => {
