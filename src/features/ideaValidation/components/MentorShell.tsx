@@ -12,6 +12,7 @@ import { useState, type ReactNode } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 
 import { Logo } from '@components/common/Logo';
+import { ThemeToggle } from '@components/common/ThemeToggle';
 import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import {
   DropdownMenu,
@@ -157,13 +158,7 @@ export function MentorShell({
             </button>
 
             <div className="flex flex-1 items-center justify-end gap-1.5 sm:gap-3">
-              {/* <button
-                type="button"
-                aria-label="Notifications"
-                className="text-muted-foreground hover:bg-accent flex size-9 shrink-0 items-center justify-center rounded-full transition-colors"
-              >
-                <Bell className="size-4" />
-              </button> */}
+              <ThemeToggle />
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

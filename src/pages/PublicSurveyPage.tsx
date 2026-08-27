@@ -14,6 +14,7 @@ import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { Logo } from '@components/common/Logo';
+import { ThemeToggle } from '@components/common/ThemeToggle';
 import { Button } from '@components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@components/ui/card';
 import { Checkbox } from '@components/ui/checkbox';
@@ -269,10 +270,14 @@ export default function PublicSurveyPage() {
           </span>
         </div>
 
-        <div className="text-muted-foreground flex items-center gap-1 font-mono text-xs font-semibold">
-          <span>{Math.min(currentStep + 1, totalQuestions)}</span>
-          <span className="text-muted-foreground/40">/</span>
-          <span>{totalQuestions}</span>
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+
+          <div className="text-muted-foreground flex items-center gap-1 font-mono text-xs font-semibold">
+            <span>{Math.min(currentStep + 1, totalQuestions)}</span>
+            <span className="text-muted-foreground/40">/</span>
+            <span>{totalQuestions}</span>
+          </div>
         </div>
       </header>
 

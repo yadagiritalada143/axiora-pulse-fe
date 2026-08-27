@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 
 import { Logo } from '@components/common/Logo';
+import { ThemeToggle } from '@components/common/ThemeToggle';
 
 const STRIPE_POSITIONS = ['-2%', '19%', '40%', '61%', '82%'];
 
@@ -14,7 +15,10 @@ const STRIPE_POSITIONS = ['-2%', '19%', '40%', '61%', '82%'];
  */
 export function AuthLayout() {
   return (
-    <div className="flex min-h-screen flex-col lg:grid lg:grid-cols-2">
+    <div className="relative flex min-h-screen flex-col lg:grid lg:grid-cols-2">
+      <div className="absolute top-4 right-4 z-30 sm:top-6 sm:right-6">
+        <ThemeToggle />
+      </div>
       <div className="relative min-h-[20rem] overflow-hidden rounded-b-3xl bg-[#141414] text-white lg:min-h-screen lg:rounded-none">
         {' '}
         {/* Warm glow blooming up from the bottom edge, brightest (white) at the base,

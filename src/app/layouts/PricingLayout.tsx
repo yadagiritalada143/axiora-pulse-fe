@@ -2,6 +2,7 @@ import { LogOut } from 'lucide-react';
 import { Outlet } from 'react-router-dom';
 
 import { Logo } from '@components/common/Logo';
+import { ThemeToggle } from '@components/common/ThemeToggle';
 import { Button } from '@components/ui/button';
 import { useLogout } from '@features/auth/hooks';
 
@@ -14,15 +15,19 @@ export function PricingLayout() {
       <header className="border-border flex h-16 shrink-0 items-center justify-between border-b px-6">
         <Logo />
 
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-muted-foreground hover:text-foreground gap-2"
-          onClick={handleLogout}
-        >
-          <LogOut className="size-4" />
-          Log out
-        </Button>
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground hover:text-foreground gap-2"
+            onClick={handleLogout}
+          >
+            <LogOut className="size-4" />
+            Log out
+          </Button>
+        </div>
       </header>
 
       {/* ── Page content ── */}

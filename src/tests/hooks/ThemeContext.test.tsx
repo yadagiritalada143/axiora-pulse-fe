@@ -5,10 +5,11 @@ import { ThemeContext, type ThemeContextValue } from '@app/providers/ThemeContex
 import { useTheme } from '@hooks/useTheme';
 
 describe('ThemeContext / useTheme', () => {
-  it('throws when used outside of a ThemeContext provider', () => {
-    expect(() => renderHook(() => useTheme())).toThrow(
-      'useTheme must be used within a ThemeProvider',
-    );
+  it('falls back gracefully to the theme store when used outside of a ThemeContext provider', () => {
+    const { result } = renderHook(() => useTheme());
+    expect(result.current.theme).toBeDefined();
+    expect(result.current.resolvedTheme).toBeDefined();
+    expect(typeof result.current.setTheme).toBe('function');
   });
 
   it('returns the provided context value when rendered within a provider', () => {
