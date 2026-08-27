@@ -48,6 +48,7 @@ export const API_ENDPOINTS = {
     REPORT: (workspaceId: number, agentName: string) =>
       `/v1/workspaces/${workspaceId}/reports/${agentName}`,
     REPORT_EXPORT: (workspaceId: number) => `/v1/workspaces/${workspaceId}/reports/export`,
+    CERTIFICATE: (workspaceId: number) => `/v1/workspaces/${workspaceId}/certificate`,
   },
 
   SURVEY: {

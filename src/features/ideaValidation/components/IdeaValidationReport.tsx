@@ -1,4 +1,4 @@
-import { Download, Loader2 } from 'lucide-react';
+import { Award, Download, Loader2 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -6,7 +6,10 @@ import { toast } from 'sonner';
 import type { OrchestrationRunResponse } from '@/types/orchestration.types';
 import { Badge } from '@components/ui/badge';
 import { Button } from '@components/ui/button';
-import { useExportWorkspaceReport } from '@features/workspace/hooks/useWorkspaceMentor';
+import {
+  useDownloadCertificate,
+  useExportWorkspaceReport,
+} from '@features/workspace/hooks/useWorkspaceMentor';
 import type { WorkspaceReportAgent } from '@features/workspace/types';
 import { cn } from '@lib/utils';
 
@@ -33,6 +36,8 @@ export function IdeaValidationReport({
   onRetake,
 }: IdeaValidationReportProps) {
   const { result } = response;
+  const downloadCertificate = useDownloadCertificate(workspaceId);
+
   const verdictStyle = result
     ? (VERDICT_STYLES[result.verdict.toLowerCase()] ?? 'bg-primary/10 text-primary')
     : '';
@@ -89,36 +94,81 @@ export function IdeaValidationReport({
           </ReportSection>
 
           {ideaValidation ? (
-            <AgentReportCard
-              workspaceId={workspaceId}
-              agentName="idea_validation_agent"
-              title="Idea Validation"
-            >
-              <p className="text-foreground text-sm font-semibold">Problem Statement</p>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                {ideaValidation.problem_statement_summary}
-              </p>
+            <>
+              <AgentReportCard
+                workspaceId={workspaceId}
+                agentName="idea_validation_agent"
+                title="Idea Validation"
+                onDownloadCertificate={() => downloadCertificate.mutate()}
+                isDownloadingCertificate={downloadCertificate.isPending}
+              >
+                <p className="text-foreground text-sm font-semibold">Problem Statement</p>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  {ideaValidation.problem_statement_summary}
+                </p>
 
-              {ideaValidation.falsifiable_problem_sentence ? (
-                <>
-                  <p className="text-foreground pt-2 text-sm font-semibold">
-                    Falsifiable Statement
-                  </p>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {ideaValidation.falsifiable_problem_sentence}
-                  </p>
-                </>
-              ) : null}
+                {ideaValidation.falsifiable_problem_sentence ? (
+                  <>
+                    <p className="text-foreground pt-2 text-sm font-semibold">
+                      Falsifiable Statement
+                    </p>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      {ideaValidation.falsifiable_problem_sentence}
+                    </p>
+                  </>
+                ) : null}
 
-              <p className="text-foreground pt-2 text-sm font-semibold">Who & How Often</p>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                {ideaValidation.who_and_frequency}
-              </p>
+                <p className="text-foreground pt-2 text-sm font-semibold">Who & How Often</p>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  {ideaValidation.who_and_frequency}
+                </p>
 
-              <SubList title="Current Workarounds" items={ideaValidation.current_workarounds} />
-              <SubList title="Key Falsifiable Assumptions" items={ideaValidation.assumption_list} />
-              <SubList title="Red Flags" items={ideaValidation.red_flags} />
-            </AgentReportCard>
+                <SubList title="Current Workarounds" items={ideaValidation.current_workarounds} />
+                <SubList
+                  title="Key Falsifiable Assumptions"
+                  items={ideaValidation.assumption_list}
+                />
+                <SubList title="Red Flags" items={ideaValidation.red_flags} />
+              </AgentReportCard>
+
+              <div className="via-background flex flex-col gap-4 rounded-xl border border-amber-500/20 bg-gradient-to-r from-amber-500/10 to-orange-500/10 p-4.5 shadow-xs sm:flex-row sm:items-center sm:justify-between dark:border-amber-500/30">
+                <div className="flex items-center gap-3.5">
+                  <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-sm ring-2 ring-amber-500/20">
+                    <Award className="size-5.5" aria-hidden />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-foreground text-sm font-semibold sm:text-base">
+                        Certificate of Completion
+                      </h3>
+                      <Badge
+                        variant="outline"
+                        className="border-amber-500/40 bg-amber-500/10 text-[10px] font-semibold tracking-wider text-amber-600 uppercase dark:text-amber-400"
+                      >
+                        Verified
+                      </Badge>
+                    </div>
+                    <p className="text-muted-foreground text-xs leading-relaxed sm:text-sm">
+                      Download your official certificate verifying completion of the idea validation
+                      agent run for this venture.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => downloadCertificate.mutate()}
+                  disabled={downloadCertificate.isPending}
+                  className="shrink-0 gap-2 self-start bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-xs hover:from-amber-600 hover:to-orange-700 sm:self-center"
+                >
+                  {downloadCertificate.isPending ? (
+                    <Loader2 className="size-4 animate-spin" aria-hidden />
+                  ) : (
+                    <Download className="size-4" aria-hidden />
+                  )}
+                  Download Certificate
+                </Button>
+              </div>
+            </>
           ) : null}
 
           {marketResearch ? (
@@ -222,11 +272,6 @@ function ReportSection({ title, children }: { title: string; children: ReactNode
   );
 }
 
-// Agent output is LLM-generated JSON with no strict schema enforcement on the backend
-// (see OutputValidator in the API repo) - a field documented and typed as "array of
-// strings" can still arrive as null, a non-array value, or an array of objects (the
-// model doesn't always follow the prompt's "return a plain string" instruction), so
-// every list item is coerced to a readable string before it's ever handed to React.
 function toDisplayString(value: unknown): string {
   if (typeof value === 'string') return value;
   if (value === null || value === undefined) return '';
@@ -235,7 +280,6 @@ function toDisplayString(value: unknown): string {
       .filter((entry): entry is string => typeof entry === 'string' && entry.trim().length > 0)
       .join(' — ');
   }
-  // Only number/boolean/bigint/symbol/function reach here - object was handled above.
   // eslint-disable-next-line @typescript-eslint/no-base-to-string
   return String(value);
 }
@@ -276,11 +320,15 @@ function AgentReportCard({
   agentName,
   title,
   children,
+  onDownloadCertificate,
+  isDownloadingCertificate,
 }: {
   workspaceId: number;
   agentName: WorkspaceReportAgent;
   title: string;
   children: ReactNode;
+  onDownloadCertificate?: () => void;
+  isDownloadingCertificate?: boolean;
 }) {
   const exportReport = useExportWorkspaceReport(workspaceId);
 
@@ -304,6 +352,22 @@ function AgentReportCard({
               className="border-[#FF4500] text-[#FF4500] hover:bg-[#FF4500]/10"
             >
               <Link to={`/workspace/${workspaceId}/survey`}>Manage Survey</Link>
+            </Button>
+          )}
+          {agentName === 'idea_validation_agent' && onDownloadCertificate && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5 border-amber-500/50 text-amber-600 hover:bg-amber-500/10 dark:text-amber-400"
+              onClick={onDownloadCertificate}
+              disabled={isDownloadingCertificate}
+            >
+              {isDownloadingCertificate ? (
+                <Loader2 className="size-3.5 animate-spin" aria-hidden />
+              ) : (
+                <Award className="size-3.5" aria-hidden />
+              )}
+              Certificate
             </Button>
           )}
           <Button

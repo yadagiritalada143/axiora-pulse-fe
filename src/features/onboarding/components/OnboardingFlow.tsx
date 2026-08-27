@@ -72,7 +72,7 @@ function WelcomeStep({ onContinue }: { onContinue: () => void }) {
 
         <Tagline />
 
-        <Button className="mt-3 w-36 text-white" onClick={onContinue}>
+        <Button className="mt-3 w-36 cursor-pointer text-white" onClick={onContinue}>
           Continue
         </Button>
       </div>

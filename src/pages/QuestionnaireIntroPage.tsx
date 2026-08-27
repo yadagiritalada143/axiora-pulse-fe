@@ -33,7 +33,7 @@ export default function QuestionnaireIntroPage() {
             Estimated time: <strong>2–3 minutes</strong>
           </p>
 
-          <div className="flex justify-center gap-5 pt-4">
+          <div className="flex cursor-pointer justify-center gap-5 pt-4">
             <Button
               size="lg"
               onClick={() => {

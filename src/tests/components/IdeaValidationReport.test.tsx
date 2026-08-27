@@ -4,10 +4,14 @@ import { toast } from 'sonner';
 
 import type { OrchestrationRunResponse } from '@/types/orchestration.types';
 import { IdeaValidationReport } from '@features/ideaValidation/components/IdeaValidationReport';
-import { useExportWorkspaceReport } from '@features/workspace/hooks/useWorkspaceMentor';
+import {
+  useDownloadCertificate,
+  useExportWorkspaceReport,
+} from '@features/workspace/hooks/useWorkspaceMentor';
 
 jest.mock('@features/workspace/hooks/useWorkspaceMentor', () => ({
   useExportWorkspaceReport: jest.fn(),
+  useDownloadCertificate: jest.fn(),
 }));
 
 jest.mock('sonner', () => ({
@@ -21,6 +25,7 @@ jest.mock('react-router-dom', () => ({
 }));
 
 const mockedUseExportWorkspaceReport = useExportWorkspaceReport as jest.Mock;
+const mockedUseDownloadCertificate = useDownloadCertificate as jest.Mock;
 
 const RESPONSE: OrchestrationRunResponse = {
   run_id: 'run-1',
@@ -117,6 +122,7 @@ const RESPONSE: OrchestrationRunResponse = {
 describe('IdeaValidationReport', () => {
   beforeEach(() => {
     mockedUseExportWorkspaceReport.mockReturnValue({ mutate: jest.fn(), isPending: false });
+    mockedUseDownloadCertificate.mockReturnValue({ mutate: jest.fn(), isPending: false });
   });
 
   afterEach(() => {
@@ -419,5 +425,37 @@ describe('IdeaValidationReport', () => {
     );
 
     expect(screen.getByText('42')).toBeInTheDocument();
+  });
+
+  it('renders certificate of completion card and triggers certificate download on click', async () => {
+    const user = userEvent.setup();
+    const mockDownloadMutate = jest.fn();
+    mockedUseDownloadCertificate.mockReturnValue({
+      mutate: mockDownloadMutate,
+      isPending: false,
+    });
+
+    render(
+      <IdeaValidationReport
+        workspaceId={1}
+        ideaTitle="Inventory AI"
+        response={RESPONSE}
+        onRetake={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Certificate of Completion')).toBeInTheDocument();
+    expect(screen.getByText('Verified')).toBeInTheDocument();
+
+    const certButtons = screen.getAllByRole('button', { name: /download certificate/i });
+    expect(certButtons.length).toBeGreaterThanOrEqual(1);
+
+    const firstCertButton = certButtons[0];
+    if (!firstCertButton) {
+      throw new Error('Expected at least one certificate button');
+    }
+    await user.click(firstCertButton);
+
+    expect(mockDownloadMutate).toHaveBeenCalledTimes(1);
   });
 });

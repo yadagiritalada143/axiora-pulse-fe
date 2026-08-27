@@ -17,7 +17,7 @@ export function WorkspaceEmpty({ onCreate }: WorkspaceEmptyProps) {
           Create your first workspace to start using Axiora Pulse.
         </p>
 
-        <Button onClick={onCreate}>
+        <Button onClick={onCreate} className="cursor-pointer">
           <Plus className="mr-2 size-4" />
           Create Workspace
         </Button>
