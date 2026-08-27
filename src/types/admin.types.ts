@@ -127,3 +127,60 @@ export interface AdminSurveyResponseDetailResponse extends AdminSurveyResponseIt
 export interface SetProfileStatusPayload {
   profile_status: 'Active' | 'Inactive' | 'Suspended';
 }
+
+export interface AdminDashboardGrowth {
+  total_users: number;
+  paid_users: number;
+  non_paid_users: number;
+  active_subscriptions: number;
+  total_workspaces: number;
+  active_workspaces: number;
+  archived_workspaces: number;
+}
+
+export interface AdminDashboardStatsResponse {
+  total_users: number;
+  paid_users: number;
+  non_paid_users: number;
+  active_subscriptions: number;
+  total_workspaces: number;
+  active_workspaces: number;
+  archived_workspaces: number;
+  growth: AdminDashboardGrowth;
+}
+
+export type UserGrowthAnalyticsPeriod = 'week' | 'month' | 'last_7_days' | 'last_30_days' | 'year';
+
+export interface UserGrowthDataPoint {
+  period: string;
+  count: number;
+}
+
+export interface UserGrowthAnalyticsResponse {
+  period: UserGrowthAnalyticsPeriod;
+  series: UserGrowthDataPoint[];
+}
+
+export interface UsersByPlanItem {
+  plan: string;
+  user_count: number;
+  percentage: number;
+}
+
+export interface UsersByPlanResponse {
+  total_users: number;
+  plans: UsersByPlanItem[];
+}
+
+export type RevenueAnalyticsPeriod = 'today' | 'week' | 'month' | 'year';
+
+export interface RevenueDataPoint {
+  period: string;
+  amount: number;
+}
+
+export interface RevenueResponse {
+  period: RevenueAnalyticsPeriod;
+  total_amount: number;
+  series: RevenueDataPoint[];
+}

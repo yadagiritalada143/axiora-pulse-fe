@@ -1,46 +1,49 @@
-import { ArrowRight, ListChecks } from 'lucide-react';
-import { Link } from 'react-router-dom';
-
-import { Button } from '@components/ui/button';
-import { ROUTES } from '@constants/routes';
-import { UserGrowthChart } from '@features/admin/components';
+import {
+  AdminDashboardMetrics,
+  AdminRecentUsersCard,
+  AdminRevenueChart,
+  AdminUserGrowthChart,
+  AdminUsersByPlanChart,
+} from '@features/admin/components';
+import { useAdminDashboardStats } from '@features/admin/hooks';
 import { useAuthStore } from '@store/auth.store';
 
 export default function AdminDashboardPage() {
   const user = useAuthStore((state) => state.user);
+  const { data: stats, isLoading: isStatsLoading } = useAdminDashboardStats();
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-8">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 pb-12">
       <div>
-        <h1 className="text-foreground text-2xl font-semibold tracking-tight sm:text-3xl">
-          Welcome back{user?.name ? `, ${user.name}` : ''}.
+        <h1 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
+          Welcome back{user?.name ? `, ${user.name}` : ''} 👋
         </h1>
-        <p className="text-muted-foreground mt-2 text-sm">
-          Manage what users see across Axiora Pulse from here.
+        <p className="text-muted-foreground mt-1 text-sm">
+          Overview of customer growth, subscriptions, workspaces, and platform metrics.
         </p>
       </div>
 
-      <div className="border-border bg-primary/5 flex flex-col gap-4 rounded-xl border p-6 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-start gap-3">
-          <span className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
-            <ListChecks className="size-4" aria-hidden />
-          </span>
-          <div className="space-y-1">
-            <p className="text-foreground text-base font-semibold">Interactive Questions</p>
-            <p className="text-muted-foreground text-sm">
-              Add or remove the questions shown to users on their first login.
-            </p>
-          </div>
+      <section aria-label="Headline Metrics">
+        <AdminDashboardMetrics stats={stats} isLoading={isStatsLoading} />
+      </section>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <div className="lg:col-span-7">
+          <AdminUserGrowthChart />
         </div>
-        <Button asChild className="shrink-0">
-          <Link to={ROUTES.ADMIN_INTERACTIVE_QUESTIONS}>
-            Manage questions
-            <ArrowRight className="ml-2 size-4" aria-hidden />
-          </Link>
-        </Button>
+        <div className="lg:col-span-5">
+          <AdminUsersByPlanChart />
+        </div>
       </div>
 
-      <UserGrowthChart />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <div className="lg:col-span-7">
+          <AdminRecentUsersCard />
+        </div>
+        <div className="lg:col-span-5">
+          <AdminRevenueChart />
+        </div>
+      </div>
     </div>
   );
 }

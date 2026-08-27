@@ -3,7 +3,6 @@ import { TrendingUp } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 
-import type { GrowthGranularity, UserGrowthPoint } from '@/types/admin.types';
 import { ApiErrorMessage } from '@components/common/ApiErrorMessage';
 import { Loader } from '@components/common/Loader';
 import { Card, CardContent, CardHeader, CardTitle } from '@components/ui/card';
@@ -15,6 +14,7 @@ import {
 } from '@components/ui/chart';
 import { Tabs, TabsList, TabsTrigger } from '@components/ui/tabs';
 import { useUserGrowth } from '@features/admin/hooks';
+import type { GrowthGranularity, UserGrowthPoint } from '@features/admin/types';
 
 const chartConfig = {
   count: {
@@ -23,7 +23,6 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-/** Parse a "YYYY-MM" or "YYYY" period into a Date at the start of that period. */
 function periodToDate(period: string): Date {
   const [year, month] = period.split('-');
   return new Date(Number(year), month ? Number(month) - 1 : 0, 1);

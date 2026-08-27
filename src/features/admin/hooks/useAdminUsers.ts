@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
-import type { ListAdminUsersParams } from '@/types/admin.types';
 import { queryKeys } from '@constants/queryKeys';
+import type { ListAdminUsersParams } from '@features/admin/types';
 import { adminService } from '@services/admin';
 
 export function useAdminUsers(params?: ListAdminUsersParams) {

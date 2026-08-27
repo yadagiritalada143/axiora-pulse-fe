@@ -46,6 +46,10 @@ export const queryKeys = {
 
   admin: {
     interactiveQuestions: () => ['admin', 'interactiveQuestions'] as const,
+    dashboardStats: () => ['admin', 'dashboardStats'] as const,
+    analyticsUserGrowth: (period: string) => ['admin', 'analyticsUserGrowth', period] as const,
+    analyticsUsersByPlan: () => ['admin', 'analyticsUsersByPlan'] as const,
+    analyticsRevenue: (period: string) => ['admin', 'analyticsRevenue', period] as const,
     users: (params?: { limit?: number; offset?: number; search?: string }) =>
       ['admin', 'users', params] as const,
     userGrowth: (granularity: 'month' | 'year') => ['admin', 'userGrowth', granularity] as const,
