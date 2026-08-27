@@ -254,7 +254,7 @@ export function ChatInput({
                 <button
                   type="button"
                   onClick={() => onRemoveAttachment(file.id)}
-                  className="text-muted-foreground hover:text-foreground ml-1.5 focus:outline-none"
+                  className="text-muted-foreground hover:text-foreground ml-1.5 cursor-pointer focus:outline-none"
                   aria-label={`Remove ${file.name}`}
                 >
                   <X className="h-3.5 w-3.5" />

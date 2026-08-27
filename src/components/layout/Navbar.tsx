@@ -59,14 +59,16 @@ export function Navbar({ onSearch, actions }: NavbarProps) {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="gap-2 px-2">
+            <Button variant="ghost" className="cursor-pointer gap-2 px-2">
               <Avatar className="size-7">
                 <AvatarImage src={user?.avatarUrl ?? undefined} alt="" />
                 <AvatarFallback>
                   {(user?.name?.trim() ?? user?.email?.trim() ?? 'U').charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <span className="hidden text-sm font-medium sm:inline">{displayName}</span>
+              <span className="text-foreground hidden text-sm font-semibold sm:inline">
+                {displayName}
+              </span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

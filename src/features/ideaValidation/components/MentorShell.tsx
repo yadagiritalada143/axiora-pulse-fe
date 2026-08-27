@@ -117,7 +117,7 @@ export function MentorShell({
               type="button"
               aria-label="Close menu"
               onClick={closeNav}
-              className="text-muted-foreground hover:bg-accent flex size-8 items-center justify-center rounded-full transition-colors lg:hidden"
+              className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-8 cursor-pointer items-center justify-center rounded-full transition-colors lg:hidden"
             >
               <X className="size-4" />
             </button>
@@ -152,7 +152,7 @@ export function MentorShell({
               type="button"
               aria-label="Open menu"
               onClick={() => setIsNavOpen(true)}
-              className="text-muted-foreground hover:bg-accent flex size-9 shrink-0 items-center justify-center rounded-full transition-colors lg:hidden"
+              className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors lg:hidden"
             >
               <Menu className="size-4" />
             </button>
@@ -165,7 +165,7 @@ export function MentorShell({
                   <button
                     type="button"
                     aria-label="Account menu"
-                    className="hover:bg-accent flex items-center gap-2 rounded-full py-1 pr-2 pl-1 transition-colors"
+                    className="hover:bg-accent flex cursor-pointer items-center gap-2 rounded-full py-1 pr-2 pl-1 transition-colors"
                   >
                     <Avatar className="size-8">
                       <AvatarFallback>
@@ -178,7 +178,9 @@ export function MentorShell({
                         )}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="hidden text-sm font-medium sm:inline">{displayName}</span>
+                    <span className="text-foreground hidden text-sm font-semibold sm:inline">
+                      {displayName}
+                    </span>
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -215,9 +217,9 @@ function MentorNavButton({ item, onNavigate }: { item: MentorNavItem; onNavigate
   const Icon = item.icon;
 
   const baseClasses =
-    'flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium transition-colors';
-  const idleClasses = 'text-muted-foreground hover:bg-accent hover:text-accent-foreground';
-  const activeClasses = 'bg-primary/10 text-primary';
+    'flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium transition-colors cursor-pointer';
+  const idleClasses = 'text-foreground/80 hover:bg-accent hover:text-foreground font-medium';
+  const activeClasses = 'bg-primary/10 text-primary font-semibold';
 
   if (item.href) {
     return (

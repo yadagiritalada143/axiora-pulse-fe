@@ -77,7 +77,7 @@ export default function WorkspaceArchivePage() {
   return (
     <div className="mx-auto w-full max-w-6xl">
       <div className="mb-8 space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Archive</h1>
+        <h1 className="text-foreground text-2xl font-semibold tracking-tight">Archive</h1>
         <p className="text-muted-foreground text-sm">
           Workspaces you&apos;ve deleted are stored here. You can restore them or delete them
           permanently.
