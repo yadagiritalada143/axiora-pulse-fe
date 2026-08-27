@@ -3,6 +3,8 @@ export const API_ENDPOINTS = {
     LOGIN: '/v1/auth/login',
     REGISTER: '/v1/auth/register',
 
+    GOOGLE: '/v1/auth/google',
+
     ADMIN_LOGIN: '/v1/auth/admin/login',
 
     VERIFY_OTP: '/v1/auth/verifyOTP',
@@ -76,6 +78,8 @@ export const API_ENDPOINTS = {
     PROFILE: '/users/me',
     UPDATE_PROFILE: '/users/me',
     DETAILS: '/users/me/details',
+    AVATAR: '/users/me/avatar',
+    GET_AVATAR: (userId: number | string) => `/users/${userId}/avatar`,
   },
   ORCHESTRATION: {
     RUN: '/v1/orchestration/run',
@@ -96,6 +100,12 @@ export const API_ENDPOINTS = {
   ADMIN: {
     USERS: '/v1/admin/users',
     USER_GROWTH: '/v1/admin/stats/user-growth',
+    USER_SURVEYS: '/v1/admin/users/surveys',
+    USER_SURVEY_SUMMARY: (userId: number) => `/v1/admin/users/${userId}/survey-summary`,
+    SURVEY_RESPONSES: (surveyId: number) => `/v1/admin/surveys/${surveyId}/responses`,
+    SURVEY_RESPONSE_DETAIL: (surveyId: number, responseId: number) =>
+      `/v1/admin/surveys/${surveyId}/responses/${responseId}`,
+    SET_USER_STATUS: (userId: number) => `/v1/admin/user-details/${userId}/status`,
   },
 } as const;
 

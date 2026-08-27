@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 
 import { AdminUsersTable } from '@features/admin/components/AdminUsersTable';
 import { useAdminUsers } from '@features/admin/hooks';
@@ -9,6 +10,10 @@ jest.mock('@features/admin/hooks', () => ({
 }));
 
 const mockedUseAdminUsers = jest.mocked(useAdminUsers);
+
+const renderWithRouter = (ui: React.ReactElement) => {
+  return render(<MemoryRouter>{ui}</MemoryRouter>);
+};
 
 describe('AdminUsersTable', () => {
   beforeEach(() => {
@@ -23,7 +28,7 @@ describe('AdminUsersTable', () => {
       error: null,
     } as unknown as ReturnType<typeof useAdminUsers>);
 
-    render(<AdminUsersTable />);
+    renderWithRouter(<AdminUsersTable />);
 
     expect(screen.getByText('Loading users...')).toBeInTheDocument();
   });
@@ -36,7 +41,7 @@ describe('AdminUsersTable', () => {
       error: new Error('Failed to fetch'),
     } as unknown as ReturnType<typeof useAdminUsers>);
 
-    render(<AdminUsersTable />);
+    renderWithRouter(<AdminUsersTable />);
 
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });
@@ -73,7 +78,7 @@ describe('AdminUsersTable', () => {
       error: null,
     } as unknown as ReturnType<typeof useAdminUsers>);
 
-    render(<AdminUsersTable />);
+    renderWithRouter(<AdminUsersTable />);
 
     expect(screen.getByText('Users Management')).toBeInTheDocument();
     expect(screen.getByText('Prabhas')).toBeInTheDocument();
@@ -99,7 +104,7 @@ describe('AdminUsersTable', () => {
       error: null,
     } as unknown as ReturnType<typeof useAdminUsers>);
 
-    render(<AdminUsersTable />);
+    renderWithRouter(<AdminUsersTable />);
 
     const searchInput = screen.getByPlaceholderText('Search by name or username...');
     await user.type(searchInput, 'Prabhas');
@@ -129,7 +134,7 @@ describe('AdminUsersTable', () => {
       error: null,
     } as unknown as ReturnType<typeof useAdminUsers>);
 
-    render(<AdminUsersTable />);
+    renderWithRouter(<AdminUsersTable />);
 
     const prevButton = screen.getByRole('button', { name: /previous/i });
     const nextButton = screen.getByRole('button', { name: /next/i });

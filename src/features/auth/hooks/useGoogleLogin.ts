@@ -2,29 +2,33 @@ import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import type { GoogleLoginRequest } from '@/features/auth/types';
 import { isApiError } from '@/types/error.types';
 import { ROUTES } from '@constants/routes';
 import { authService } from '@services/auth';
 import { useAuthStore } from '@store/auth.store';
 
-import type { LoginRequest } from '../types';
-
-export function useLogin() {
+/**
+ * Authenticates a user from a Google Identity Services credential (ID token).
+ * On success the backend returns the same token/gate shape as the OTP login
+ * flow, so post-auth routing mirrors {@link useVerifyLogin}.
+ */
+export function useGoogleLogin() {
   const navigate = useNavigate();
   const setAuthenticated = useAuthStore((state) => state.setAuthenticated);
   const setHasActivePlan = useAuthStore((state) => state.setHasActivePlan);
   const setRole = useAuthStore((state) => state.setRole);
 
   return useMutation({
-    mutationFn: (payload: LoginRequest) => authService.login(payload),
+    mutationFn: (payload: GoogleLoginRequest) => authService.googleLogin(payload),
     onSuccess: (response) => {
       if (response.status !== 'success') {
-        toast.error(response.message || 'Login failed.');
+        toast.error(response.message || 'Google sign-in failed.');
         return;
       }
 
       setAuthenticated(response.access_token, response.refresh_token);
-      setRole(response.role || 'user');
+      setRole(response.role);
 
       void authService
         .getCurrentUser()
@@ -34,7 +38,7 @@ export function useLogin() {
         })
         .catch(() => null);
 
-      toast.success(response.message || 'Signed in successfully.');
+      toast.success(response.message || 'Signed in with Google.');
 
       if (response.role === 'admin') {
         void navigate(ROUTES.ADMIN_DASHBOARD);
@@ -47,11 +51,7 @@ export function useLogin() {
         useAuthStore.getState().setHasCompletedQuestionnaire(interactive_questions);
         useAuthStore.getState().setShowQuestionnaireIntro(!interactive_questions);
 
-        if (payment) {
-          void navigate(ROUTES.DASHBOARD);
-        } else {
-          void navigate(ROUTES.PRICING);
-        }
+        void navigate(payment ? ROUTES.DASHBOARD : ROUTES.PRICING);
         return;
       }
 
@@ -59,7 +59,7 @@ export function useLogin() {
       void navigate(ROUTES.PRICING);
     },
     onError: (error) => {
-      toast.error(isApiError(error) ? error.message : 'Unable to sign in. Please try again.');
+      toast.error(isApiError(error) ? error.message : 'Google sign-in failed. Please try again.');
     },
   });
 }

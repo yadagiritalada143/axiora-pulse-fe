@@ -3,6 +3,13 @@ import type { AccountRole } from '@/types/common.types';
 export interface LoginResponse {
   status: 'success';
   message: string;
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+  expires_in_minutes: number;
+  role: AccountRole;
+  actions?: string[];
+  auth_actions?: AuthActionsData | null;
   userid?: number;
 }
 
@@ -52,6 +59,19 @@ export interface VerifyLoginResponse {
   /** Present once the backend starts sending it. Defaults to false when absent. */
   hasActivePlan?: boolean;
   auth_actions?: AuthActionsData | null;
+}
+
+export interface GoogleLoginResponse {
+  status: 'success';
+  message: string;
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+  expires_in_minutes: number;
+  role: AccountRole;
+  auth_actions?: AuthActionsData | null;
+  /** True when this Google sign-in created a brand-new account. */
+  is_new_user: boolean;
 }
 
 export interface ResendOtpResponse {

@@ -99,8 +99,10 @@ describe('useRegister', () => {
       mfaVerified: false,
       flow: 'register',
     });
-    expect(mockedToastSuccess).toHaveBeenCalledWith('OTP sent successfully.');
-    expect(mockNavigate).toHaveBeenCalledWith('/verify-otp');
+    expect(mockedToastSuccess).toHaveBeenCalledWith(
+      'Registration successful. Please verify your OTP.',
+    );
+    expect(mockNavigate).toHaveBeenCalledWith('/verify-login');
   });
 
   it('shows an error toast and does not update the store when registration fails', async () => {

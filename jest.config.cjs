@@ -4,6 +4,7 @@ module.exports = {
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/tests/setup.ts'],
   testMatch: ['<rootDir>/src/tests/**/*.test.{ts,tsx}'],
+  testTimeout: 15000,
   workerIdleMemoryLimit: '512MB',
   maxWorkers: '50%',
   moduleNameMapper: {

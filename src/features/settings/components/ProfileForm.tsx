@@ -1,8 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
-import { Mail, Calendar, Shield, UserRound } from 'lucide-react';
-import { useEffect } from 'react';
+import { Mail, Calendar, Shield, UserRound, Camera, Loader2 } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
 import { ButtonLoader, Loader } from '@components/common/Loader';
 import { Avatar, AvatarFallback, AvatarImage } from '@components/ui/avatar';
@@ -20,16 +21,19 @@ import {
 import { Input } from '@components/ui/input';
 import { useCurrentUser } from '@features/auth/hooks';
 import { useUpdateProfile } from '@features/settings/hooks/useUpdateProfile';
+import { useUploadAvatar } from '@features/settings/hooks/useUploadAvatar';
 import { profileSchema, type ProfileFormValues } from '@schemas/profile.schema';
 import { useAuthStore } from '@store/auth.store';
 
 export function ProfileForm() {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const storeUser = useAuthStore((state) => state.user);
   const { data: currentUser, isLoading } = useCurrentUser();
   const user = currentUser ?? storeUser;
 
   const updateProfile = useUpdateProfile();
+  const uploadAvatar = useUploadAvatar();
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -42,6 +46,28 @@ export function ProfileForm() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.name, user?.email]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    if (!allowedTypes.includes(file.type) && !['jpg', 'jpeg', 'png'].includes(ext ?? '')) {
+      toast.error('Only JPG, JPEG, and PNG image files are allowed.');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB.');
+      return;
+    }
+
+    uploadAvatar.mutate(file);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const onSubmit = (values: ProfileFormValues) => updateProfile.mutate(values);
 
@@ -59,12 +85,33 @@ export function ProfileForm() {
         <CardContent className="relative px-6 pt-16 pb-6 text-center">
           <div className="flex justify-center">
             <div className="relative -mt-12 mb-4">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/jpg"
+                className="hidden"
+                onChange={handleFileChange}
+              />
               <Avatar className="border-background ring-border size-24 border-4 shadow-md ring-1">
                 <AvatarImage src={user?.avatarUrl ?? undefined} alt={user?.name ?? ''} />
                 <AvatarFallback className="bg-gradient-to-tr from-[#FF4500] to-[#FF8C00] text-3xl font-bold text-white select-none">
                   {(user?.name ?? 'U').charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
+              {uploadAvatar.isPending && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-xs">
+                  <Loader2 className="size-6 animate-spin text-[#FF4500]" />
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadAvatar.isPending}
+                className="ring-background absolute -right-1 -bottom-1 flex size-7 cursor-pointer items-center justify-center rounded-full bg-[#FF4500] text-white shadow-md ring-2 transition-transform hover:bg-[#FF4500]/90 active:scale-95 disabled:opacity-50"
+                title="Change Photo"
+              >
+                <Camera className="size-3.5" />
+              </button>
             </div>
           </div>
 
@@ -106,11 +153,20 @@ export function ProfileForm() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Full name</FormLabel>
+                      <FormLabel>
+                        Full name{' '}
+                        <span
+                          className="ml-1 inline-block text-sm font-bold text-red-500 select-none"
+                          aria-hidden="true"
+                        >
+                          *
+                        </span>
+                      </FormLabel>
                       <div className="relative">
                         <UserRound className="text-muted-foreground absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2" />
                         <FormControl>
                           <Input
+                            aria-label="Full name"
                             {...field}
                             className="bg-background border-input pl-9 focus:ring-[#FF4500]"
                           />

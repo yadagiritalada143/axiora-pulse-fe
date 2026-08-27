@@ -1,6 +1,5 @@
 import {
   Archive,
-  Info,
   LayoutGrid,
   LogOut,
   Menu,
@@ -21,7 +20,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@components/ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@components/ui/tooltip';
 import { ROUTES } from '@constants/routes';
 import { useCurrentUser, useLogout } from '@features/auth/hooks';
 import { cn } from '@lib/utils';
@@ -88,7 +86,7 @@ export function MentorShell({
   const activeOverviewItem = overviewItem ?? defaultOverviewItem;
 
   const footerItems: MentorNavItem[] = [
-    { label: 'Archive', icon: Archive, href: ROUTES.WORKSPACE_ARCHIVE },
+    ...(isAdmin ? [] : [{ label: 'Archive', icon: Archive, href: ROUTES.WORKSPACE_ARCHIVE }]),
     // { label: 'Integrations', icon: Sparkles, disabled: true },
     { label: 'Settings', icon: Settings, href: ROUTES.SETTINGS },
     { label: 'Logout', icon: LogOut, onClick: () => void handleLogout() },
@@ -166,37 +164,6 @@ export function MentorShell({
               >
                 <Bell className="size-4" />
               </button> */}
-
-              <TooltipProvider>
-                <Tooltip delayDuration={200}>
-                  <TooltipTrigger asChild>
-                    <button
-                      type="button"
-                      aria-label="Help"
-                      className="text-muted-foreground hover:bg-accent hidden size-9 shrink-0 items-center justify-center rounded-full transition-colors sm:flex"
-                    >
-                      <Info className="size-4" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent
-                    side="bottom"
-                    align="end"
-                    className="bg-card text-card-foreground border-border animate-in fade-in zoom-in z-50 w-[240px] rounded-lg border p-3 shadow-md duration-100"
-                  >
-                    <div className="space-y-2">
-                      <p className="text-foreground border-border border-b pb-1.5 text-xs font-semibold">
-                        Idea Validation Process
-                      </p>
-                      <ol className="text-muted-foreground list-decimal space-y-1.5 pl-4 text-[11px] font-medium">
-                        <li>Create a workspace</li>
-                        <li>Enter your startup idea</li>
-                        <li>Chat with the AI Mentor</li>
-                        <li>Run validation analysis</li>
-                      </ol>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

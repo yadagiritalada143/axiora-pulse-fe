@@ -74,10 +74,22 @@ export function CreateWorkspaceDialog({ open, onOpenChange }: CreateWorkspaceDia
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Workspace Name</FormLabel>
+                  <FormLabel>
+                    Workspace Name{' '}
+                    <span
+                      className="ml-1 inline-block text-sm font-bold text-red-500 select-none"
+                      aria-hidden="true"
+                    >
+                      *
+                    </span>
+                  </FormLabel>
 
                   <FormControl>
-                    <Input placeholder="Enter workspace name" {...field} />
+                    <Input
+                      aria-label="Workspace Name"
+                      placeholder="Enter workspace name"
+                      {...field}
+                    />
                   </FormControl>
 
                   <FormMessage />

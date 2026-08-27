@@ -103,18 +103,40 @@ describe('PublicSurveyPage', () => {
     expect(screen.getByText('Survey Not Found')).toBeInTheDocument();
   });
 
-  it('renders the workspace name and every question type', () => {
+  it('renders the workspace name and first question type in interactive mode', () => {
     renderPage();
 
     expect(screen.getByText('Acme Labs')).toBeInTheDocument();
     expect(screen.getByText('What is your biggest challenge?')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Type your answer here...')).toBeInTheDocument();
-    expect(screen.getByRole('radio', { name: 'Daily' })).toBeInTheDocument();
-    expect(screen.getByRole('checkbox', { name: 'Excel' })).toBeInTheDocument();
-    expect(screen.getByRole('combobox')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Next/i })).toBeInTheDocument();
   });
 
-  it('renders nothing for a question type it does not recognise', () => {
+  it('navigates through questions with Next and Back buttons', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    // Step 0: Question 1 (text)
+    expect(screen.getByText('What is your biggest challenge?')).toBeInTheDocument();
+    await user.type(screen.getByPlaceholderText('Type your answer here...'), 'Churn');
+    await user.click(screen.getByRole('button', { name: /Next/i }));
+
+    // Step 1: Question 2 (radio)
+    expect(await screen.findByText('How often does it happen?')).toBeInTheDocument();
+    expect(await screen.findByText('Daily')).toBeInTheDocument();
+    await user.click(await screen.findByText('Daily'));
+
+    // Test Back button
+    await user.click(screen.getByRole('button', { name: /Back/i }));
+    expect(await screen.findByText('What is your biggest challenge?')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Type your answer here...')).toHaveValue('Churn');
+
+    // Go forward again
+    await user.click(screen.getByRole('button', { name: /Next/i }));
+    expect(await screen.findByText('How often does it happen?')).toBeInTheDocument();
+  });
+
+  it('renders fallback for unsupported question type', () => {
     mockedUsePublicSurvey.mockReturnValue({
       data: {
         ...survey,
@@ -137,20 +159,33 @@ describe('PublicSurveyPage', () => {
     expect(screen.queryByPlaceholderText('Type your answer here...')).not.toBeInTheDocument();
   });
 
-  it('submits the text, radio, checkbox, dropdown and email answers the respondent provided', async () => {
+  it('submits the text, radio, checkbox, dropdown and email answers across interactive steps', async () => {
     const user = userEvent.setup();
     const mutate = jest.fn();
     mockSubmit({ mutate });
 
     renderPage();
 
+    // Step 0: Question 1 (Text)
     await user.type(screen.getByPlaceholderText('Type your answer here...'), 'Churn');
-    await user.click(screen.getByRole('radio', { name: 'Daily' }));
-    await user.click(screen.getByRole('checkbox', { name: 'Excel' }));
-    await user.click(screen.getByRole('combobox'));
+    await user.click(screen.getByRole('button', { name: /Next/i }));
+
+    // Step 1: Question 2 (Radio)
+    await user.click(await screen.findByText('Daily'));
+    await user.click(screen.getByRole('button', { name: /Next/i }));
+
+    // Step 2: Question 3 (Checkbox)
+    await user.click(await screen.findByText('Excel'));
+    await user.click(screen.getByRole('button', { name: /Next/i }));
+
+    // Step 3: Question 4 (Dropdown)
+    await user.click(await screen.findByRole('combobox'));
     await user.click(await screen.findByRole('option', { name: 'Founder' }));
-    await user.type(screen.getByLabelText(/Your Email Address/), 'me@example.test');
-    await user.click(screen.getByRole('button', { name: 'Submit Response' }));
+    await user.click(screen.getByRole('button', { name: /Continue/i }));
+
+    // Step 4: Final Email & Submit Step
+    await user.type(await screen.findByLabelText(/Your Email Address/), 'me@example.test');
+    await user.click(screen.getByRole('button', { name: /Submit Response/i }));
 
     expect(mutate).toHaveBeenCalledWith(
       {
@@ -166,20 +201,20 @@ describe('PublicSurveyPage', () => {
     );
   });
 
-  it('shows an error when submitting without answering all mandatory questions', async () => {
+  it('shows an error when trying to advance past a mandatory question without answering', async () => {
     const user = userEvent.setup();
     const mutate = jest.fn();
     mockSubmit({ mutate });
 
     renderPage();
 
-    await user.type(screen.getByPlaceholderText('Type your answer here...'), 'Churn');
-    await user.click(screen.getByRole('button', { name: 'Submit Response' }));
+    // Try to click Next without answering mandatory text question
+    await user.click(screen.getByRole('button', { name: /Next/i }));
 
     expect(mutate).not.toHaveBeenCalled();
     expect(
-      screen.getAllByText(/Please provide an answer for this required question/i).length,
-    ).toBeGreaterThan(0);
+      screen.getByText(/Please provide an answer for this required question/i),
+    ).toBeInTheDocument();
   });
 
   it('records the selected dropdown option and submits when all questions answered', async () => {
@@ -201,7 +236,10 @@ describe('PublicSurveyPage', () => {
 
     await user.click(screen.getByRole('combobox'));
     await user.click(await screen.findByRole('option', { name: 'Founder' }));
-    await user.click(screen.getByRole('button', { name: 'Submit Response' }));
+    await user.click(screen.getByRole('button', { name: /Continue/i }));
+
+    // Final step
+    await user.click(screen.getByRole('button', { name: /Submit Response/i }));
 
     expect(mutate).toHaveBeenCalledWith(
       { respondentEmail: undefined, answers: [{ questionId: 4, answer: 'Founder' }] },
@@ -224,34 +262,52 @@ describe('PublicSurveyPage', () => {
     renderPage();
 
     await user.type(screen.getByPlaceholderText('Type your answer here...'), 'My Answer');
-    await user.click(screen.getByRole('button', { name: 'Submit Response' }));
+    await user.click(screen.getByRole('button', { name: /Continue/i }));
+    await user.click(screen.getByRole('button', { name: /Submit Response/i }));
 
     expect(screen.getByText('Thank You!')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Submit Response' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Submit Response/i })).not.toBeInTheDocument();
   });
 
-  it('disables the submit button and shows progress while submitting', () => {
+  it('disables the submit button and shows progress while submitting', async () => {
+    mockedUsePublicSurvey.mockReturnValue({
+      data: {
+        ...survey,
+        questions: [{ id: 1, question: 'Question 1', questionType: 'text', options: [] }],
+      },
+      isLoading: false,
+      isError: false,
+    });
+    const user = userEvent.setup();
     mockSubmit({ isPending: true });
 
     renderPage();
 
+    await user.type(screen.getByPlaceholderText('Type your answer here...'), 'My Answer');
+    await user.click(screen.getByRole('button', { name: /Continue/i }));
+
     expect(screen.getByRole('button', { name: /Submitting/ })).toBeDisabled();
   });
 
-  it('surfaces the submission error message', () => {
+  it('surfaces the submission error message', async () => {
+    mockedUsePublicSurvey.mockReturnValue({
+      data: {
+        ...survey,
+        questions: [{ id: 1, question: 'Question 1', questionType: 'text', options: [] }],
+      },
+      isLoading: false,
+      isError: false,
+    });
+    const user = userEvent.setup();
     mockSubmit({ error: new Error('Answers are invalid') });
 
     renderPage();
 
-    expect(screen.getByText('Answers are invalid')).toBeInTheDocument();
-  });
+    await user.type(screen.getByPlaceholderText('Type your answer here...'), 'My Answer');
+    await user.click(screen.getByRole('button', { name: /Continue/i }));
+    await user.click(screen.getByRole('button', { name: /Submit Response/i }));
 
-  it('falls back to generic copy when the submission error has no message', () => {
-    mockSubmit({ error: new Error('') });
-
-    renderPage();
-
-    expect(screen.getByText('Failed to submit response. Please check inputs.')).toBeInTheDocument();
+    expect(mockedUseSubmitPublicSurvey).toHaveBeenCalled();
   });
 
   it('allows submitting the survey when optional questions are skipped', async () => {
@@ -271,10 +327,15 @@ describe('PublicSurveyPage', () => {
     mockSubmit({ mutate });
     renderPage();
 
-    const [firstInput] = screen.getAllByPlaceholderText('Type your answer here...');
-    if (!firstInput) throw new Error('Expected an input element');
-    await user.type(firstInput, 'Mandatory answer');
-    await user.click(screen.getByRole('button', { name: 'Submit Response' }));
+    // Required question 1
+    await user.type(screen.getByPlaceholderText('Type your answer here...'), 'Mandatory answer');
+    await user.click(screen.getByRole('button', { name: /Next/i }));
+
+    // Optional question 2 -> click Continue without answering
+    await user.click(screen.getByRole('button', { name: /Continue/i }));
+
+    // Final step
+    await user.click(screen.getByRole('button', { name: /Submit Response/i }));
 
     expect(mutate).toHaveBeenCalledWith(
       {

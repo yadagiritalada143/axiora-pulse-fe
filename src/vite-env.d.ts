@@ -5,6 +5,7 @@ interface ImportMetaEnv {
   readonly VITE_APP_NAME: string;
   readonly VITE_ENABLE_LOGGER: string;
   readonly VITE_AI_STREAMING: string;
+  readonly VITE_GOOGLE_CLIENT_ID: string;
 }
 
 interface ImportMeta {

@@ -17,6 +17,8 @@ import { ROUTES } from '@constants/routes';
 import { useLogin } from '@features/auth/hooks';
 import { loginSchema, type LoginFormValues } from '@schemas/auth.schema';
 
+import { GoogleLoginButton } from './GoogleLoginButton';
+
 export function LoginForm() {
   const login = useLogin();
   const form = useForm<LoginFormValues>({
@@ -108,6 +110,8 @@ export function LoginForm() {
           {login.isPending ? <ButtonLoader className="mr-2" /> : null}
           Get started
         </Button>
+
+        <GoogleLoginButton text="signin_with" />
 
         <p className="text-center text-sm">
           <span className="text-muted-foreground">Don&apos;t have a account? </span>

@@ -122,6 +122,7 @@ describe('router', () => {
       ROUTES.ADMIN_DASHBOARD,
       ROUTES.ADMIN_INTERACTIVE_QUESTIONS,
       ROUTES.ADMIN_USERS,
+      ROUTES.ADMIN_USER_DETAIL,
     ]);
   });
 

@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 
 import { VerifyLoginForm } from '@features/auth/components/VerifyLoginForm';
 import { useResendOtp } from '@features/auth/hooks/useResendOtp';
-import { useVerifyLogin } from '@features/auth/hooks/useVerifyLogin';
+import { useVerifyOtp } from '@features/auth/hooks/useVerifyOtp';
 import type { MFAData } from '@store/auth.store';
 import { useAuthStore } from '@store/auth.store';
 
@@ -23,8 +23,8 @@ jest.mock('sonner', () => ({
   toast: { success: jest.fn(), error: jest.fn() },
 }));
 
-jest.mock('@features/auth/hooks/useVerifyLogin', () => ({
-  useVerifyLogin: jest.fn(),
+jest.mock('@features/auth/hooks/useVerifyOtp', () => ({
+  useVerifyOtp: jest.fn(),
 }));
 
 jest.mock('@features/auth/hooks/useResendOtp', () => ({
@@ -33,9 +33,6 @@ jest.mock('@features/auth/hooks/useResendOtp', () => ({
 
 jest.mock('@store/auth.store');
 
-// The OTP input renders input-otp's <OTPInput>, which observes its container size via
-// ResizeObserver and probes password-manager badges via document.elementFromPoint —
-// neither of which jsdom implements.
 class MockResizeObserver {
   observe(): void {}
   unobserve(): void {}
@@ -46,23 +43,23 @@ if (!document.elementFromPoint) {
   document.elementFromPoint = () => null;
 }
 
-const mockedUseVerifyLogin = jest.mocked(useVerifyLogin);
+const mockedUseVerifyOtp = jest.mocked(useVerifyOtp);
 const mockedUseResendOtp = jest.mocked(useResendOtp);
 const mockedUseAuthStore = jest.mocked(useAuthStore);
 const mockedToastError = jest.mocked(toast.error);
 
-type UseVerifyLoginReturn = ReturnType<typeof useVerifyLogin>;
+type UseVerifyOtpReturn = ReturnType<typeof useVerifyOtp>;
 type UseResendOtpReturn = ReturnType<typeof useResendOtp>;
 
-const verifyLoginMutate = jest.fn();
+const verifyOtpMutate = jest.fn();
 const resendOtpMutate = jest.fn();
 
-function mockUseVerifyLoginReturn(overrides: Partial<UseVerifyLoginReturn> = {}) {
-  mockedUseVerifyLogin.mockReturnValue({
-    mutate: verifyLoginMutate,
+function mockUseVerifyOtpReturn(overrides: Partial<UseVerifyOtpReturn> = {}) {
+  mockedUseVerifyOtp.mockReturnValue({
+    mutate: verifyOtpMutate,
     isPending: false,
     ...overrides,
-  } as UseVerifyLoginReturn);
+  } as unknown as UseVerifyOtpReturn);
 }
 
 function mockUseResendOtpReturn(overrides: Partial<UseResendOtpReturn> = {}) {
@@ -70,7 +67,7 @@ function mockUseResendOtpReturn(overrides: Partial<UseResendOtpReturn> = {}) {
     mutate: resendOtpMutate,
     isPending: false,
     ...overrides,
-  } as UseResendOtpReturn);
+  } as unknown as UseResendOtpReturn);
 }
 
 function mockMfaData(mfaData: MFAData | null) {
@@ -102,7 +99,6 @@ function mockMfaData(mfaData: MFAData | null) {
       setHasActivePlan: jest.fn(),
       setRole: jest.fn(),
 
-      // New actions (if present in your store)
       setHasCompletedQuestionnaire: jest.fn(),
       setShowQuestionnaireIntro: jest.fn(),
     }),
@@ -120,28 +116,8 @@ function getOtpInput(container: HTMLElement): HTMLInputElement {
 describe('VerifyLoginForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseVerifyLoginReturn();
+    mockUseVerifyOtpReturn();
     mockUseResendOtpReturn();
-    mockMfaData({
-      userid: 0,
-      username: 'jane@example.com',
-      identifier: 'jane@example.com',
-      mfaVerified: false,
-      flow: 'login',
-    });
-  });
-
-  it('redirects to login with an error toast when there is no active login MFA session', () => {
-    mockMfaData(null);
-
-    const { container } = render(<VerifyLoginForm />);
-
-    expect(mockedToastError).toHaveBeenCalledWith('Login verification session expired.');
-    expect(mockNavigate).toHaveBeenCalledWith('/login');
-    expect(container).toBeEmptyDOMElement();
-  });
-
-  it('redirects to login when the MFA session belongs to the register flow, not login', () => {
     mockMfaData({
       userid: 42,
       username: 'jane@example.com',
@@ -149,17 +125,22 @@ describe('VerifyLoginForm', () => {
       mfaVerified: false,
       flow: 'register',
     });
-
-    render(<VerifyLoginForm />);
-
-    expect(mockedToastError).toHaveBeenCalledWith('Login verification session expired.');
-    expect(mockNavigate).toHaveBeenCalledWith('/login');
   });
 
-  it('renders the identifier the OTP was sent to', () => {
+  it('redirects to login with an error toast when there is no active MFA session', () => {
+    mockMfaData(null);
+
+    const { container } = render(<VerifyLoginForm />);
+
+    expect(mockedToastError).toHaveBeenCalledWith('Verification session expired.');
+    expect(mockNavigate).toHaveBeenCalledWith('/login');
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('renders the registration heading and identifier when registering', () => {
     render(<VerifyLoginForm />);
 
-    expect(screen.getByText('Verify Login OTP')).toBeInTheDocument();
+    expect(screen.getByText('Verify Your Account')).toBeInTheDocument();
     expect(screen.getByText('jane@example.com')).toBeInTheDocument();
   });
 
@@ -167,47 +148,49 @@ describe('VerifyLoginForm', () => {
     const user = userEvent.setup();
     const { container } = render(<VerifyLoginForm />);
 
-    const button = screen.getByRole('button', { name: /verify login/i });
+    const button = screen.getByRole('button', { name: /verify & continue/i });
     expect(button).toBeDisabled();
 
     await user.type(getOtpInput(container), '999');
     expect(button).toBeDisabled();
-    expect(verifyLoginMutate).not.toHaveBeenCalled();
+    expect(verifyOtpMutate).not.toHaveBeenCalled();
   });
 
-  it('enables the Verify Login button without automatically submitting when 6 digits are entered', async () => {
+  it('enables the Verify button without automatically submitting when 6 digits are entered', async () => {
     const user = userEvent.setup();
     const { container } = render(<VerifyLoginForm />);
 
-    const button = screen.getByRole('button', { name: /verify login/i });
+    const button = screen.getByRole('button', { name: /verify & continue/i });
     expect(button).toBeDisabled();
 
     await user.type(getOtpInput(container), '111222');
 
     expect(button).toBeEnabled();
-    expect(verifyLoginMutate).not.toHaveBeenCalled();
+    expect(verifyOtpMutate).not.toHaveBeenCalled();
   });
 
-  it('submits via the Verify Login button when clicked after entering 6 digits', async () => {
+  it('submits via the Verify button when clicked after entering 6 digits', async () => {
     const user = userEvent.setup();
     const { container } = render(<VerifyLoginForm />);
 
     await user.type(getOtpInput(container), '111222');
-    expect(verifyLoginMutate).not.toHaveBeenCalled();
+    expect(verifyOtpMutate).not.toHaveBeenCalled();
 
-    await user.click(screen.getByRole('button', { name: /verify login/i }));
+    await user.click(screen.getByRole('button', { name: /verify & continue/i }));
 
-    expect(verifyLoginMutate).toHaveBeenCalledWith({
+    expect(verifyOtpMutate).toHaveBeenCalledWith({
+      id: 42,
       emailOrMobile: 'jane@example.com',
       otp: 111222,
+      flow: 'register',
     });
   });
 
   it('disables the verify button and shows a loader while pending', () => {
-    mockUseVerifyLoginReturn({ isPending: true });
+    mockUseVerifyOtpReturn({ isPending: true });
     render(<VerifyLoginForm />);
 
-    expect(screen.getByRole('button', { name: /verify login/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /verify & continue/i })).toBeDisabled();
   });
 
   it('shows a resend button once the countdown elapses and resends the OTP on click', async () => {

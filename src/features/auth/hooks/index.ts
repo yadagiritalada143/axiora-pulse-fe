@@ -1,4 +1,5 @@
 export { useLogin } from './useLogin';
+export { useGoogleLogin } from './useGoogleLogin';
 export { useAdminLogin } from './useAdminLogin';
 export { useRegister } from './useRegister';
 export { useForgotPassword } from './useForgotPassword';

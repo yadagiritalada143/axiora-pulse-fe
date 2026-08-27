@@ -156,8 +156,8 @@ export function AgentStepProgress({
         </Card>
       </div>
 
-      <div className="hidden h-full lg:block">
-        <Card className="border-border bg-card/60 flex h-full flex-col overflow-hidden rounded-2xl shadow-xs backdrop-blur-xs">
+      <div className="hidden lg:block">
+        <Card className="border-border bg-card/60 flex h-[570px] max-h-[570px] flex-col overflow-hidden rounded-2xl shadow-xs backdrop-blur-xs">
           <CardHeader className="border-border bg-muted/20 shrink-0 border-b p-4 pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -165,7 +165,7 @@ export function AgentStepProgress({
                   <TrendingUp className="size-4 text-green-500" />
                 </div>
                 <CardTitle className="text-sm font-bold tracking-tight">
-                  Business Lifecycle
+                  Entrepreneur Journey
                 </CardTitle>
               </div>
               <Badge
@@ -177,8 +177,8 @@ export function AgentStepProgress({
             </div>
           </CardHeader>
 
-          <CardContent className="min-h-0 flex-1 overflow-y-auto p-4 pr-3">
-            <div className="relative space-y-3.5">
+          <CardContent className="min-h-0 flex-1 scrollbar-thin overflow-y-auto p-3 pr-2">
+            <div className="relative space-y-2.5">
               {AGENT_STEPS.map((step, index) => {
                 const isCompleted = step.id < currentStep;
                 const isActive = step.id === currentStep;

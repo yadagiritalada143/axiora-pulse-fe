@@ -65,4 +65,86 @@ describe('adminService', () => {
     });
     expect(result).toEqual(mockResponse);
   });
+
+  it('getUserSurveySummary calls GET API_ENDPOINTS.ADMIN.USER_SURVEY_SUMMARY and returns data', async () => {
+    const mockSummary = {
+      user_id: 1,
+      name: 'John Doe',
+      email: 'john@example.com',
+      status: 'Active',
+      joined_on: '2026-07-30T09:39:44.020Z',
+      surveys_created: 4,
+      total_responses: 120,
+    };
+
+    mockedApiClient.get.mockResolvedValue({ data: mockSummary });
+
+    const result = await adminService.getUserSurveySummary(1);
+
+    expect(mockedApiClient.get).toHaveBeenCalledWith(API_ENDPOINTS.ADMIN.USER_SURVEY_SUMMARY(1));
+    expect(result).toEqual(mockSummary);
+  });
+
+  it('listSurveys calls GET API_ENDPOINTS.ADMIN.USER_SURVEYS and returns data', async () => {
+    const mockSurveys = {
+      surveys: [],
+      pagination: { total: 0, limit: 25, offset: 0 },
+    };
+
+    mockedApiClient.get.mockResolvedValue({ data: mockSurveys });
+
+    const params = { user_id: 1, limit: 10, offset: 0 };
+    const result = await adminService.listSurveys(params);
+
+    expect(mockedApiClient.get).toHaveBeenCalledWith(API_ENDPOINTS.ADMIN.USER_SURVEYS, {
+      params,
+    });
+    expect(result).toEqual(mockSurveys);
+  });
+
+  it('listSurveyResponses calls GET API_ENDPOINTS.ADMIN.SURVEY_RESPONSES and returns data', async () => {
+    const mockResponses = {
+      survey_id: 12,
+      total_responses: 0,
+      responses: [],
+      pagination: { total: 0, limit: 25, offset: 0 },
+    };
+
+    mockedApiClient.get.mockResolvedValue({ data: mockResponses });
+
+    const result = await adminService.listSurveyResponses(12);
+
+    expect(mockedApiClient.get).toHaveBeenCalledWith(API_ENDPOINTS.ADMIN.SURVEY_RESPONSES(12), {
+      params: undefined,
+    });
+    expect(result).toEqual(mockResponses);
+  });
+
+  it('getSurveyResponseDetail calls GET API_ENDPOINTS.ADMIN.SURVEY_RESPONSE_DETAIL and returns data', async () => {
+    const mockDetail = {
+      id: 5,
+      response_code: 'RESP-001',
+      survey_id: 12,
+      respondent_email: 'respondent@test.com',
+      answers: [],
+      answers_preview: [],
+      submitted_at: '2026-08-01T00:00:00Z',
+      status: 'Completed',
+      source: 'Web',
+      user_id: 1,
+      owner_username: 'john',
+      workspace_id: 2,
+      workspace_name: 'Product Idea',
+      workspace_description: 'Test workspace',
+    };
+
+    mockedApiClient.get.mockResolvedValue({ data: mockDetail });
+
+    const result = await adminService.getSurveyResponseDetail(12, 5);
+
+    expect(mockedApiClient.get).toHaveBeenCalledWith(
+      API_ENDPOINTS.ADMIN.SURVEY_RESPONSE_DETAIL(12, 5),
+    );
+    expect(result).toEqual(mockDetail);
+  });
 });

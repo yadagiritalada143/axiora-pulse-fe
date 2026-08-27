@@ -31,6 +31,7 @@ export const ROUTES = {
   ADMIN_DASHBOARD: '/admin/dashboard',
   ADMIN_INTERACTIVE_QUESTIONS: '/admin/interactive-questions',
   ADMIN_USERS: '/admin/users',
+  ADMIN_USER_DETAIL: '/admin/users/:userId',
 
   NOT_FOUND: '/404',
 } as const;
@@ -65,6 +66,7 @@ export const PROTECTED_ROUTES: AppRoute[] = [
   ROUTES.ADMIN_DASHBOARD,
   ROUTES.ADMIN_INTERACTIVE_QUESTIONS,
   ROUTES.ADMIN_USERS,
+  ROUTES.ADMIN_USER_DETAIL,
 ];
 
 export function buildConversationRoute(conversationId: string): string {
@@ -81,4 +83,8 @@ export function buildWorkspaceSurveyRoute(workspaceId: number | string): string 
 
 export function buildWorkspaceAttachmentsRoute(workspaceId: number | string): string {
   return ROUTES.WORKSPACE_ATTACHMENTS.replace(':workspaceId', String(workspaceId));
+}
+
+export function buildAdminUserDetailRoute(userId: number | string): string {
+  return ROUTES.ADMIN_USER_DETAIL.replace(':userId', String(userId));
 }

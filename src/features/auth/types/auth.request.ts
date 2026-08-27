@@ -14,7 +14,8 @@ export interface RegisterRequest {
 }
 
 export interface VerifyOtpRequest {
-  id: number;
+  id?: number;
+  emailOrMobile?: string;
   otp: number;
   flow: 'register' | 'login';
 }
@@ -28,6 +29,11 @@ export interface ResendOtpRequest {
 export interface VerifyLoginRequest {
   emailOrMobile: string;
   otp: number;
+}
+
+export interface GoogleLoginRequest {
+  /** The ID token (JWT) returned by Google Identity Services on the client. */
+  credential: string;
 }
 
 export interface ForgotPasswordRequest {

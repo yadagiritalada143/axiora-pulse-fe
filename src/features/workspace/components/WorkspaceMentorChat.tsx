@@ -228,13 +228,15 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
 
   if (!hasStarted) {
     return (
-      <div className="mx-auto flex h-full min-h-[70vh] w-full max-w-6xl items-start gap-6">
-        <div className="min-w-0 flex-1">
-          <AgentStepProgress currentStep={1} className="mb-4 block lg:hidden" />
-          <WorkspaceMentorIntake onSubmit={send} isPending={chat.isPending} error={chat.error} />
-        </div>
-        <div className="hidden w-72 shrink-0 lg:block">
-          <AgentStepProgress currentStep={1} />
+      <div className="min-h-0 w-full flex-1 overflow-y-auto pr-1">
+        <div className="mx-auto flex w-full max-w-6xl items-start gap-6 px-1 py-2">
+          <div className="min-w-0 flex-1">
+            <AgentStepProgress currentStep={1} className="mb-4 block lg:hidden" />
+            <WorkspaceMentorIntake onSubmit={send} isPending={chat.isPending} error={chat.error} />
+          </div>
+          <div className="sticky top-2 hidden w-72 shrink-0 lg:block">
+            <AgentStepProgress currentStep={1} />
+          </div>
         </div>
       </div>
     );
@@ -380,7 +382,7 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
         </div>
 
         {showQuickActions ? (
-          <div className="flex shrink-0 flex-wrap gap-2 pb-3">
+          <div className="text-foreground flex shrink-0 flex-wrap gap-2 pb-3">
             <Button
               type="button"
               variant="outline"

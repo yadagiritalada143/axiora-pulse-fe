@@ -19,6 +19,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import { Badge } from '@components/ui/badge';
 import { Button } from '@components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@components/ui/card';
 import {
@@ -438,7 +439,7 @@ export default function WorkspaceSurveyPage() {
 
     if (isWorkspaceError || !workspace) {
       return (
-        <div className="mx-auto flex max-w-md flex-col items-center gap-3 py-16 text-center">
+        <div className="border-border/60 bg-card/60 mx-auto flex max-w-md flex-col items-center gap-3 rounded-2xl border p-8 text-center shadow-xs">
           <h1 className="text-foreground text-lg font-semibold">Workspace not found</h1>
           <p className="text-muted-foreground text-sm">
             This workspace doesn&apos;t exist or you don&apos;t have access to it.
@@ -452,15 +453,17 @@ export default function WorkspaceSurveyPage() {
 
     if (isSurveyError && isSurvey404) {
       return (
-        <div className="mx-auto flex max-w-lg flex-col items-center gap-4 py-16 text-center">
-          <div className="flex size-14 items-center justify-center rounded-full bg-[#FF4500]/10 text-[#FF4500]">
+        <div className="border-border/60 bg-card/60 mx-auto flex max-w-lg flex-col items-center gap-4 rounded-2xl border p-8 text-center shadow-xs">
+          <div className="flex size-14 items-center justify-center rounded-2xl bg-[#FF4500]/10 text-[#FF4500]">
             <ClipboardList className="size-7" />
           </div>
           <h1 className="text-foreground text-lg font-semibold">No survey generated yet</h1>
           <p className="text-muted-foreground text-sm leading-relaxed">
             The Survey Intelligence Agent generates market validation questions after you initiate
-            the full validation run. Go to the **AI Mentor** chat and click **Run the Validations**
-            to run the agent pipeline.
+            the full validation run. Go to the{' '}
+            <strong className="text-foreground">AI Mentor</strong> chat and click{' '}
+            <strong className="text-foreground">Run the Validations</strong> to run the agent
+            pipeline.
           </p>
           <Link to={buildWorkspaceRoute(workspace.id)}>
             <Button className="bg-[#FF4500] font-semibold text-white shadow-xs transition-all duration-150 hover:bg-[#FF4500]/90">
@@ -473,7 +476,7 @@ export default function WorkspaceSurveyPage() {
 
     if (isSurveyError || !survey) {
       return (
-        <div className="mx-auto flex max-w-md flex-col items-center gap-3 py-16 text-center">
+        <div className="border-border/60 bg-card/60 mx-auto flex max-w-md flex-col items-center gap-3 rounded-2xl border p-8 text-center shadow-xs">
           <h1 className="text-foreground text-lg font-semibold">Failed to load survey</h1>
           <p className="text-muted-foreground text-sm">
             An error occurred while loading this survey. Please refresh or try again.
@@ -483,12 +486,15 @@ export default function WorkspaceSurveyPage() {
     }
 
     return (
-      <div className="mx-auto flex max-w-5xl flex-col gap-6">
+      <div className="mx-auto flex max-w-5xl flex-col gap-6 pb-12">
+        {/* Live Survey Banner */}
         {survey.public_token ? (
           <Card className="border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-950/10">
             <CardContent className="flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between">
               <div className="space-y-1">
-                <h3 className="text-foreground text-sm font-semibold">Your survey is live!</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-foreground text-sm font-semibold">Your survey is live!</h3>
+                </div>
                 <p className="text-muted-foreground text-xs leading-normal">
                   Share this public URL with target customers, ICP audiences, or respondents to
                   gather feedback.
@@ -512,32 +518,52 @@ export default function WorkspaceSurveyPage() {
           </Card>
         ) : null}
 
+        {/* Navigation Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full max-w-[540px] grid-cols-3">
-            <TabsTrigger value="editor">Questions Editor</TabsTrigger>
-            <TabsTrigger value="responses">
+          <TabsList className="grid w-full grid-cols-1 gap-1.5 p-1.5 group-data-[orientation=horizontal]/tabs:h-auto sm:max-w-[540px] sm:grid-cols-3 sm:gap-0 sm:p-[3px] sm:group-data-[orientation=horizontal]/tabs:h-9">
+            <TabsTrigger
+              value="editor"
+              className="h-9 w-full justify-center text-xs font-semibold sm:h-[calc(100%-1px)] sm:text-sm"
+            >
+              Questions Editor
+            </TabsTrigger>
+            <TabsTrigger
+              value="responses"
+              className="h-9 w-full justify-center text-xs font-semibold sm:h-[calc(100%-1px)] sm:text-sm"
+            >
               Responses ({responsesData?.total_responses ?? 0})
             </TabsTrigger>
-            <TabsTrigger value="analysis" className="gap-1.5">
+            <TabsTrigger
+              value="analysis"
+              className="h-9 w-full justify-center gap-1.5 text-xs font-semibold sm:h-[calc(100%-1px)] sm:text-sm"
+            >
               <Sparkles className="size-3.5 text-[#FF4500]" /> Arya Analysis
             </TabsTrigger>
           </TabsList>
 
-          {/* EDITOR TAB */}
+          {/* QUESTIONS EDITOR TAB */}
           <TabsContent value="editor" className="mt-4 space-y-6">
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
+              {/* Questions Section Toolbar */}
+              <div className="flex flex-col gap-3 px-0.5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-wrap items-center gap-2">
                   <h3 className="text-foreground text-base font-semibold">
                     Questions ({questions.length})
                   </h3>
+                  <span className="text-muted-foreground/50 text-xs">•</span>
+                  <span className="text-muted-foreground text-xs">
+                    {questions.filter((q) => !q.optional).length} mandatory,{' '}
+                    {questions.filter((q) => q.optional).length} optional
+                  </span>
+
                   {totalErrorsCount > 0 && hasAttemptedSave && (
-                    <span className="bg-destructive/10 text-destructive flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium">
+                    <span className="bg-destructive/10 text-destructive flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium">
                       <AlertCircle className="size-3.5" />
                       {totalErrorsCount} {totalErrorsCount === 1 ? 'error' : 'errors'} to fix
                     </span>
                   )}
                 </div>
+
                 <div className="flex items-center gap-2">
                   {survey.public_token ? (
                     <Button
@@ -559,6 +585,7 @@ export default function WorkspaceSurveyPage() {
                 </div>
               </div>
 
+              {/* Validation Warning Alert */}
               {hasAttemptedSave && totalErrorsCount > 0 && (
                 <div className="border-destructive/30 bg-destructive/5 text-destructive flex items-start gap-3 rounded-xl border p-4">
                   <AlertCircle className="mt-0.5 size-5 shrink-0" />
@@ -584,8 +611,9 @@ export default function WorkspaceSurveyPage() {
                 </div>
               )}
 
+              {/* Empty Questions State */}
               {questions.length === 0 ? (
-                <Card className="border-dashed p-8 text-center">
+                <Card className="border-border/70 bg-card/40 border-dashed p-8 text-center">
                   <p className="text-muted-foreground text-sm">No questions in this survey yet.</p>
                   <Button
                     onClick={handleAddQuestion}
@@ -606,17 +634,32 @@ export default function WorkspaceSurveyPage() {
                         key={qIdx}
                         data-question-card
                         className={cn(
-                          'relative overflow-visible transition-all',
-                          hasCardError && 'border-destructive/60 bg-destructive/[0.01] shadow-2xs',
+                          'border-border/70 bg-card hover:border-border relative overflow-visible rounded-xl shadow-xs transition-all duration-150',
+                          hasCardError && 'border-destructive/60 bg-destructive/[0.015] shadow-2xs',
                         )}
                       >
-                        <CardContent className="space-y-4 pt-6">
+                        <CardContent className="space-y-4.5 p-5 sm:p-6">
                           {/* Question Action Row */}
-                          <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-3">
-                            <div className="flex items-center gap-2">
-                              <span className="text-muted-foreground text-xs font-semibold uppercase">
+                          <div className="border-border/60 flex flex-wrap items-center justify-between gap-3 border-b pb-3">
+                            <div className="flex items-center gap-2.5">
+                              <span className="bg-primary/10 text-primary flex size-6 items-center justify-center rounded-md text-xs font-bold">
+                                Q{qIdx + 1}
+                              </span>
+                              <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                                 Question {qIdx + 1}
                               </span>
+                              {q.optional ? (
+                                <Badge variant="secondary" className="text-[10px] font-medium">
+                                  Optional
+                                </Badge>
+                              ) : (
+                                <Badge
+                                  variant="outline"
+                                  className="border-[#FF4500]/30 bg-[#FF4500]/10 text-[10px] font-semibold text-[#FF4500]"
+                                >
+                                  Mandatory
+                                </Badge>
+                              )}
                               {hasCardError && (
                                 <span className="text-destructive bg-destructive/10 flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium">
                                   <AlertCircle className="size-3" />
@@ -624,7 +667,8 @@ export default function WorkspaceSurveyPage() {
                                 </span>
                               )}
                             </div>
-                            <div className="flex items-center gap-1.5">
+
+                            <div className="flex items-center gap-1">
                               <Button
                                 type="button"
                                 variant="ghost"
@@ -632,7 +676,7 @@ export default function WorkspaceSurveyPage() {
                                 disabled={qIdx === 0}
                                 onClick={() => moveQuestion(qIdx, 'up')}
                                 title="Move up"
-                                className="text-muted-foreground transition-all duration-150 hover:bg-[#FF4500]/5 hover:text-[#FF4500] disabled:opacity-50"
+                                className="text-muted-foreground size-8 transition-all duration-150 hover:bg-[#FF4500]/10 hover:text-[#FF4500] disabled:opacity-30"
                               >
                                 <ArrowUp className="size-4" />
                               </Button>
@@ -643,7 +687,7 @@ export default function WorkspaceSurveyPage() {
                                 disabled={qIdx === questions.length - 1}
                                 onClick={() => moveQuestion(qIdx, 'down')}
                                 title="Move down"
-                                className="text-muted-foreground transition-all duration-150 hover:bg-[#FF4500]/5 hover:text-[#FF4500] disabled:opacity-50"
+                                className="text-muted-foreground size-8 transition-all duration-150 hover:bg-[#FF4500]/10 hover:text-[#FF4500] disabled:opacity-30"
                               >
                                 <ArrowDown className="size-4" />
                               </Button>
@@ -652,7 +696,7 @@ export default function WorkspaceSurveyPage() {
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => setDeleteIndex(qIdx)}
-                                className="text-destructive hover:bg-destructive/10"
+                                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive size-8"
                                 title="Delete question"
                               >
                                 <Trash2 className="size-4" />
@@ -661,10 +705,13 @@ export default function WorkspaceSurveyPage() {
                           </div>
 
                           {/* Question Text, Type & Optional/Mandatory Dropdown */}
-                          <div className="grid gap-4 md:grid-cols-12">
+                          <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
                             {/* Question Text */}
                             <div className="space-y-1.5 md:col-span-6">
-                              <Label htmlFor={`q-text-${qIdx}`} className="text-xs font-semibold">
+                              <Label
+                                htmlFor={`q-text-${qIdx}`}
+                                className="text-foreground text-xs font-semibold"
+                              >
                                 Question Text <span className="text-destructive font-bold">*</span>
                               </Label>
                               <Input
@@ -675,6 +722,7 @@ export default function WorkspaceSurveyPage() {
                                 }
                                 placeholder="e.g. How often do you face this challenge?"
                                 className={cn(
+                                  'bg-background h-9 rounded-lg text-xs font-normal focus-visible:ring-1',
                                   (hasAttemptedSave || q.question_text.length > 0) &&
                                     qErr?.questionTextError &&
                                     'border-destructive focus-visible:ring-destructive',
@@ -691,7 +739,7 @@ export default function WorkspaceSurveyPage() {
 
                             {/* Question Type */}
                             <div className="space-y-1.5 md:col-span-3">
-                              <Label className="text-xs font-semibold">
+                              <Label className="text-foreground text-xs font-semibold">
                                 Question Type <span className="text-destructive font-bold">*</span>
                               </Label>
                               <Select
@@ -700,7 +748,10 @@ export default function WorkspaceSurveyPage() {
                                   handleQuestionChange(qIdx, { question_type: val })
                                 }
                               >
-                                <SelectTrigger aria-label="Question Type">
+                                <SelectTrigger
+                                  aria-label="Question Type"
+                                  className="bg-background h-9 w-full rounded-lg text-xs font-normal"
+                                >
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -718,18 +769,23 @@ export default function WorkspaceSurveyPage() {
 
                             {/* Mandatory / Optional Requirement Dropdown */}
                             <div className="space-y-1.5 md:col-span-3">
-                              <Label className="text-xs font-semibold">
+                              <Label className="text-foreground text-xs font-semibold">
                                 Requirement <span className="text-destructive font-bold">*</span>
                               </Label>
+
                               <Select
                                 value={q.optional ? 'optional' : 'mandatory'}
                                 onValueChange={(val) =>
                                   handleQuestionChange(qIdx, { optional: val === 'optional' })
                                 }
                               >
-                                <SelectTrigger aria-label="Requirement">
+                                <SelectTrigger
+                                  aria-label="Requirement"
+                                  className="bg-background h-9 w-full rounded-lg text-xs font-normal"
+                                >
                                   <SelectValue />
                                 </SelectTrigger>
+
                                 <SelectContent>
                                   <SelectItem value="mandatory">Mandatory</SelectItem>
                                   <SelectItem value="optional">Optional</SelectItem>
@@ -740,9 +796,9 @@ export default function WorkspaceSurveyPage() {
 
                           {/* Options Editor (Choice Types Only) */}
                           {['radio', 'checkbox', 'dropdown'].includes(q.question_type) ? (
-                            <div className="space-y-3 border-t pt-4">
+                            <div className="border-border/50 bg-muted/20 space-y-3.5 rounded-xl border p-4">
                               <div className="flex items-center justify-between">
-                                <Label className="text-xs font-semibold">
+                                <Label className="text-foreground text-xs font-semibold">
                                   Answer Options{' '}
                                   <span className="text-destructive font-bold">*</span>
                                 </Label>
@@ -755,15 +811,19 @@ export default function WorkspaceSurveyPage() {
                                 </p>
                               )}
 
-                              <div className="grid gap-3 sm:grid-cols-2">
+                              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                                 {q.options.map((opt, optIdx) => {
                                   const optErr = qErr?.optionsErrors[optIdx];
                                   const hasOptError =
                                     (hasAttemptedSave || opt.length > 0) && Boolean(optErr);
+                                  const letterLabel = String.fromCharCode(65 + (optIdx % 26));
 
                                   return (
                                     <div key={optIdx} className="flex flex-col gap-1">
                                       <div className="flex items-center gap-2">
+                                        <span className="bg-muted border-border/60 text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-lg border text-[11px] font-semibold">
+                                          {letterLabel}
+                                        </span>
                                         <Input
                                           value={opt}
                                           onChange={(e) =>
@@ -771,7 +831,7 @@ export default function WorkspaceSurveyPage() {
                                           }
                                           placeholder={`Option ${optIdx + 1}`}
                                           className={cn(
-                                            'h-8 text-xs',
+                                            'bg-background h-8.5 rounded-lg text-xs font-normal focus-visible:ring-1',
                                             hasOptError &&
                                               'border-destructive focus-visible:ring-destructive',
                                           )}
@@ -782,14 +842,14 @@ export default function WorkspaceSurveyPage() {
                                           size="icon"
                                           onClick={() => handleRemoveOption(qIdx, optIdx)}
                                           disabled={q.options.length <= 2}
-                                          className="text-muted-foreground hover:text-destructive size-8 shrink-0"
+                                          className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive size-8 shrink-0 rounded-lg"
                                           title="Remove option"
                                         >
                                           <Trash2 className="size-3.5" />
                                         </Button>
                                       </div>
                                       {hasOptError && (
-                                        <span className="text-destructive flex items-center gap-1 text-[10px] font-medium">
+                                        <span className="text-destructive ml-9 flex items-center gap-1 text-[10px] font-medium">
                                           <AlertCircle className="size-3 shrink-0" />
                                           {optErr}
                                         </span>
@@ -818,11 +878,12 @@ export default function WorkspaceSurveyPage() {
               )}
             </div>
 
-            <div className="flex items-center justify-between border-t pt-4">
+            {/* Bottom Footer Save Bar */}
+            <div className="border-border/60 bg-card/60 flex flex-col gap-4 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="text-muted-foreground text-xs">
                 {totalErrorsCount > 0 && hasAttemptedSave ? (
-                  <span className="text-destructive flex items-center gap-1 font-medium">
-                    <AlertTriangle className="size-3.5" />
+                  <span className="text-destructive flex items-center gap-1.5 font-medium">
+                    <AlertTriangle className="size-4 shrink-0" />
                     Please fix the {totalErrorsCount} highlighted issue(s) above.
                   </span>
                 ) : (
@@ -835,7 +896,7 @@ export default function WorkspaceSurveyPage() {
               <Button
                 onClick={handleSave}
                 disabled={updateSurveyMutation.isPending}
-                className="bg-[#FF4500] font-semibold text-white hover:bg-[#FF4500]/90"
+                className="bg-[#FF4500] font-semibold text-white shadow-sm hover:bg-[#FF4500]/90"
               >
                 {updateSurveyMutation.isPending ? (
                   <>
@@ -850,7 +911,7 @@ export default function WorkspaceSurveyPage() {
 
           {/* RESPONSES TAB */}
           <TabsContent value="responses" className="mt-4">
-            <Card>
+            <Card className="border-border/70 bg-card shadow-xs">
               <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <CardTitle>Collected Responses</CardTitle>
@@ -922,6 +983,7 @@ export default function WorkspaceSurveyPage() {
             </Card>
           </TabsContent>
 
+          {/* ARYA ANALYSIS TAB */}
           <TabsContent value="analysis" className="mt-4">
             <SurveyAnalysisReport
               survey={survey}
@@ -1037,10 +1099,10 @@ export default function WorkspaceSurveyPage() {
                 <div className="mb-3 flex size-10 items-center justify-center rounded-xl border border-[#FF4500]/20 bg-[#FF4500]/10">
                   <Share2 className="size-[18px] text-[#FF4500]" />
                 </div>
-                <DialogTitle className="text-lg font-semibold tracking-tight">
+                <DialogTitle className="text-foreground text-lg font-semibold tracking-tight">
                   Share Survey
                 </DialogTitle>
-                <DialogDescription className="mt-0.5 text-[13px] leading-relaxed">
+                <DialogDescription className="text-muted-foreground mt-0.5 text-[13px] leading-relaxed">
                   Send this link to respondents to collect real market feedback.
                 </DialogDescription>
               </div>
