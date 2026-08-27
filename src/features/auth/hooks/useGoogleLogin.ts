@@ -45,18 +45,21 @@ export function useGoogleLogin() {
         return;
       }
 
+      const isMember = response.role === 'member';
+
       if (response.auth_actions) {
         const { payment, interactive_questions } = response.auth_actions;
-        setHasActivePlan(payment);
+        const hasPlan = payment || isMember;
+        setHasActivePlan(hasPlan);
         useAuthStore.getState().setHasCompletedQuestionnaire(interactive_questions);
         useAuthStore.getState().setShowQuestionnaireIntro(!interactive_questions);
 
-        void navigate(payment ? ROUTES.DASHBOARD : ROUTES.PRICING);
+        void navigate(hasPlan ? ROUTES.DASHBOARD : ROUTES.PRICING);
         return;
       }
 
-      setHasActivePlan(false);
-      void navigate(ROUTES.PRICING);
+      setHasActivePlan(isMember);
+      void navigate(isMember ? ROUTES.DASHBOARD : ROUTES.PRICING);
     },
     onError: (error) => {
       toast.error(isApiError(error) ? error.message : 'Google sign-in failed. Please try again.');

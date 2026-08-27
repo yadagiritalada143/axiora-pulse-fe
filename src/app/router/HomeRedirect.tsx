@@ -22,5 +22,6 @@ export function HomeRedirect() {
     return <Navigate to={ROUTES.ONBOARDING} replace />;
   }
 
-  return <Navigate to={hasActivePlan ? ROUTES.DASHBOARD : ROUTES.PRICING} replace />;
+  const hasPlan = hasActivePlan || role === 'member';
+  return <Navigate to={hasPlan ? ROUTES.DASHBOARD : ROUTES.PRICING} replace />;
 }

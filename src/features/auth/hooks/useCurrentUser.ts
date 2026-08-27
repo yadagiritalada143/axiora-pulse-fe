@@ -23,14 +23,19 @@ export function useCurrentUser() {
       const user = await authService.getCurrentUser();
       updateUser(user);
 
+      const state = typeof useAuthStore.getState === 'function' ? useAuthStore.getState() : null;
+      if (user.role && state?.setRole) {
+        state.setRole(user.role);
+      }
+
       const rawUser = user as UserWithAuthActions;
       if (rawUser?.auth_actions) {
         const { payment, interactive_questions } = rawUser.auth_actions;
-        useAuthStore.getState().setHasActivePlan(payment);
-        useAuthStore.getState().setHasCompletedQuestionnaire(interactive_questions);
-        useAuthStore.getState().setShowQuestionnaireIntro(!interactive_questions);
+        state?.setHasActivePlan?.(payment);
+        state?.setHasCompletedQuestionnaire?.(interactive_questions);
+        state?.setShowQuestionnaireIntro?.(!interactive_questions);
       } else if (typeof rawUser?.hasActivePlan === 'boolean') {
-        useAuthStore.getState().setHasActivePlan(rawUser.hasActivePlan);
+        state?.setHasActivePlan?.(rawUser.hasActivePlan);
       }
 
       return user;

@@ -32,18 +32,25 @@ export function useVerifyOtp() {
           })
           .catch(() => null);
 
+        if (response.role === 'admin') {
+          void navigate(ROUTES.ADMIN_DASHBOARD);
+          return;
+        }
+
         const isRegisterFlow = variables.flow !== 'login';
+        const isMember = response.role === 'member';
 
         if (response.auth_actions) {
           const { payment, interactive_questions } = response.auth_actions;
-          useAuthStore.getState().setHasActivePlan(payment);
+          const hasPlan = payment || isMember;
+          useAuthStore.getState().setHasActivePlan(hasPlan);
           useAuthStore.getState().setHasCompletedQuestionnaire(interactive_questions);
           useAuthStore.getState().setShowQuestionnaireIntro(!interactive_questions);
 
           if (isRegisterFlow) {
             setOnboardingPending?.(true);
             void navigate(ROUTES.ONBOARDING);
-          } else if (!payment) {
+          } else if (!hasPlan) {
             void navigate(ROUTES.PRICING);
           } else {
             void navigate(ROUTES.DASHBOARD);
@@ -55,7 +62,7 @@ export function useVerifyOtp() {
           setOnboardingPending?.(true);
           void navigate(ROUTES.ONBOARDING);
         } else {
-          const hasActivePlan = response.hasActivePlan ?? false;
+          const hasActivePlan = (response.hasActivePlan ?? false) || isMember;
           useAuthStore.getState().setHasActivePlan(hasActivePlan);
           if (hasActivePlan) {
             void navigate(ROUTES.DASHBOARD);

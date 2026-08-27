@@ -23,10 +23,11 @@ export function ProtectedRoute() {
     return <Outlet />;
   }
 
+  const hasPlan = hasActivePlan || role === 'member';
   const path = location.pathname;
 
   const isPaymentOrOnboardingRoute = path === ROUTES.PRICING || path === ROUTES.ONBOARDING;
-  if (!hasActivePlan && !isPaymentOrOnboardingRoute) {
+  if (!hasPlan && !isPaymentOrOnboardingRoute) {
     return <Navigate to={onboardingPending ? ROUTES.ONBOARDING : ROUTES.PRICING} replace />;
   }
 
