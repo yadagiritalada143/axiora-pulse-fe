@@ -61,7 +61,15 @@ export function Navbar({ onSearch, actions }: NavbarProps) {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="cursor-pointer gap-2 px-2">
               <Avatar className="size-7">
-                <AvatarImage src={user?.avatarUrl ?? undefined} alt="" />
+                <AvatarImage
+                  src={
+                    currentUser?.avatarUrl ??
+                    storeUser?.avatarUrl ??
+                    storeUser?.avatar_url ??
+                    undefined
+                  }
+                  alt=""
+                />
                 <AvatarFallback>
                   {(user?.name?.trim() ?? user?.email?.trim() ?? 'U').charAt(0).toUpperCase()}
                 </AvatarFallback>
@@ -72,9 +80,6 @@ export function Navbar({ onSearch, actions }: NavbarProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link to={ROUTES.PROFILE}>Profile</Link>
-            </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link to={ROUTES.SETTINGS}>Settings</Link>
             </DropdownMenuItem>

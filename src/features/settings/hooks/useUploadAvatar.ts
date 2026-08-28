@@ -14,18 +14,29 @@ export function useUploadAvatar() {
     mutationFn: (file: File) => userService.uploadAvatar(file),
     onSuccess: (updatedUser: User) => {
       if (updatedUser) {
+        const bustCache = (url: string | null | undefined) => {
+          if (!url || typeof url !== 'string' || url.trim() === '') return url;
+          const separator = url.includes('?') ? '&' : '?';
+          return `${url}${separator}t=${Date.now()}`;
+        };
+        const freshAvatarUrl = bustCache(updatedUser.avatarUrl) ?? updatedUser.avatarUrl;
+
         updateUser({
           ...updatedUser,
-          avatarUrl: updatedUser.avatarUrl,
-          avatar_url: updatedUser.avatarUrl,
+          avatarUrl: freshAvatarUrl,
+          avatar_url: freshAvatarUrl,
         });
-        queryClient.setQueryData(queryKeys.user.profile(), updatedUser);
+        queryClient.setQueryData(queryKeys.user.profile(), {
+          ...updatedUser,
+          avatarUrl: freshAvatarUrl,
+          avatar_url: freshAvatarUrl,
+        });
         queryClient.setQueryData(queryKeys.user.details(), (prev: unknown) => {
           if (!prev || typeof prev !== 'object') return prev;
           return {
             ...prev,
-            avatar_url: updatedUser.avatarUrl,
-            avatarUrl: updatedUser.avatarUrl,
+            avatar_url: freshAvatarUrl,
+            avatarUrl: freshAvatarUrl,
           };
         });
       }

@@ -20,6 +20,7 @@ import {
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { AvatarPreviewDialog } from '@components/common/AvatarPreviewDialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@components/ui/avatar';
 import { Badge } from '@components/ui/badge';
 import { Button } from '@components/ui/button';
@@ -35,6 +36,7 @@ import { EditProfileDialog } from './EditProfileDialog';
 
 export function ProfileTab() {
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isAvatarPreviewOpen, setIsAvatarPreviewOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: currentUser } = useCurrentUser();
@@ -186,14 +188,23 @@ export function ProfileTab() {
 
               <div className="mt-5 flex items-center gap-4">
                 <div className="group relative">
-                  <Avatar className="border-border/80 size-16 border-2 shadow-sm ring-2 ring-[#FF4500]/20 transition-transform group-hover:scale-105 sm:size-18">
-                    {avatarSrc ? (
-                      <AvatarImage src={avatarSrc} alt={fullName} className="object-cover" />
-                    ) : null}
-                    <AvatarFallback className="bg-gradient-to-tr from-[#FF4500] to-[#FFA07A] text-lg font-bold text-white select-none sm:text-xl">
-                      {initialLetter}
-                    </AvatarFallback>
-                  </Avatar>
+                  <button
+                    type="button"
+                    className="cursor-pointer text-left focus:outline-none"
+                    onClick={() => {
+                      if (avatarSrc) setIsAvatarPreviewOpen(true);
+                    }}
+                    disabled={!avatarSrc}
+                  >
+                    <Avatar className="border-border/80 size-16 border-2 shadow-sm ring-2 ring-[#FF4500]/20 transition-transform group-hover:scale-105 sm:size-18">
+                      {avatarSrc ? (
+                        <AvatarImage src={avatarSrc} alt={fullName} className="object-cover" />
+                      ) : null}
+                      <AvatarFallback className="bg-gradient-to-tr from-[#FF4500] to-[#FFA07A] text-lg font-bold text-white select-none sm:text-xl">
+                        {initialLetter}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
                   {uploadAvatarMutation.isPending && (
                     <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-xs">
                       <Loader2 className="size-5 animate-spin text-[#FF4500]" />
@@ -487,6 +498,15 @@ export function ProfileTab() {
         user={user}
         userDetails={userDetails}
       />
+
+      {avatarSrc && (
+        <AvatarPreviewDialog
+          isOpen={isAvatarPreviewOpen}
+          onClose={() => setIsAvatarPreviewOpen(false)}
+          avatarUrl={avatarSrc}
+          userName={fullName}
+        />
+      )}
     </div>
   );
 }

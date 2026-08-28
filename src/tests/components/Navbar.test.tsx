@@ -113,16 +113,16 @@ describe('Navbar', () => {
     expect(mockLogout).toHaveBeenCalled();
   });
 
-  it('opens the account menu showing links to profile and settings', async () => {
+  it('opens the account menu showing link to settings', async () => {
     const user = userEvent.setup();
     renderNavbar();
 
     await user.click(screen.getByRole('button', { name: /account/i }));
 
-    expect(await screen.findByRole('menuitem', { name: 'Profile' })).toHaveAttribute(
+    expect(await screen.findByRole('menuitem', { name: 'Settings' })).toHaveAttribute(
       'href',
-      '/profile',
+      '/settings',
     );
-    expect(screen.getByRole('menuitem', { name: 'Settings' })).toHaveAttribute('href', '/settings');
+    expect(screen.queryByRole('menuitem', { name: 'Profile' })).not.toBeInTheDocument();
   });
 });
