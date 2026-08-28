@@ -18,6 +18,7 @@ export function useGoogleLogin() {
   const setAuthenticated = useAuthStore((state) => state.setAuthenticated);
   const setHasActivePlan = useAuthStore((state) => state.setHasActivePlan);
   const setRole = useAuthStore((state) => state.setRole);
+  const setOnboardingPending = useAuthStore((state) => state.setOnboardingPending);
 
   return useMutation({
     mutationFn: (payload: GoogleLoginRequest) => authService.googleLogin(payload),
@@ -45,21 +46,29 @@ export function useGoogleLogin() {
         return;
       }
 
-      const isMember = response.role === 'member';
-
       if (response.auth_actions) {
         const { payment, interactive_questions } = response.auth_actions;
-        const hasPlan = payment || isMember;
-        setHasActivePlan(hasPlan);
+        setHasActivePlan(payment);
         useAuthStore.getState().setHasCompletedQuestionnaire(interactive_questions);
         useAuthStore.getState().setShowQuestionnaireIntro(!interactive_questions);
+      }
 
-        void navigate(hasPlan ? ROUTES.DASHBOARD : ROUTES.PRICING);
+      // A first-time Google account is a registration: route through onboarding
+      // (welcome + guide video), exactly like the email/password signup flow.
+      if (response.is_new_user) {
+        setOnboardingPending?.(true);
+        void navigate(ROUTES.ONBOARDING);
         return;
       }
 
-      setHasActivePlan(isMember);
-      void navigate(isMember ? ROUTES.DASHBOARD : ROUTES.PRICING);
+      // Returning users: route by their post-login payment gate.
+      if (response.auth_actions) {
+        void navigate(response.auth_actions.payment ? ROUTES.DASHBOARD : ROUTES.PRICING);
+        return;
+      }
+
+      setHasActivePlan(false);
+      void navigate(ROUTES.PRICING);
     },
     onError: (error) => {
       toast.error(isApiError(error) ? error.message : 'Google sign-in failed. Please try again.');
