@@ -34,16 +34,27 @@ export function useUpdateProfile() {
   return useMutation({
     mutationFn: updateProfile,
     onSuccess: (user) => {
-      updateUser(user);
-      queryClient.setQueryData(queryKeys.user.profile(), user);
+      const normalizedAvatar =
+        user.avatarUrl && typeof user.avatarUrl === 'string' && user.avatarUrl.trim() !== ''
+          ? user.avatarUrl
+          : null;
+      const normalizedUser = {
+        ...user,
+        avatarUrl: normalizedAvatar,
+        avatar_url: normalizedAvatar,
+      };
+      updateUser(normalizedUser);
+      queryClient.setQueryData(queryKeys.user.profile(), normalizedUser);
       queryClient.setQueryData(queryKeys.user.details(), (prev: unknown) => {
         if (!prev || typeof prev !== 'object') return prev;
         return {
           ...prev,
-          avatar_url: user.avatarUrl ?? null,
-          avatarUrl: user.avatarUrl ?? null,
+          avatar_url: normalizedAvatar,
+          avatarUrl: normalizedAvatar,
         };
       });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.user.profile() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.user.details() });
       toast.success('Profile updated successfully.');
     },
     onError: (error) => {

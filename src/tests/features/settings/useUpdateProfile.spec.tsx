@@ -24,6 +24,7 @@ const updatedUser: User = {
   email: 'jane@example.com',
   name: 'Jane Updated',
   avatarUrl: null,
+  avatar_url: null,
   role: 'member',
   createdAt: '2026-01-01T00:00:00Z',
   updatedAt: '2026-01-02T00:00:00Z',
@@ -52,7 +53,7 @@ describe('useUpdateProfile', () => {
     await result.current.mutateAsync({ name: 'Jane Updated', email: 'jane@example.com' });
 
     expect(useAuthStore.getState().user).toEqual(updatedUser);
-    expect(toast.success).toHaveBeenCalledWith('Profile updated.');
+    expect(toast.success).toHaveBeenCalledWith('Profile updated successfully.');
   });
 
   it('toasts the API error message on a known API error', async () => {
