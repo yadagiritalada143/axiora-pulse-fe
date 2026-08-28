@@ -40,6 +40,10 @@ function GoogleLoginButtonInner({ text = 'continue_with' }: GoogleLoginButtonPro
 
       <div className="flex justify-center" aria-busy={googleLogin.isPending}>
         <GoogleLogin
+          // Google renders its button once into an iframe and ignores later
+          // `theme` prop changes; keying on the resolved theme forces a remount
+          // so the button re-renders in the correct light/dark variant.
+          key={resolvedTheme}
           onSuccess={(credentialResponse: CredentialResponse) => {
             const credential = credentialResponse.credential;
             if (!credential) {

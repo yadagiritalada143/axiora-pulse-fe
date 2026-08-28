@@ -8,6 +8,7 @@ import type {
   InteractiveAnswerPayload,
   InteractiveQuestion,
 } from '@/types/onboarding.types';
+import { ThemeToggle } from '@components/common/ThemeToggle';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -161,8 +162,9 @@ export function InteractiveQuestionsFlow({
             className="from-primary/25 via-primary/5 pointer-events-none absolute inset-0 bg-gradient-to-br to-transparent"
           />
 
-          <div className="relative z-10 px-4 pt-4 sm:px-8 sm:pt-6">
+          <div className="relative z-10 flex items-center justify-between px-4 pt-4 sm:px-8 sm:pt-6">
             <PulseWordmark />
+            <ThemeToggle />
           </div>
 
           <div className="relative z-10 flex flex-1 items-center justify-center px-4 py-6 sm:px-8">

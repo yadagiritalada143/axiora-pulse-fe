@@ -1,6 +1,7 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 
 import { Logo } from '@components/common/Logo';
+import { ThemeToggle } from '@components/common/ThemeToggle';
 import { Button } from '@components/ui/button';
 import { ROUTES } from '@constants/routes';
 
@@ -20,7 +21,9 @@ export function PublicLayout() {
           <Logo />
         </Link>
 
-        <nav className="flex items-center gap-2">
+        <nav className="flex items-center gap-3">
+          <ThemeToggle />
+
           <Button variant="ghost" asChild>
             <Link to={ROUTES.LOGIN}>Sign in</Link>
           </Button>

@@ -22,12 +22,14 @@ const setHasActivePlan = jest.fn();
 const setHasCompletedQuestionnaire = jest.fn();
 const setShowQuestionnaireIntro = jest.fn();
 
+const setRole = jest.fn();
+
 const baseUser: User = {
   id: 'usr_123',
   email: 'user@example.com',
   name: 'John Doe',
   avatarUrl: null,
-  role: 'member',
+  role: 'viewer',
   createdAt: '2026-07-30T10:09:31.072Z',
   updatedAt: '2026-07-30T10:09:31.072Z',
 };
@@ -39,6 +41,7 @@ function mockStore({ isAuthenticated = true } = {}) {
     user: null,
     isAuthenticated,
     updateUser,
+    setRole,
     setHasActivePlan,
     setHasCompletedQuestionnaire,
     setShowQuestionnaireIntro,
@@ -75,15 +78,7 @@ describe('useCurrentUser', () => {
       updatedAt: '2026-07-30T10:09:31.072Z',
     };
 
-    const mockUpdateUser = jest.fn();
-
-    mockedUseAuthStore.mockImplementation((selector) =>
-      selector({
-        user: null,
-        isAuthenticated: true,
-        updateUser: mockUpdateUser,
-      } as unknown as ReturnType<typeof useAuthStore.getState>),
-    );
+    const { updateUser: mockUpdateUser } = mockStore();
 
     mockedAuthService.getCurrentUser.mockResolvedValue(mockUser);
 

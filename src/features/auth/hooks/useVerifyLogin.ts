@@ -36,13 +36,16 @@ export function useVerifyLogin() {
           return;
         }
 
+        const isMember = response.role === 'member';
+
         if (response.auth_actions) {
           const { payment, interactive_questions } = response.auth_actions;
-          setHasActivePlan(payment);
+          const hasPlan = payment || isMember;
+          setHasActivePlan(hasPlan);
           useAuthStore.getState().setHasCompletedQuestionnaire(interactive_questions);
           useAuthStore.getState().setShowQuestionnaireIntro(!interactive_questions);
 
-          if (payment) {
+          if (hasPlan) {
             void navigate(ROUTES.DASHBOARD);
           } else {
             void navigate(ROUTES.PRICING);
@@ -50,7 +53,7 @@ export function useVerifyLogin() {
           return;
         }
 
-        const hasActivePlan = response.hasActivePlan ?? false;
+        const hasActivePlan = (response.hasActivePlan ?? false) || isMember;
         setHasActivePlan(hasActivePlan);
         if (hasActivePlan) {
           void navigate(ROUTES.DASHBOARD);

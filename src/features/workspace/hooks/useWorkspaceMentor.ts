@@ -112,3 +112,32 @@ export function useExportWorkspaceReport(workspaceId: number) {
     },
   });
 }
+
+export function useDownloadCertificate(workspaceId: number) {
+  return useMutation({
+    mutationFn: () => workspaceService.downloadCertificate(workspaceId),
+
+    onSuccess: ({ blob, filename }) => {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        link.remove();
+        URL.revokeObjectURL(url);
+      }, 100);
+      toast.success('Certificate downloaded successfully.');
+    },
+
+    onError: (error) => {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Failed to download certificate. Please try again.';
+      toast.error(message);
+    },
+  });
+}

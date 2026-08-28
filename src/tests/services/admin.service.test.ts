@@ -147,4 +147,79 @@ describe('adminService', () => {
     );
     expect(result).toEqual(mockDetail);
   });
+
+  it('getDashboardStats calls GET API_ENDPOINTS.ADMIN.DASHBOARD_STATS and returns data', async () => {
+    const mockStats = {
+      total_users: 100,
+      paid_users: 40,
+      non_paid_users: 60,
+      active_subscriptions: 35,
+      total_workspaces: 80,
+      active_workspaces: 70,
+      archived_workspaces: 10,
+      growth: {
+        total_users: 12.5,
+        paid_users: 8.3,
+        non_paid_users: 15.7,
+        active_subscriptions: 10.2,
+        total_workspaces: 5.0,
+        active_workspaces: 4.5,
+        archived_workspaces: 1.2,
+      },
+    };
+
+    mockedApiClient.get.mockResolvedValue({ data: mockStats });
+
+    const result = await adminService.getDashboardStats();
+
+    expect(mockedApiClient.get).toHaveBeenCalledWith(API_ENDPOINTS.ADMIN.DASHBOARD_STATS);
+    expect(result).toEqual(mockStats);
+  });
+
+  it('getAnalyticsUserGrowth calls GET API_ENDPOINTS.ADMIN.ANALYTICS_USER_GROWTH with period and returns data', async () => {
+    const mockGrowth = {
+      period: 'month' as const,
+      series: [{ period: '2026-08-01', count: 10 }],
+    };
+
+    mockedApiClient.get.mockResolvedValue({ data: mockGrowth });
+
+    const result = await adminService.getAnalyticsUserGrowth('month');
+
+    expect(mockedApiClient.get).toHaveBeenCalledWith(API_ENDPOINTS.ADMIN.ANALYTICS_USER_GROWTH, {
+      params: { period: 'month' },
+    });
+    expect(result).toEqual(mockGrowth);
+  });
+
+  it('getAnalyticsUsersByPlan calls GET API_ENDPOINTS.ADMIN.ANALYTICS_USERS_BY_PLAN and returns data', async () => {
+    const mockPlanData = {
+      total_users: 100,
+      plans: [{ plan: 'pro', user_count: 40, percentage: 40 }],
+    };
+
+    mockedApiClient.get.mockResolvedValue({ data: mockPlanData });
+
+    const result = await adminService.getAnalyticsUsersByPlan();
+
+    expect(mockedApiClient.get).toHaveBeenCalledWith(API_ENDPOINTS.ADMIN.ANALYTICS_USERS_BY_PLAN);
+    expect(result).toEqual(mockPlanData);
+  });
+
+  it('getAnalyticsRevenue calls GET API_ENDPOINTS.ADMIN.ANALYTICS_REVENUE with period and returns data', async () => {
+    const mockRevenue = {
+      period: 'month' as const,
+      total_amount: 5000,
+      series: [{ period: '2026-08-01', amount: 5000 }],
+    };
+
+    mockedApiClient.get.mockResolvedValue({ data: mockRevenue });
+
+    const result = await adminService.getAnalyticsRevenue('month');
+
+    expect(mockedApiClient.get).toHaveBeenCalledWith(API_ENDPOINTS.ADMIN.ANALYTICS_REVENUE, {
+      params: { period: 'month' },
+    });
+    expect(result).toEqual(mockRevenue);
+  });
 });

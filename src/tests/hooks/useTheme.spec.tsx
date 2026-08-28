@@ -20,9 +20,10 @@ describe('useTheme', () => {
     expect(result.current).toBe(value);
   });
 
-  it('throws when used outside a provider', () => {
-    expect(() => renderHook(() => useTheme())).toThrow(
-      'useTheme must be used within a ThemeProvider',
-    );
+  it('falls back to the theme store when outside a provider', () => {
+    const { result } = renderHook(() => useTheme());
+    expect(result.current.theme).toBeDefined();
+    expect(result.current.resolvedTheme).toBeDefined();
+    expect(typeof result.current.setTheme).toBe('function');
   });
 });

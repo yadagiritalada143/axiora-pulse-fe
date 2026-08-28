@@ -11,7 +11,6 @@ import {
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import type { AdminUserSurveySummaryResponse } from '@/types/admin.types';
 import { Badge } from '@components/ui/badge';
 import { Button } from '@components/ui/button';
 import { Card, CardContent } from '@components/ui/card';
@@ -23,6 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@components/ui/dropdown-menu';
+import type { AdminUserSurveySummaryResponse } from '@features/admin/types';
 
 interface AdminUserSummaryCardProps {
   summary: AdminUserSurveySummaryResponse;

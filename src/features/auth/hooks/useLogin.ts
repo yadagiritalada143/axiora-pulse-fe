@@ -24,7 +24,7 @@ export function useLogin() {
       }
 
       setAuthenticated(response.access_token, response.refresh_token);
-      setRole(response.role || 'user');
+      setRole(response.role ?? 'viewer');
 
       void authService
         .getCurrentUser()
@@ -41,13 +41,16 @@ export function useLogin() {
         return;
       }
 
+      const isMember = response.role === 'member';
+
       if (response.auth_actions) {
         const { payment, interactive_questions } = response.auth_actions;
-        setHasActivePlan(payment);
+        const hasPlan = payment || isMember;
+        setHasActivePlan(hasPlan);
         useAuthStore.getState().setHasCompletedQuestionnaire(interactive_questions);
         useAuthStore.getState().setShowQuestionnaireIntro(!interactive_questions);
 
-        if (payment) {
+        if (hasPlan) {
           void navigate(ROUTES.DASHBOARD);
         } else {
           void navigate(ROUTES.PRICING);
@@ -55,8 +58,8 @@ export function useLogin() {
         return;
       }
 
-      setHasActivePlan(false);
-      void navigate(ROUTES.PRICING);
+      setHasActivePlan(isMember);
+      void navigate(isMember ? ROUTES.DASHBOARD : ROUTES.PRICING);
     },
     onError: (error) => {
       toast.error(isApiError(error) ? error.message : 'Unable to sign in. Please try again.');

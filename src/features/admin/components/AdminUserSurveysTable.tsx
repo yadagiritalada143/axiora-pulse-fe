@@ -15,7 +15,6 @@ import {
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import type { AdminSurvey } from '@/types/admin.types';
 import { TablePagination } from '@components/common/TablePagination';
 import { Badge } from '@components/ui/badge';
 import { Button } from '@components/ui/button';
@@ -28,6 +27,7 @@ import {
 } from '@components/ui/dropdown-menu';
 import { Input } from '@components/ui/input';
 import { useAdminSurveys } from '@features/admin/hooks';
+import type { AdminSurvey } from '@features/admin/types';
 import { useDebouncedValue } from '@hooks/useDebouncedValue';
 
 import { AdminSurveyResponsesModal } from './AdminSurveyResponsesModal';

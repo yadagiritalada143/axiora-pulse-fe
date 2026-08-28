@@ -48,6 +48,7 @@ export const API_ENDPOINTS = {
     REPORT: (workspaceId: number, agentName: string) =>
       `/v1/workspaces/${workspaceId}/reports/${agentName}`,
     REPORT_EXPORT: (workspaceId: number) => `/v1/workspaces/${workspaceId}/reports/export`,
+    CERTIFICATE: (workspaceId: number) => `/v1/workspaces/${workspaceId}/certificate`,
   },
 
   SURVEY: {
@@ -100,6 +101,10 @@ export const API_ENDPOINTS = {
   ADMIN: {
     USERS: '/v1/admin/users',
     USER_GROWTH: '/v1/admin/stats/user-growth',
+    DASHBOARD_STATS: '/v1/admin/dashboard/stats',
+    ANALYTICS_USER_GROWTH: '/v1/admin/analytics/user-growth',
+    ANALYTICS_USERS_BY_PLAN: '/v1/admin/analytics/users-by-plan',
+    ANALYTICS_REVENUE: '/v1/admin/analytics/revenue',
     USER_SURVEYS: '/v1/admin/users/surveys',
     USER_SURVEY_SUMMARY: (userId: number) => `/v1/admin/users/${userId}/survey-summary`,
     SURVEY_RESPONSES: (surveyId: number) => `/v1/admin/surveys/${surveyId}/responses`,

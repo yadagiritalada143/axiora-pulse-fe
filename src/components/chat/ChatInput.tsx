@@ -254,7 +254,7 @@ export function ChatInput({
                 <button
                   type="button"
                   onClick={() => onRemoveAttachment(file.id)}
-                  className="text-muted-foreground hover:text-foreground ml-1.5 focus:outline-none"
+                  className="text-muted-foreground hover:text-foreground ml-1.5 cursor-pointer focus:outline-none"
                   aria-label={`Remove ${file.name}`}
                 >
                   <X className="h-3.5 w-3.5" />
@@ -376,7 +376,7 @@ export function ChatInput({
         <Button
           type="button"
           size="sm"
-          className="gap-1.5 bg-[#FF4500] font-semibold text-white hover:bg-[#FF4500]/90"
+          className="cursor-pointer gap-1.5 bg-[#FF4500] font-semibold text-white hover:bg-[#FF4500]/90"
           // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- boolean OR, not a fallback
           disabled={disabled || (!value.trim() && attachments.length === 0) || isUploadingAny}
           onClick={onSubmit}

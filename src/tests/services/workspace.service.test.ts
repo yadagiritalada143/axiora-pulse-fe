@@ -496,4 +496,37 @@ describe('workspaceService', () => {
       expect(result.sizeBytes).toBe(0);
     });
   });
+
+  describe('downloadCertificate', () => {
+    it('downloads the certificate PDF blob and extracts the filename', async () => {
+      const pdfBlob = new Blob(['%PDF-1.4 certificate content'], { type: 'application/pdf' });
+      mockedApiClient.get.mockResolvedValueOnce({
+        data: pdfBlob,
+        headers: {
+          'content-disposition': 'attachment; filename="idea_validation_certificate_alpha.pdf"',
+        },
+      });
+
+      const result = await workspaceService.downloadCertificate(42);
+
+      expect(mockedApiClient.get).toHaveBeenCalledWith(API_ENDPOINTS.WORKSPACE.CERTIFICATE(42), {
+        responseType: 'blob',
+        timeout: 60_000,
+      });
+      expect(result.filename).toBe('idea_validation_certificate_alpha.pdf');
+      expect(result.blob).toBeInstanceOf(Blob);
+    });
+
+    it('falls back to default certificate filename when header is missing', async () => {
+      const pdfBlob = new Blob(['%PDF-1.4 certificate content'], { type: 'application/pdf' });
+      mockedApiClient.get.mockResolvedValueOnce({
+        data: pdfBlob,
+        headers: {},
+      });
+
+      const result = await workspaceService.downloadCertificate(99);
+
+      expect(result.filename).toBe('idea_validation_certificate_99.pdf');
+    });
+  });
 });

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
-import type { GrowthGranularity } from '@/types/admin.types';
 import { queryKeys } from '@constants/queryKeys';
+import type { GrowthGranularity } from '@features/admin/types';
 import { adminService } from '@services/admin';
 
 export function useUserGrowth(granularity: GrowthGranularity) {

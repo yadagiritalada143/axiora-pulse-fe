@@ -249,4 +249,39 @@ export const workspaceService = {
 
     return { blob: processedBlob, filename };
   },
+
+  downloadCertificate: async (workspaceId: number): Promise<ExportWorkspaceReportResult> => {
+    const response = await apiClient.get<Blob>(API_ENDPOINTS.WORKSPACE.CERTIFICATE(workspaceId), {
+      responseType: 'blob',
+      timeout: 60_000,
+    });
+
+    const rawBlob = response.data;
+
+    const disposition = response.headers['content-disposition'] as string | undefined;
+    let filename = '';
+    if (disposition) {
+      const filenameStarRegex = /filename\*=UTF-8''([^;]+)/i;
+      const filenameStarMatch = filenameStarRegex.exec(disposition);
+      if (filenameStarMatch?.[1]) {
+        filename = decodeURIComponent(filenameStarMatch[1]);
+      } else {
+        const filenameRegex = /filename="?([^";]+)"?/i;
+        const filenameMatch = filenameRegex.exec(disposition);
+        if (filenameMatch?.[1]) {
+          filename = filenameMatch[1];
+        }
+      }
+    }
+
+    if (!filename) {
+      filename = `idea_validation_certificate_${workspaceId}.pdf`;
+    } else if (!filename.toLowerCase().endsWith('.pdf')) {
+      filename = `${filename}.pdf`;
+    }
+
+    const processedBlob = await processReportBlob(rawBlob, 'pdf');
+
+    return { blob: processedBlob, filename };
+  },
 };
