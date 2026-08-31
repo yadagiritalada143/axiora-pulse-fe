@@ -2345,7 +2345,7 @@
    Startup Journey Section
    ========================================================================== */
   .startup-journey-section {
-    padding: 100px 0;
+    padding: 60px 0;
     background-color: #ffffff;
   }
 
@@ -2523,7 +2523,7 @@
 
   /* FAQ Section */
   .faq-section {
-    padding: 100px 40px;
+    padding: 70px 40px;
     background-color: #111111;
     font-family: var(--font-primary, 'Inter', sans-serif);
   }
@@ -2697,7 +2697,7 @@
   /* Testimonials Section */
   .testimonials-section {
     background: #ffffff;
-    padding: 100px 40px 110px;
+    padding: 70px 40px 80px;
     font-family: var(--font-primary, 'Inter', sans-serif);
     overflow: hidden;
   }
@@ -3243,7 +3243,7 @@
   /*About AI mentor */
   .about-section {
     background-color: #ffffff;
-    padding: 120px 24px;
+    padding: 60px 24px;
     position: relative;
     z-index: 10;
     display: flex;
@@ -3729,6 +3729,445 @@
     }
     .contact-form-card {
       padding: 24px 18px;
+    }
+  }
+
+  /* COMPREHENSIVE RESPONSIVE DESIGN (MOBILE & TABLET)   */
+  .landing-page-root {
+    overflow-x: hidden !important;
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  /* Hamburger Toggle (Hidden on Desktop) */
+  .mobile-hamburger-btn {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    cursor: pointer;
+    padding: 8px;
+    z-index: 105;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-hamburger-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .hamburger-bar {
+    width: 22px;
+    height: 2px;
+    background-color: #ffffff;
+    border-radius: 2px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .mobile-hamburger-btn.active .hamburger-bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .mobile-hamburger-btn.active .hamburger-bar:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  .mobile-hamburger-btn.active .hamburger-bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  /* Mobile Drawer Overlay */
+
+  .mobile-nav-backdrop-btn {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    z-index: 1;
+  }
+
+  .mobile-nav-drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.82);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 99;
+    display: flex;
+    flex-direction: column;
+    padding-top: 80px;
+    transition: opacity 0.25s ease;
+  }
+
+  .mobile-nav-drawer {
+    position: relative;
+    z-index: 2;
+    background: #141417;
+    border-bottom: 1.5px solid rgba(240, 79, 30, 0.35);
+    border-radius: 0 0 24px 24px;
+    padding: 24px 20px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.9);
+    max-height: calc(100vh - 90px);
+    overflow-y: auto;
+  }
+
+  .mobile-nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .mobile-nav-link {
+    font-size: 16px;
+    font-weight: 500;
+    color: #f4f4f5;
+    text-decoration: none;
+    padding: 12px 14px;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    display: block;
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .mobile-nav-link:hover,
+  .mobile-nav-link:active {
+    background: rgba(240, 79, 30, 0.15);
+    color: #ff5c2b;
+  }
+
+  .mobile-nav-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 18px;
+  }
+
+  .mobile-cta-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .mobile-login-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .mobile-login-btn {
+    width: 100%;
+    justify-content: center;
+    font-size: 13.5px;
+    padding: 11px 8px;
+    text-align: center;
+  }
+
+  /* Breakpoint: <= 860px (Tablets & Mobile) */
+  @media (max-width: 860px) {
+    .navbar {
+      padding: 16px 20px;
+    }
+
+    .nav-menu {
+      display: none !important;
+    }
+
+    .nav-actions {
+      display: none !important;
+    }
+
+    .mobile-hamburger-btn {
+      display: flex !important;
+    }
+  }
+
+  /* Breakpoint: <= 768px (Standard Mobile) */
+  @media (max-width: 768px) {
+    /* Hero Section */
+    .hero-section {
+      margin: 32px auto 20px !important;
+      padding: 0 16px !important;
+    }
+
+    .hero-title {
+      font-size: clamp(30px, 8.5vw, 44px) !important;
+      line-height: 1.15 !important;
+      letter-spacing: -0.02em !important;
+    }
+
+    .hero-subtitle {
+      font-size: 15px !important;
+      line-height: 1.55 !important;
+      margin-bottom: 24px !important;
+      padding: 0 8px !important;
+    }
+
+    .hero-actions {
+      flex-direction: column !important;
+      width: 100% !important;
+      gap: 12px !important;
+    }
+
+    .hero-actions .btn,
+    .hero-actions a {
+      width: 100% !important;
+      justify-content: center !important;
+    }
+
+    .hero-video-container {
+      margin-top: 24px !important;
+      border-radius: 14px !important;
+    }
+
+    /* Founder Challenges */
+    .services-section {
+      padding: 36px 16px !important;
+    }
+
+    .services-container {
+      grid-template-columns: 1fr !important;
+      gap: 32px !important;
+      padding: 0 !important;
+      margin-top: 60px !important;
+    }
+
+    .services-header-title {
+      font-size: clamp(24px, 6.5vw, 32px) !important;
+      line-height: 1.22 !important;
+    }
+
+    .services-header-subtitle {
+      font-size: 14.5px !important;
+      margin-bottom: 22px !important;
+    }
+
+    .services-cta-group {
+      flex-direction: column !important;
+      width: 100% !important;
+      gap: 12px !important;
+    }
+
+    .btn-start-project,
+    .link-learn-more {
+      width: 100% !important;
+      justify-content: center !important;
+    }
+
+    .service-item {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      padding: 18px 16px !important;
+      gap: 12px !important;
+    }
+
+    .service-title-col {
+      width: 100% !important;
+    }
+
+    .service-title {
+      font-size: 18px !important;
+    }
+
+    .service-divider {
+      width: 100% !important;
+      height: 1px !important;
+    }
+
+    .service-description {
+      font-size: 14px !important;
+    }
+
+    /* About Section */
+    .about-section {
+      padding: 36px 16px !important;
+    }
+
+    .about-container {
+      gap: 32px !important;
+    }
+
+    .about-title {
+      font-size: clamp(24px, 6.5vw, 32px) !important;
+    }
+
+    .mission-vision-grid {
+      grid-template-columns: 1fr !important;
+      gap: 16px !important;
+    }
+
+    .story-card {
+      padding: 24px 18px !important;
+    }
+
+    /* AI Mentor Section */
+    .ai-mentor-title {
+      font-size: clamp(26px, 7vw, 36px) !important;
+    }
+
+    .ai-mentor-subtitle {
+      font-size: 14px !important;
+      padding: 0 12px !important;
+    }
+
+    .mentor-card-item {
+      width: calc(100vw - 36px) !important;
+      max-width: 360px !important;
+      padding: 16px !important;
+      border-radius: 18px !important;
+    }
+
+    .mentor-card-img {
+      height: 140px !important;
+    }
+
+    .mentor-card-title {
+      font-size: 17px !important;
+    }
+
+    .mentor-card-subtitle {
+      font-size: 13px !important;
+    }
+
+    .mentor-card-desc {
+      font-size: 12.5px !important;
+      line-height: 1.5 !important;
+    }
+
+    /* Startup Journey Section */
+    .startup-journey-section {
+      padding: 36px 16px !important;
+    }
+
+    .journey-title {
+      font-size: clamp(24px, 6.5vw, 32px) !important;
+    }
+
+    .journey-steps-grid {
+      grid-template-columns: 1fr !important;
+      gap: 16px !important;
+    }
+
+    /* FAQ Section */
+    .faq-section {
+      padding: 36px 16px !important;
+    }
+
+    .faq-container {
+      grid-template-columns: 1fr !important;
+      gap: 32px !important;
+    }
+
+    .faq-title {
+      font-size: clamp(24px, 6.5vw, 32px) !important;
+      text-align: left !important;
+    }
+
+    /* CTA Banner */
+    .cta-banner-section {
+      padding: 36px 16px !important;
+    }
+
+    .cta-banner-title {
+      font-size: clamp(24px, 6.5vw, 34px) !important;
+    }
+
+    .cta-banner-actions {
+      flex-direction: column !important;
+      width: 100% !important;
+      gap: 12px !important;
+    }
+
+    .cta-banner-actions .btn {
+      width: 100% !important;
+      justify-content: center !important;
+    }
+
+    /* Footer */
+    .site-footer {
+      padding: 28px 16px 0 !important;
+    }
+
+    .footer-inner {
+      grid-template-columns: 1fr !important;
+      gap: 28px !important;
+      padding-bottom: 20px !important;
+    }
+
+    .footer-brand {
+      align-items: flex-start !important;
+      text-align: left !important;
+    }
+
+    .footer-desc {
+      max-width: 100% !important;
+    }
+
+    /* Scroll To Top */
+    .scroll-to-top-btn {
+      bottom: 18px !important;
+      right: 18px !important;
+      width: 40px !important;
+      height: 40px !important;
+    }
+  }
+
+  /* Breakpoint: <= 480px (Small Mobile) */
+  @media (max-width: 480px) {
+    .navbar {
+      padding: 14px 16px;
+    }
+
+    .brand-logo svg {
+      transform: scale(0.9);
+      transform-origin: left center;
+    }
+
+    .contact-section {
+      padding: 24px 12px !important;
+    }
+
+    .contact-container {
+      padding: 20px 14px !important;
+      border-radius: 20px !important;
+    }
+
+    .contact-heading {
+      font-size: 24px !important;
+    }
+
+    .contact-form-card {
+      padding: 18px 14px !important;
+      border-radius: 16px !important;
+    }
+
+    .form-input-custom {
+      font-size: 14px !important;
+      padding: 11px 13px !important;
+    }
+
+    .btn-submit-contact {
+      width: 100% !important;
+      justify-content: center !important;
+      font-size: 14.5px !important;
+      padding: 12px !important;
     }
   }
 }
