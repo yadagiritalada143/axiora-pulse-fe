@@ -2,12 +2,20 @@ import { Loader2 } from 'lucide-react';
 
 import { cn } from '@lib/utils';
 
+import { CartoonBotLoader } from './CartoonBotLoader';
+
 interface LoaderProps {
   className?: string;
   label?: string;
+  variant?: 'spinner' | 'cartoon';
+  size?: 'sm' | 'md' | 'lg';
 }
 
-export function Loader({ className, label }: LoaderProps) {
+export function Loader({ className, label, variant = 'spinner', size = 'sm' }: LoaderProps) {
+  if (variant === 'cartoon') {
+    return <CartoonBotLoader className={className} label={label} size={size} />;
+  }
+
   return (
     <div
       role="status"
@@ -20,10 +28,15 @@ export function Loader({ className, label }: LoaderProps) {
 }
 
 /** Full-page loading state, used as a Suspense fallback for route-level code splitting. */
-export function PageLoader() {
+export function PageLoader({ className }: { className?: string }) {
   return (
-    <div className="flex min-h-[60vh] w-full items-center justify-center">
-      <Loader label="Loading page" className="text-base" />
+    <div
+      className={cn(
+        'flex min-h-[70vh] w-full flex-col items-center justify-center p-6 text-center',
+        className,
+      )}
+    >
+      <CartoonBotLoader size="md" label="Loading page" showStatusMessages={false} />
     </div>
   );
 }
@@ -31,3 +44,5 @@ export function PageLoader() {
 export function ButtonLoader({ className }: { className?: string }) {
   return <Loader2 className={cn('size-4 animate-spin', className)} aria-hidden="true" />;
 }
+
+export { CartoonBotLoader };
