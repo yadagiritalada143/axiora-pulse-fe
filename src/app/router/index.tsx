@@ -10,7 +10,6 @@ import { ROUTES } from '@constants/routes';
 
 import { AdminRoute } from './AdminRoute';
 import { GuestRoute } from './GuestRoute';
-import { HomeRedirect } from './HomeRedirect';
 import { lazyPage } from './lazyPage';
 import { ProtectedRoute } from './ProtectedRoute';
 
@@ -21,7 +20,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <HomeRedirect />,
+        element: lazyPage(() => import('@pages/LandingPage')),
       },
       {
         path: '/surveys/public/:surveyId',
