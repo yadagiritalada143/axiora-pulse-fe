@@ -14,10 +14,10 @@ describe('PublicLayout', () => {
       [
         {
           element: <PublicLayout />,
-          children: [{ path: '/', element: <div>Marketing page marker</div> }],
+          children: [{ path: '/pricing', element: <div>Marketing page marker</div> }],
         },
       ],
-      { initialEntries: ['/'] },
+      { initialEntries: ['/pricing'] },
     );
 
     render(<RouterProvider router={router} />);
@@ -36,10 +36,10 @@ describe('PublicLayout', () => {
       [
         {
           element: <PublicLayout />,
-          children: [{ path: '/', element: <div>Marketing page marker</div> }],
+          children: [{ path: '/pricing', element: <div>Marketing page marker</div> }],
         },
       ],
-      { initialEntries: ['/'] },
+      { initialEntries: ['/pricing'] },
     );
 
     render(<RouterProvider router={router} />);

@@ -9,8 +9,9 @@ import { ROUTES } from '@constants/routes';
 export function PublicLayout() {
   const location = useLocation();
   const isPublicSurvey = location.pathname.startsWith('/surveys/public/');
+  const isLandingPage = location.pathname === ROUTES.HOME || location.pathname === '/';
 
-  if (isPublicSurvey) {
+  if (isPublicSurvey || isLandingPage) {
     return <Outlet />;
   }
 
