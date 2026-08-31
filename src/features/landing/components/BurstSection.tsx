@@ -45,7 +45,7 @@ export function BurstSection() {
       DPR = Math.min(window.devicePixelRatio || 1, 2);
       const rect = section.getBoundingClientRect();
       W = rect.width || window.innerWidth;
-      H = rect.height || 220;
+      H = rect.height || 350;
       canvas.width = W * DPR;
       canvas.height = H * DPR;
       canvas.style.width = `${W}px`;

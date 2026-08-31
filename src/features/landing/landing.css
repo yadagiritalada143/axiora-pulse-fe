@@ -3073,7 +3073,7 @@
   /* Site Footer */
   .site-footer {
     background: #05070f;
-    padding: 64px 48px 0;
+    padding: 38px 42px 0;
     font-family: var(--font-primary, 'Inter', sans-serif);
   }
 
@@ -3083,7 +3083,7 @@
     display: grid;
     grid-template-columns: 1.8fr 1fr 1fr;
     gap: 48px;
-    padding-bottom: 56px;
+    padding-bottom: 10px;
   }
 
   /* ---- Brand column ---- */
@@ -3197,12 +3197,14 @@
   }
 
   /* Burst Strings Interactive Section */
+
   .burst-interactive-section {
     position: relative;
+    border: none;
     width: 100%;
-    height: 85vh;
-    min-height: 520px;
-    max-height: 850px;
+    height: 300px;
+    min-height: 400px;
+    max-height: 660px;
     overflow: hidden;
     background: radial-gradient(ellipse at 50% 100%, #1a1330 0%, #0d1830 35%, #05070f 75%);
     cursor: crosshair;
