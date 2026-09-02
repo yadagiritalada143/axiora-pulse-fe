@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import { CartoonBotLoader } from '@components/common/CartoonBotLoader';
 import { ButtonLoader } from '@components/common/Loader';
 import { Button } from '@components/ui/button';
 import {
@@ -43,40 +44,48 @@ function RequestStep({ onSuccess }: { onSuccess: () => void }) {
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" noValidate>
-        <FormField
-          control={form.control}
-          name="emailOrMobile"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input
-                  type="email"
-                  autoComplete="email"
-                  placeholder="Enter your email"
-                  className="placeholder:text-sm"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+    <div className="relative">
+      {forgotPassword.isPending && (
+        <div className="bg-background/85 animate-in fade-in absolute inset-0 z-50 flex flex-col items-center justify-center rounded-xl p-4 backdrop-blur-xs transition-all duration-300">
+          <CartoonBotLoader label="Sending reset code..." showStatusMessages={false} />
+        </div>
+      )}
 
-        <Button type="submit" className="w-full text-white" disabled={forgotPassword.isPending}>
-          {forgotPassword.isPending ? <ButtonLoader className="mr-2" /> : null}
-          Send Reset Code
-        </Button>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" noValidate>
+          <FormField
+            control={form.control}
+            name="emailOrMobile"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input
+                    type="email"
+                    autoComplete="email"
+                    placeholder="Enter your email"
+                    className="placeholder:text-sm"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <p className="text-muted-foreground text-center text-sm">
-          <Link to={ROUTES.LOGIN} className="text-primary font-medium hover:underline">
-            Back to sign in
-          </Link>
-        </p>
-      </form>
-    </Form>
+          <Button type="submit" className="w-full text-white" disabled={forgotPassword.isPending}>
+            {forgotPassword.isPending ? <ButtonLoader className="mr-2" /> : null}
+            Send Reset Code
+          </Button>
+
+          <p className="text-muted-foreground text-center text-sm">
+            <Link to={ROUTES.LOGIN} className="text-primary font-medium hover:underline">
+              Back to sign in
+            </Link>
+          </p>
+        </form>
+      </Form>
+    </div>
   );
 }
 
@@ -133,7 +142,13 @@ function VerifyStep({ onSuccess, onBack }: { onSuccess: () => void; onBack: () =
   };
 
   return (
-    <div className="space-y-6">
+    <div className="relative space-y-6">
+      {verifyForgotPassword.isPending && (
+        <div className="bg-background/85 animate-in fade-in absolute inset-0 z-50 flex flex-col items-center justify-center rounded-xl p-4 backdrop-blur-xs transition-all duration-300">
+          <CartoonBotLoader label="Verifying code..." showStatusMessages={false} />
+        </div>
+      )}
+
       <div className="space-y-3">
         <p className="block text-sm font-medium">Enter the 6-digit code</p>
         <p className="text-muted-foreground text-xs">
@@ -160,7 +175,7 @@ function VerifyStep({ onSuccess, onBack }: { onSuccess: () => void; onBack: () =
       </Button>
 
       <div className="flex items-center justify-between text-sm">
-        <Button variant="ghost" size="sm" className="h-auto px-0" onClick={onBack}>
+        <Button variant="ghost" className="h-auto px-0" onClick={onBack}>
           ← Change email
         </Button>
 
@@ -205,74 +220,82 @@ function NewPasswordStep() {
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" noValidate>
-        <FormField
-          control={form.control}
-          name="new_password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>New Password</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Input
-                    type={showPassword ? 'text' : 'password'}
-                    autoComplete="new-password"
-                    placeholder="••••••••"
-                    className="pr-10"
-                    {...field}
-                  />
-                  <button
-                    type="button"
-                    tabIndex={-1}
-                    className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
-                    onClick={() => setShowPassword((v) => !v)}
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+    <div className="relative">
+      {resetPassword.isPending && (
+        <div className="bg-background/85 animate-in fade-in absolute inset-0 z-50 flex flex-col items-center justify-center rounded-xl p-4 backdrop-blur-xs transition-all duration-300">
+          <CartoonBotLoader label="Updating password..." showStatusMessages={false} />
+        </div>
+      )}
 
-        <FormField
-          control={form.control}
-          name="confirmPassword"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Confirm New Password</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Input
-                    type={showConfirm ? 'text' : 'password'}
-                    autoComplete="new-password"
-                    placeholder="••••••••"
-                    className="pr-10"
-                    {...field}
-                  />
-                  <button
-                    type="button"
-                    tabIndex={-1}
-                    className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
-                    onClick={() => setShowConfirm((v) => !v)}
-                  >
-                    {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" noValidate>
+          <FormField
+            control={form.control}
+            name="new_password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>New Password</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete="new-password"
+                      placeholder="••••••••"
+                      className="pr-10"
+                      {...field}
+                    />
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
+                      onClick={() => setShowPassword((v) => !v)}
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <Button type="submit" className="w-full text-white" disabled={resetPassword.isPending}>
-          {resetPassword.isPending ? <ButtonLoader className="mr-2" /> : null}
-          Reset Password
-        </Button>
-      </form>
-    </Form>
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Confirm New Password</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      type={showConfirm ? 'text' : 'password'}
+                      autoComplete="new-password"
+                      placeholder="••••••••"
+                      className="pr-10"
+                      {...field}
+                    />
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
+                      onClick={() => setShowConfirm((v) => !v)}
+                    >
+                      {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Button type="submit" className="w-full text-white" disabled={resetPassword.isPending}>
+            {resetPassword.isPending ? <ButtonLoader className="mr-2" /> : null}
+            Reset Password
+          </Button>
+        </form>
+      </Form>
+    </div>
   );
 }
 

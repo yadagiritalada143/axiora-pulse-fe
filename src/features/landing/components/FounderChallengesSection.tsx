@@ -42,7 +42,7 @@ export function FounderChallengesSection() {
               id="btn-start-project"
               onClick={handleStartProject}
             >
-              <span>Start a project</span>
+              <span>Build Your Idea</span>
               <svg
                 className="cta-arrow"
                 viewBox="0 0 24 24"

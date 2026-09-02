@@ -13,7 +13,7 @@ export function LandingFooter() {
     <footer className="site-footer" id="site-footer">
       <div className="footer-inner">
         <div className="footer-brand">
-          <div className="mb-4">
+          <div className="footer-brand-logo-wrap">
             <Logo size="lg" tone="dark" animated={true} />
           </div>
           <p className="footer-desc">
