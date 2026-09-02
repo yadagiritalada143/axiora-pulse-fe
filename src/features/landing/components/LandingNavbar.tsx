@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { Logo } from '@components/common/Logo';
@@ -6,9 +6,7 @@ import { ROUTES } from '@constants/routes';
 import { useAuthStore } from '@store/auth.store';
 
 export function LandingNavbar() {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const role = useAuthStore((state) => state.role);
@@ -30,16 +28,6 @@ export function LandingNavbar() {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, []);
 
   useEffect(() => {
     if (mobileMenuOpen) {
@@ -103,44 +91,9 @@ export function LandingNavbar() {
           </button>
 
           {!isAuthenticated ? (
-            <div ref={dropdownRef} className={`dropdown-wrapper ${dropdownOpen ? 'active' : ''}`}>
-              <button
-                type="button"
-                className="btn btn-secondary dropdown-toggle"
-                id="login-dropdown-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setDropdownOpen((prev) => !prev);
-                }}
-              >
-                Login
-                <svg
-                  className="chevron-icon"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                >
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
-              </button>
-              <div className="dropdown-menu dropdown-menu-right" id="login-dropdown-menu">
-                <Link
-                  to={ROUTES.LOGIN}
-                  className="dropdown-item"
-                  onClick={() => setDropdownOpen(false)}
-                >
-                  As user
-                </Link>
-                <Link
-                  to={ROUTES.ADMIN_LOGIN}
-                  className="dropdown-item"
-                  onClick={() => setDropdownOpen(false)}
-                >
-                  As Admin
-                </Link>
-              </div>
-            </div>
+            <Link to={ROUTES.LOGIN} className="btn btn-secondary" id="login-btn">
+              Login
+            </Link>
           ) : (
             <button
               className="btn btn-secondary"
@@ -216,22 +169,13 @@ export function LandingNavbar() {
               </button>
 
               {!isAuthenticated ? (
-                <div className="mobile-login-options">
-                  <Link
-                    to={ROUTES.LOGIN}
-                    className="btn btn-secondary mobile-login-btn"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Login as User
-                  </Link>
-                  <Link
-                    to={ROUTES.ADMIN_LOGIN}
-                    className="btn btn-secondary mobile-login-btn"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Login as Admin
-                  </Link>
-                </div>
+                <Link
+                  to={ROUTES.LOGIN}
+                  className="btn btn-secondary mobile-login-btn"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Login
+                </Link>
               ) : (
                 <button
                   className="btn btn-secondary mobile-login-btn"

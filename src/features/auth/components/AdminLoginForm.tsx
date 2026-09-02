@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 
+import { CartoonBotLoader } from '@components/common/CartoonBotLoader';
 import { ButtonLoader } from '@components/common/Loader';
 import { Button } from '@components/ui/button';
 import {
@@ -35,55 +36,63 @@ export function AdminLoginForm() {
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" noValidate>
-        <FormField
-          control={form.control}
-          name="username"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Admin Email</FormLabel>
+    <div className="relative">
+      {adminLogin.isPending && (
+        <div className="bg-background/85 animate-in fade-in absolute inset-0 z-50 flex flex-col items-center justify-center rounded-xl p-4 backdrop-blur-xs transition-all duration-300">
+          <CartoonBotLoader label="Authenticating administrator..." showStatusMessages={false} />
+        </div>
+      )}
 
-              <FormControl>
-                <Input
-                  type="email"
-                  autoComplete="email"
-                  placeholder="Enter admin email"
-                  {...field}
-                />
-              </FormControl>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" noValidate>
+          <FormField
+            control={form.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Admin Email</FormLabel>
 
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                <FormControl>
+                  <Input
+                    type="email"
+                    autoComplete="email"
+                    placeholder="Enter admin email"
+                    {...field}
+                  />
+                </FormControl>
 
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-              <FormControl>
-                <Input
-                  type="password"
-                  autoComplete="current-password"
-                  placeholder="••••••••"
-                  {...field}
-                />
-              </FormControl>
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
 
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                <FormControl>
+                  <Input
+                    type="password"
+                    autoComplete="current-password"
+                    placeholder="••••••••"
+                    {...field}
+                  />
+                </FormControl>
 
-        <Button type="submit" className="w-full text-white" disabled={adminLogin.isPending}>
-          {adminLogin.isPending ? <ButtonLoader className="mr-2" /> : null}
-          Login
-        </Button>
-      </form>
-    </Form>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Button type="submit" className="w-full text-white" disabled={adminLogin.isPending}>
+            {adminLogin.isPending ? <ButtonLoader className="mr-2" /> : null}
+            Login
+          </Button>
+        </form>
+      </Form>
+    </div>
   );
 }

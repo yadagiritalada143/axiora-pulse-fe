@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { useSubmitContact } from '../hooks/useSubmitContact';
+
 export function ContactSection() {
   const [formData, setFormData] = useState({
     name: '',
@@ -8,27 +10,42 @@ export function ContactSection() {
     subject: 'General Inquiry',
     message: '',
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const submitContactMutation = useSubmitContact();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+    const name = formData.name.trim();
+    const email = formData.email.trim();
+    const message = formData.message.trim();
+    const topic = formData.subject.trim();
+
+    if (!name || !email || !message) {
       toast.error('Please fill in all required fields.');
       return;
     }
 
-    setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      toast.success('Thank you! Your message has been sent. We will get back to you shortly.');
-      setFormData({
-        name: '',
-        email: '',
-        subject: 'General Inquiry',
-        message: '',
-      });
-    }, 1000);
+    submitContactMutation.mutate(
+      {
+        name,
+        email,
+        topic,
+        message,
+      },
+      {
+        onSuccess: () => {
+          setFormData({
+            name: '',
+            email: '',
+            subject: 'General Inquiry',
+            message: '',
+          });
+        },
+      },
+    );
   };
+
+  const isSubmitting = submitContactMutation.isPending;
 
   return (
     <section className="contact-section" id="contact">
@@ -92,6 +109,7 @@ export function ContactSection() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="form-input-custom"
+                  disabled={isSubmitting}
                 />
               </div>
 
@@ -107,6 +125,7 @@ export function ContactSection() {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="form-input-custom"
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -120,6 +139,7 @@ export function ContactSection() {
                 value={formData.subject}
                 onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                 className="form-input-custom form-select-custom"
+                disabled={isSubmitting}
               >
                 <option value="General Inquiry">General Inquiry</option>
                 <option value="Product Feedback">Product Feedback</option>
@@ -141,6 +161,7 @@ export function ContactSection() {
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                 className="form-input-custom form-textarea-custom"
+                disabled={isSubmitting}
               />
             </div>
 

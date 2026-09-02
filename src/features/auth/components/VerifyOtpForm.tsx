@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import { CartoonBotLoader } from '@/components/common/CartoonBotLoader';
 import { ButtonLoader } from '@/components/common/Loader';
 import { Button } from '@components/ui/button';
 import { OtpInput } from '@components/ui/otp-input';
@@ -65,7 +66,13 @@ export function VerifyOtpForm({ heading, description }: { heading: string; descr
   };
 
   return (
-    <div className="space-y-8">
+    <div className="relative space-y-8">
+      {verifyOtp.isPending && (
+        <div className="bg-background/85 animate-in fade-in absolute inset-0 z-50 flex flex-col items-center justify-center rounded-xl p-4 backdrop-blur-xs transition-all duration-300">
+          <CartoonBotLoader label="Verifying security code..." showStatusMessages={false} />
+        </div>
+      )}
+
       <div>
         <h1 className="text-3xl font-bold">{heading}</h1>
 

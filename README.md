@@ -1,63 +1,75 @@
 # Axiora Pulse Frontend
 
-Axiora Pulse is an AI workspace for turning startup ideas into validated opportunities. Users can describe an idea, work through structured questions and surveys, collaborate with an AI co-founder, and manage the resulting workspaces.
+Axiora Pulse is an AI workspace for turning startup ideas into validated opportunities. Founders and teams can describe their ideas, analyze market demand through structured questions and customer surveys, collaborate with specialized AI mentor agents, and manage end-to-end venture validation workspaces.
 
-This repository contains the frontend only. It communicates with an existing REST API and does not include backend services.
+This repository contains the frontend application built with React 19, Vite, TypeScript, and Tailwind CSS.
 
-## Current Status
+---
 
-The frontend currently includes:
+## Key Features
 
-- Guest and authenticated routing with protected and admin-only route guards
-- Login, registration, OTP verification, login verification, logout, and password reset flows
-- Pricing and onboarding screens
-- Dashboard and workspace management, including workspace details, archive, surveys, and attachments views
-- Questionnaire introduction and interactive question flows
-- Public survey links and authenticated workspace surveys
-- AI chat with conversations, model selection, Markdown messages, and optional streaming responses
-- Profile and application settings screens
-- Admin login, dashboard, user management, and interactive-question management screens
-- Shared layouts, shadcn/ui components, responsive app navigation, error handling, notifications, and lazy-loaded routes
-- API services and TanStack Query hooks for auth, billing, chat, onboarding, mentor, survey, and workspace data
-- Unit and component tests using Jest and React Testing Library
+- **Modern Interactive Landing Page**:
+  - High-performance marketing experience with pure CSS/Canvas animations and magic rings background.
+  - Zero-friction bottom-right `0` to `100` `%` preloader.
+  - Comprehensive feature sections: Hero, Founder Challenges, About Platform, AI Mentor Team, Startup Journey Roadmap, Interactive FAQ, Testimonials, "Get in Touch" Contact Form, and Quick-Action Footer.
+  - Smooth in-page navigation with floating back-to-top controls.
 
-## In Progress
+- **Cartoon Bot AI Loading Mascot**:
+  - Custom SVG cartoon robot mascot loader with floating physics, pulsing antenna signal waves, blinking glowing eyes, and heart core animations.
+  - Interactive auth overlays on Login, Register, Admin Login, OTP Verification, and Password Reset forms.
 
-The following areas are present in the architecture or UI but still need further implementation or backend support:
+- **Authentication & Security**:
+  - Email and password login/registration with form validation (React Hook Form + Zod).
+  - MFA / OTP code verification flows and password recovery.
+  - Role-based route protection (`GuestRoute`, `ProtectedRoute`, `AdminRoute`).
 
-- Complete the guided onboarding and idea-intake experience across all workflow steps
-- Finish mentor and orchestration workflows as their API contracts become available
-- Connect attachment selection to a real upload endpoint
-- Continue expanding admin capabilities and validation/question management
-- Add and refine backend integrations for the remaining survey, workspace, and AI workflows
-- Increase coverage for pages, feature hooks, protected routes, and end-to-end user journeys
+- **Workspaces & Venture Validation**:
+  - Workspace management, idea intake, details, surveys, attachments, and archive workflows.
+  - Interactive questionnaires and automated market validation.
+  - Public and authenticated customer surveys with real-time response capture.
+
+- **AI Co-Founder & Chat**:
+  - Multi-turn AI mentor chat with model selection, Markdown rendering, and optional streaming responses.
+
+- **Administration**:
+  - Dedicated admin dashboard, user administration, and interactive question management.
+
+---
 
 ## Tech Stack
 
-- React 19 and TypeScript in strict mode
-- Vite for development and production builds
-- React Router v7 for lazy-loaded route composition and guards
-- Tailwind CSS v4 and shadcn/ui for styling and accessible primitives
-- TanStack Query v5 for server state and Zustand for client-only state
-- Axios for REST API communication
-- React Hook Form and Zod for forms and validation
-- Framer Motion, lucide-react, Sonner, and React Markdown for UI behavior and presentation
-- Jest, React Testing Library, and user-event for tests
+- **Framework**: [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) (Strict Mode)
+- **Bundler & Build Tool**: [Vite](https://vitejs.dev/)
+- **Routing**: [React Router v7](https://reactrouter.com/) with route-level code splitting and layout composition
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/) + [Lucide Icons](https://lucide.dev/)
+- **State Management**: [TanStack Query v5](https://tanstack.com/query/latest) (server state) + [Zustand](https://zustand-demo.pmnd.rs/) (client state)
+- **Form Handling**: [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/)
+- **HTTP Client**: [Axios](https://axios-http.com/)
+- **Testing**: [Jest](https://jestjs.io/) + [React Testing Library](https://testing-library.com/) + `@testing-library/user-event`
+
+---
 
 ## Getting Started
 
-Requirements: Node.js and npm.
+### Prerequisites
+- Node.js (v18+ recommended)
+- npm or pnpm
+
+### Installation & Development
 
 ```bash
+# 1. Install dependencies
 npm install
+
+# 2. Start local development server
 npm run dev
 ```
 
-The development server is available at `http://localhost:5173` by default.
+The application will be available at `http://localhost:5173`.
 
-### Environment Variables
+### Environment Configuration
 
-Create a `.env` file in the project root when you need to override defaults:
+Create a `.env` file in the project root to configure local environment variables:
 
 ```env
 VITE_API_URL=http://localhost:8000/api
@@ -66,39 +78,45 @@ VITE_ENABLE_LOGGER=true
 VITE_AI_STREAMING=true
 ```
 
-All variables are optional. The application defaults to the values shown above; logging defaults to enabled in development, and AI streaming defaults to enabled.
+---
 
-## Commands
+## Available Scripts
 
-```bash
-npm run dev          # start the Vite development server
-npm run build        # typecheck and create a production build
-npm run preview      # preview the production build
-npm run lint         # run ESLint
-npm run typecheck    # run TypeScript checks
-npm test             # run the Jest test suite
-npm run test:watch   # run Jest in watch mode
-npm run test:coverage # generate test coverage
-npm run format       # format the repository with Prettier
-```
+| Command | Description |
+| :--- | :--- |
+| `npm run dev` | Start the local Vite development server |
+| `npm run build` | Run TypeScript type checks and build the production bundle |
+| `npm run preview` | Preview the local production build |
+| `npm run lint` | Run ESLint checks across all codebase files |
+| `npm run typecheck` | Run TypeScript strict compiler checks (`tsc -b`) |
+| `npm test` | Run the complete Jest test suite |
+| `npm run test:watch` | Run Jest in interactive watch mode |
+| `npm run test:coverage` | Generate code coverage report |
+| `npm run format` | Format source files with Prettier |
+
+---
 
 ## Project Structure
 
 ```text
 src/
-	app/          application providers, layouts, router, and composition
-	components/   shared UI, chat, common, and layout components
-	features/     auth, AI, onboarding, pricing, settings, survey, and workspace logic
-	pages/        route-level page components
-	services/     API clients and domain services
-	store/        Zustand client state
-	types/        shared TypeScript types
-	tests/        Jest and React Testing Library tests
+├── app/          # App providers, layouts (Public, Auth, Dashboard, Admin), and router setup
+├── components/   # Reusable UI primitives, CartoonBotLoader, common widgets, and layout items
+├── constants/    # Route paths, API endpoints, and configuration constants
+├── features/     # Domain features (auth, landing, workspace, survey, ai-chat, onboarding, settings)
+├── hooks/        # Global custom React hooks
+├── lib/          # Utilities, axios client setup, and helper functions
+├── pages/        # Route page components (LandingPage, LoginPage, DashboardPage, etc.)
+├── schemas/      # Zod validation schemas for forms and API models
+├── services/     # API service layer and domain endpoints
+├── store/        # Zustand client state stores (auth, workspace, etc.)
+├── tests/        # Jest & React Testing Library test suites
+└── types/        # Global TypeScript interfaces and type definitions
 ```
 
-Server-derived data belongs in TanStack Query. Zustand is reserved for client and session UI state, and API calls are kept in `src/services/`.
+---
 
-## Further Documentation
+## Documentation
 
-- [`CLAUDE.md`](./CLAUDE.md) contains the detailed architecture, conventions, testing strategy, and contribution workflow.
-- [`GRAPHFY.md`](./GRAPHFY.md) provides a relationship-first map of the codebase.
+- [`CLAUDE.md`](./CLAUDE.md): Architecture conventions, code style guidelines, and workflow rules.
+- [`GRAPHFY.md`](./GRAPHFY.md): Codebase topology and component relationship graph.
