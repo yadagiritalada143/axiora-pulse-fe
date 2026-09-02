@@ -112,6 +112,10 @@ export const API_ENDPOINTS = {
       `/v1/admin/surveys/${surveyId}/responses/${responseId}`,
     SET_USER_STATUS: (userId: number) => `/v1/admin/user-details/${userId}/status`,
   },
+
+  CONTACT: {
+    SUBMIT: '/v1/contact',
+  },
 } as const;
 
 export const HTTP_STATUS = {
