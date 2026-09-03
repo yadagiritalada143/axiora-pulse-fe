@@ -1,10 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
 import {
   useCreateWorkspace,
   useDeleteWorkspace,
+  useUpdateWorkspace,
   useWorkspaces,
 } from '@features/workspace/hooks/useWorkspaces';
 import type { Workspace } from '@features/workspace/types';
@@ -25,11 +26,13 @@ jest.mock('@features/workspace/hooks/useWorkspaces', () => ({
   useWorkspaces: jest.fn(),
   useDeleteWorkspace: jest.fn(),
   useCreateWorkspace: jest.fn(),
+  useUpdateWorkspace: jest.fn(),
 }));
 
 const mockedUseWorkspaces = useWorkspaces as jest.Mock;
 const mockedUseDeleteWorkspace = useDeleteWorkspace as jest.Mock;
 const mockedUseCreateWorkspace = useCreateWorkspace as jest.Mock;
+const mockedUseUpdateWorkspace = useUpdateWorkspace as jest.Mock;
 
 const workspace: Workspace = {
   id: 1,
@@ -52,6 +55,7 @@ describe('WorkspacePage', () => {
   beforeEach(() => {
     mockedUseDeleteWorkspace.mockReturnValue({ mutate: jest.fn(), isPending: false });
     mockedUseCreateWorkspace.mockReturnValue({ mutate: jest.fn(), isPending: false });
+    mockedUseUpdateWorkspace.mockReturnValue({ mutate: jest.fn(), isPending: false });
   });
 
   afterEach(() => {
@@ -190,5 +194,63 @@ describe('WorkspacePage', () => {
 
     expect(mutate).not.toHaveBeenCalled();
     expect(screen.queryByText('Archive Workspace')).not.toBeInTheDocument();
+  });
+
+  it('navigates to the workspace detail route when a workspace card is clicked', async () => {
+    const user = userEvent.setup();
+    mockedUseWorkspaces.mockReturnValue({
+      data: { total: 1, workspaces: [workspace] },
+      isLoading: false,
+      isError: false,
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route path="/" element={<WorkspacePage />} />
+          <Route path="/workspace/:workspaceId" element={<div>workspace-detail</div>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByRole('button', { name: /rocket idea/i }));
+
+    expect(screen.getByText('workspace-detail')).toBeInTheDocument();
+  });
+
+  it('opens the edit dialog from the workspace card menu', async () => {
+    const user = userEvent.setup();
+    mockedUseWorkspaces.mockReturnValue({
+      data: { total: 1, workspaces: [workspace] },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderPage();
+
+    await user.click(screen.getByRole('button', { name: 'Workspace actions' }));
+    await user.click(await screen.findByText('Edit'));
+
+    expect(screen.getByRole('heading', { name: 'Edit Workspace' })).toBeInTheDocument();
+  });
+
+  it('closes the edit dialog when its open state is set to false', async () => {
+    const user = userEvent.setup();
+    mockedUseWorkspaces.mockReturnValue({
+      data: { total: 1, workspaces: [workspace] },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderPage();
+
+    await user.click(screen.getByRole('button', { name: 'Workspace actions' }));
+    await user.click(await screen.findByText('Edit'));
+
+    expect(screen.getByRole('heading', { name: 'Edit Workspace' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.queryByText('Edit Workspace')).not.toBeInTheDocument();
   });
 });

@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { toast } from 'sonner';
 
 import { CreateWorkspaceDialog } from '@features/workspace/components/CreateWorkspaceDialog';
 import { useCreateWorkspace } from '@features/workspace/hooks/useWorkspaces';
@@ -87,5 +88,51 @@ describe('CreateWorkspaceDialog', () => {
 
     const submitButton = screen.getByRole('button', { name: 'Creating...' });
     expect(submitButton).toBeDisabled();
+  });
+
+  it('shows an error toast and keeps the dialog open when creation fails', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = jest.fn();
+    const err = { message: 'Name already taken' };
+    const mutate = jest.fn(
+      (
+        _values: { name: string; description?: string },
+        options?: { onError?: (e: unknown) => void },
+      ) => {
+        options?.onError?.(err);
+      },
+    );
+    mockedUseCreateWorkspace.mockReturnValue({ mutate, isPending: false });
+
+    render(<CreateWorkspaceDialog open onOpenChange={onOpenChange} />);
+
+    await user.type(screen.getByLabelText('Workspace Name'), 'My Workspace');
+    await user.type(screen.getByLabelText('Description'), 'A cool idea');
+    await user.click(screen.getByRole('button', { name: 'Create Workspace' }));
+
+    await waitFor(() => expect(mutate).toHaveBeenCalled());
+    expect(toast.error).toHaveBeenCalledWith('Name already taken');
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it('falls back to a generic error toast when the failure has no message', async () => {
+    const user = userEvent.setup();
+    const mutate = jest.fn(
+      (
+        _values: { name: string; description?: string },
+        options?: { onError?: (e: unknown) => void },
+      ) => {
+        options?.onError?.({});
+      },
+    );
+    mockedUseCreateWorkspace.mockReturnValue({ mutate, isPending: false });
+
+    render(<CreateWorkspaceDialog open onOpenChange={jest.fn()} />);
+
+    await user.type(screen.getByLabelText('Workspace Name'), 'My Workspace');
+    await user.click(screen.getByRole('button', { name: 'Create Workspace' }));
+
+    await waitFor(() => expect(mutate).toHaveBeenCalled());
+    expect(toast.error).toHaveBeenCalledWith('Failed to create workspace. Please try again.');
   });
 });

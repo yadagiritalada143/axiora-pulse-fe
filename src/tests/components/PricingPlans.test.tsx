@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 import type { PricingPlan } from '@/types/api.types';
 import { ROUTES } from '@constants/routes';
@@ -8,6 +9,10 @@ import { PricingPlans } from '@features/pricing/components/PricingPlans';
 import { usePricingPlans } from '@features/pricing/hooks/usePricingPlans';
 import { useSubscribe } from '@features/pricing/hooks/useSubscribe';
 import { useAuthStore } from '@store/auth.store';
+
+jest.mock('sonner', () => ({
+  toast: { error: jest.fn(), success: jest.fn() },
+}));
 
 jest.mock('react-router-dom', () => ({
   useNavigate: jest.fn(),
@@ -189,5 +194,79 @@ describe('PricingPlans', () => {
     expect(subscribeMutate).not.toHaveBeenCalled();
     expect(setHasActivePlan).toHaveBeenCalledWith(true);
     expect(navigate).toHaveBeenCalledWith(ROUTES.DASHBOARD);
+  });
+
+  it('renders an error message and retries via the Try again button', async () => {
+    const user = userEvent.setup();
+    const refetch = jest.fn();
+    mockedUsePricingPlans.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      error: new Error('Plans failed to load'),
+      refetch,
+    });
+
+    render(<PricingPlans />);
+
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /try again/i }));
+
+    expect(refetch).toHaveBeenCalled();
+  });
+
+  it('does not navigate or toast when a paid subscription is dismissed', async () => {
+    const user = userEvent.setup();
+    const errorMutate = jest.fn((_vars: unknown, opts?: { onError?: (err: Error) => void }) =>
+      opts?.onError?.(new Error('Checkout was dismissed.')),
+    );
+    mockedUseSubscribe.mockReturnValue({
+      mutate: errorMutate,
+      isPending: false,
+      variables: undefined,
+    });
+
+    render(<PricingPlans />);
+
+    const desktopGrid = screen.getAllByText('Starter Plan')[0]?.closest('.sm\\:grid');
+    if (!desktopGrid) throw new Error('desktop grid not found');
+    const starterCard = within(desktopGrid as HTMLElement)
+      .getByText('Starter Plan')
+      .closest('.rounded-2xl');
+
+    await user.click(
+      within(starterCard as HTMLElement).getByRole('button', { name: 'Choose plan' }),
+    );
+
+    expect(errorMutate).toHaveBeenCalled();
+    expect(toast.error).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+    expect(setHasActivePlan).not.toHaveBeenCalled();
+  });
+
+  it('shows an error toast when a paid subscription fails', async () => {
+    const user = userEvent.setup();
+    const errorMutate = jest.fn((_vars: unknown, opts?: { onError?: (err: Error) => void }) =>
+      opts?.onError?.(new Error('Payment failed.')),
+    );
+    mockedUseSubscribe.mockReturnValue({
+      mutate: errorMutate,
+      isPending: false,
+      variables: undefined,
+    });
+
+    render(<PricingPlans />);
+
+    const desktopGrid = screen.getAllByText('Starter Plan')[0]?.closest('.sm\\:grid');
+    if (!desktopGrid) throw new Error('desktop grid not found');
+    const starterCard = within(desktopGrid as HTMLElement)
+      .getByText('Starter Plan')
+      .closest('.rounded-2xl');
+
+    await user.click(
+      within(starterCard as HTMLElement).getByRole('button', { name: 'Choose plan' }),
+    );
+
+    expect(toast.error).toHaveBeenCalledWith('Payment failed.');
   });
 });

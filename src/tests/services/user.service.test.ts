@@ -96,6 +96,57 @@ describe('userService', () => {
     expect(result).toEqual(mockUser);
   });
 
+  it('updates profile via PATCH /users/me and unwraps ApiResponse envelope', async () => {
+    const payload = { name: 'Jane', email: 'jane@example.com' };
+    const mockUser = { id: '1', email: 'jane@example.com', name: 'Jane' };
+    mockedApiClient.patch.mockResolvedValueOnce({ data: { data: mockUser } });
+
+    const result = await userService.updateProfile(payload);
+
+    expect(mockedApiClient.patch).toHaveBeenCalledWith(API_ENDPOINTS.USER.UPDATE_PROFILE, payload);
+    expect(result).toEqual(mockUser);
+  });
+
+  it('updates profile via PATCH /users/me when response is raw (no envelope)', async () => {
+    const payload = { name: 'Jane', email: 'jane@example.com' };
+    const mockUser = { id: '1', email: 'jane@example.com', name: 'Jane' };
+    mockedApiClient.patch.mockResolvedValueOnce({ data: mockUser });
+
+    const result = await userService.updateProfile(payload);
+
+    expect(mockedApiClient.patch).toHaveBeenCalledWith(API_ENDPOINTS.USER.UPDATE_PROFILE, payload);
+    expect(result).toEqual(mockUser);
+  });
+
+  it('updates profile with avatarUrl via PATCH /users/me', async () => {
+    const payload = {
+      name: 'Jane',
+      email: 'jane@example.com',
+      avatarUrl: 'http://example.com/a.png',
+    };
+    const mockUser = {
+      id: '1',
+      email: 'jane@example.com',
+      name: 'Jane',
+      avatarUrl: 'http://example.com/a.png',
+    };
+    mockedApiClient.patch.mockResolvedValueOnce({ data: mockUser });
+
+    const result = await userService.updateProfile(payload);
+
+    expect(result).toEqual(mockUser);
+  });
+
+  it('uploadAvatar returns raw user when response has no data envelope', async () => {
+    const mockFile = new File(['dummy'], 'avatar.png', { type: 'image/png' });
+    const mockUser = { id: '1', email: 'john@example.com', name: 'John Doe' };
+    mockedApiClient.post.mockResolvedValueOnce({ data: mockUser });
+
+    const result = await userService.uploadAvatar(mockFile);
+
+    expect(result).toEqual(mockUser);
+  });
+
   it('calls POST /v1/auth/change-password on changePassword', async () => {
     const payload = {
       current_password: 'OldPassword123!',

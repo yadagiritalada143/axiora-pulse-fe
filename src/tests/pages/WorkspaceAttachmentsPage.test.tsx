@@ -53,12 +53,16 @@ const MOCK_ATTACHMENTS: WorkspaceAttachmentResponse[] = [
 
 let mockAttachments = MOCK_ATTACHMENTS;
 let mockIsLoading = false;
+let mockIsFetching = false;
+let mockRefetch = jest.fn();
 
 jest.mock('@features/workspace/hooks/useWorkspaceAttachments', () => ({
   useWorkspaceAttachments: () => ({
     attachments: mockAttachments,
     total: mockAttachments.length,
     isLoading: mockIsLoading,
+    isFetching: mockIsFetching,
+    refetch: mockRefetch,
     deleteAttachment: mockDeleteAttachment,
     isDeleting: false,
     uploadAttachment: mockUploadAttachment,
@@ -98,6 +102,8 @@ describe('WorkspaceAttachmentsPage', () => {
     jest.clearAllMocks();
     mockAttachments = MOCK_ATTACHMENTS;
     mockIsLoading = false;
+    mockIsFetching = false;
+    mockRefetch = jest.fn();
   });
 
   it('renders page header and attachment stats', () => {
@@ -179,5 +185,67 @@ describe('WorkspaceAttachmentsPage', () => {
     expect(
       screen.getByText(/files and documents uploaded in your ai mentor chat will appear here/i),
     ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /go to ai mentor chat/i })).toBeInTheDocument();
+  });
+
+  it('shows a loading state while attachments are being fetched', () => {
+    mockIsLoading = true;
+    renderComponent();
+
+    expect(screen.getByText(/loading workspace attachments/i)).toBeInTheDocument();
+    expect(screen.queryByText(/pitch_deck_v1\.pdf/i)).not.toBeInTheDocument();
+  });
+
+  it('triggers a refetch when the refresh button is clicked', async () => {
+    const user = userEvent.setup();
+    renderComponent();
+
+    await user.click(screen.getByRole('button', { name: /refresh/i }));
+
+    expect(mockRefetch).toHaveBeenCalled();
+  });
+
+  it('shows a search-specific empty state and clears the search and filters', async () => {
+    const user = userEvent.setup();
+    renderComponent();
+
+    const searchInput = screen.getByPlaceholderText(/search/i);
+    await user.type(searchInput, 'zzz_nonexistent');
+
+    expect(screen.getByText(/no matching attachments found/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /clear search & filters/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /clear search & filters/i }));
+
+    expect(screen.getByText('pitch_deck_v1.pdf')).toBeInTheDocument();
+    expect(screen.getByText('architecture_diagram.png')).toBeInTheDocument();
+    expect(screen.getByText('market_research.docx')).toBeInTheDocument();
+  });
+
+  it('sorts attachments by name, oldest, and size', async () => {
+    const user = userEvent.setup();
+    renderComponent();
+
+    const sortSelect = screen.getByLabelText('Sort attachments');
+
+    await user.selectOptions(sortSelect, 'name');
+    const gridCardsByName = screen.getAllByText(/\.(pdf|png|docx)$/i).map((el) => el.textContent);
+    expect(gridCardsByName).toEqual([
+      'architecture_diagram.png',
+      'market_research.docx',
+      'pitch_deck_v1.pdf',
+    ]);
+
+    await user.selectOptions(sortSelect, 'oldest');
+    const gridCardsByOldest = screen.getAllByText(/\.(pdf|png|docx)$/i).map((el) => el.textContent);
+    expect(gridCardsByOldest).toEqual([
+      'pitch_deck_v1.pdf',
+      'architecture_diagram.png',
+      'market_research.docx',
+    ]);
+
+    await user.selectOptions(sortSelect, 'size');
+    const gridCardsBySize = screen.getAllByText(/\.(pdf|png|docx)$/i).map((el) => el.textContent);
+    expect(gridCardsBySize[0]).toBe('architecture_diagram.png');
   });
 });

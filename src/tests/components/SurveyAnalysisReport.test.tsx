@@ -293,4 +293,214 @@ describe('SurveyAnalysisReport', () => {
       'Survey intelligence report downloaded successfully.',
     );
   });
+
+  it('shows an error toast when running analysis fails', async () => {
+    const user = userEvent.setup();
+    const error = new Error('Something went wrong');
+    const mutate = jest.fn((_p, options) => options?.onError?.(error));
+    mockedUseRunSurveyAnalysis.mockReturnValue({ mutate, isPending: false });
+
+    render(<SurveyAnalysisReport survey={baseSurvey} workspaceId={42} totalResponses={3} />);
+
+    await user.click(screen.getByRole('button', { name: /^Run Arya Analysis$/i }));
+
+    expect(mockedToast.error).toHaveBeenCalledWith('Something went wrong');
+  });
+
+  it('uses response detail when error has no top-level message', async () => {
+    const user = userEvent.setup();
+    const err = { response: { data: { detail: 'Backend failed' } } };
+    const mutate = jest.fn((_p, options) => options?.onError?.(err));
+    mockedUseRunSurveyAnalysis.mockReturnValue({ mutate, isPending: false });
+
+    render(<SurveyAnalysisReport survey={baseSurvey} workspaceId={42} totalResponses={3} />);
+
+    await user.click(screen.getByRole('button', { name: /^Run Arya Analysis$/i }));
+
+    expect(mockedToast.error).toHaveBeenCalledWith('Backend failed');
+  });
+
+  it('falls back to a generic error message when error is empty', async () => {
+    const user = userEvent.setup();
+    const mutate = jest.fn((_p, options) => options?.onError?.({}));
+    mockedUseRunSurveyAnalysis.mockReturnValue({ mutate, isPending: false });
+
+    render(<SurveyAnalysisReport survey={baseSurvey} workspaceId={42} totalResponses={3} />);
+
+    await user.click(screen.getByRole('button', { name: /^Run Arya Analysis$/i }));
+
+    expect(mockedToast.error).toHaveBeenCalledWith(
+      'Failed to run response analysis. Please try again.',
+    );
+  });
+
+  it('exports analysis as JSON when the agent report download fails', async () => {
+    const user = userEvent.setup();
+    mockedUseSurveyAnalysis.mockReturnValue({
+      data: { survey_id: 5, status: 'success', analysis_result: fullAnalysis },
+      isLoading: false,
+    });
+    mockedSurveyService.downloadAgentReport.mockRejectedValueOnce(new Error('pdf failed'));
+
+    render(<SurveyAnalysisReport survey={baseSurvey} workspaceId={42} totalResponses={5} />);
+
+    await user.click(screen.getByRole('button', { name: /Export Report/i }));
+
+    expect(mockedToast.info).toHaveBeenCalledWith('Exported analysis data as JSON.');
+  });
+
+  it('copies the public survey link to the clipboard', async () => {
+    const user = userEvent.setup();
+    const writeText = jest.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
+    });
+
+    render(<SurveyAnalysisReport survey={baseSurvey} workspaceId={42} totalResponses={0} />);
+
+    await user.click(screen.getByRole('button', { name: /Share Survey Link/i }));
+
+    expect(writeText).toHaveBeenCalledWith('http://localhost/surveys/public/abc123token');
+    expect(mockedToast.success).toHaveBeenCalledWith('Public survey link copied to clipboard!');
+  });
+
+  it('navigates to the editor tab via onNavigateTab when there is no public token', async () => {
+    const user = userEvent.setup();
+    const mockNavigate = jest.fn();
+    const noTokenSurvey = { ...baseSurvey, public_token: '' };
+
+    render(
+      <SurveyAnalysisReport
+        survey={noTokenSurvey}
+        workspaceId={42}
+        totalResponses={0}
+        onNavigateTab={mockNavigate}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /Share Survey Link/i }));
+
+    expect(mockNavigate).toHaveBeenCalledWith('responses');
+  });
+
+  it('falls back to the survey analysis_result when the query returns no result', () => {
+    mockedUseSurveyAnalysis.mockReturnValue({ data: undefined, isLoading: false });
+    const surveyWithResult = { ...baseSurvey, analysis_result: fullAnalysis };
+
+    render(<SurveyAnalysisReport survey={surveyWithResult} workspaceId={42} totalResponses={5} />);
+
+    expect(screen.getByText('Survey Analysis')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Export Report/i })).toBeInTheDocument();
+  });
+
+  it('shows Re-run Analysis and validated badge once analysis exists with a validated problem', () => {
+    const validatedAnalysis = {
+      ...fullAnalysis,
+      validation: {
+        ...fullAnalysis.validation,
+        problems: [
+          {
+            ...(fullAnalysis.validation?.problems?.[0] as object),
+            status: 'validated',
+          },
+        ],
+      },
+    };
+    mockedUseSurveyAnalysis.mockReturnValue({
+      data: { survey_id: 5, status: 'success', analysis_result: validatedAnalysis },
+      isLoading: false,
+    });
+
+    render(<SurveyAnalysisReport survey={baseSurvey} workspaceId={42} totalResponses={10} />);
+
+    expect(screen.getByRole('button', { name: /Re-run Analysis/i })).toBeInTheDocument();
+  });
+});
+
+describe('SurveyAnalysisReport extractText', () => {
+  const keyCases: { label: string; value: Record<string, unknown> }[] = [
+    { label: 'statement', value: { statement: 'From statement key' } },
+    { label: 'problem_statement', value: { problem_statement: 'From problem_statement key' } },
+    { label: 'recommended_action', value: { recommended_action: 'From recommended_action key' } },
+    { label: 'action', value: { action: 'From action key' } },
+    { label: 'pain_point', value: { pain_point: 'From pain_point key' } },
+    { label: 'persona_name', value: { persona_name: 'From persona_name key' } },
+    { label: 'summary', value: { summary: 'From summary key' } },
+    { label: 'details', value: { details: 'From details key' } },
+    { label: 'description', value: { description: 'From description key' } },
+    { label: 'title', value: { title: 'From title key' } },
+    { label: 'text', value: { text: 'From text key' } },
+    { label: 'name', value: { name: 'From name key' } },
+    { label: 'term', value: { term: 'From term key' } },
+    { label: 'objection', value: { objection: 'From objection key' } },
+    { label: 'barrier', value: { barrier: 'From barrier key' } },
+    { label: 'readiness_level', value: { readiness_level: 'From readiness_level key' } },
+    { label: 'hypothesis', value: { hypothesis: 'From hypothesis key' } },
+    { label: 'feature', value: { feature: 'From feature key' } },
+    { label: 'need', value: { need: 'From need key' } },
+    { label: 'behaviour', value: { behaviour: 'From behaviour key' } },
+    { label: 'pattern', value: { pattern: 'From pattern key' } },
+    { label: 'indicator', value: { indicator: 'From indicator key' } },
+    { label: 'value_proposition', value: { value_proposition: 'From value_proposition key' } },
+    {
+      label: 'business_implication',
+      value: { business_implication: 'From business_implication key' },
+    },
+    { label: 'rationale', value: { rationale: 'From rationale key' } },
+    { label: 'sentiment_label', value: { sentiment_label: 'From sentiment_label key' } },
+  ];
+
+  beforeEach(() => {
+    mockedUseRunSurveyAnalysis.mockReturnValue({ mutate: jest.fn(), isPending: false });
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it.each(keyCases)('extracts text from the "$label" object key', ({ value }) => {
+    const analysis = {
+      ...fullAnalysis,
+      executive_summary: value,
+    } as unknown as SurveyAnalysisResult;
+    mockedUseSurveyAnalysis.mockReturnValue({
+      data: { survey_id: 5, status: 'success', analysis_result: analysis },
+      isLoading: false,
+    });
+
+    render(<SurveyAnalysisReport survey={baseSurvey} workspaceId={42} totalResponses={5} />);
+
+    expect(screen.getByText(/From .* key/)).toBeInTheDocument();
+  });
+
+  it('falls back to scanning arbitrary object entries for a string value', () => {
+    const analysis = {
+      ...fullAnalysis,
+      executive_summary: { custom_field: 'Custom fallback value' },
+    } as unknown as SurveyAnalysisResult;
+    mockedUseSurveyAnalysis.mockReturnValue({
+      data: { survey_id: 5, status: 'success', analysis_result: analysis },
+      isLoading: false,
+    });
+
+    render(<SurveyAnalysisReport survey={baseSurvey} workspaceId={42} totalResponses={5} />);
+
+    expect(screen.getByText(/Custom fallback value/)).toBeInTheDocument();
+  });
+
+  it('renders the fallback text when declared value is null', () => {
+    const analysis = {
+      ...fullAnalysis,
+      executive_summary: null,
+    } as unknown as SurveyAnalysisResult;
+    mockedUseSurveyAnalysis.mockReturnValue({
+      data: { survey_id: 5, status: 'success', analysis_result: analysis },
+      isLoading: false,
+    });
+
+    render(<SurveyAnalysisReport survey={baseSurvey} workspaceId={42} totalResponses={5} />);
+
+    expect(screen.getByText(/not sufficient to validate the problem/)).toBeInTheDocument();
+  });
 });
