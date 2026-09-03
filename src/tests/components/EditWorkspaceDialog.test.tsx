@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { toast } from 'sonner';
 
 import { EditWorkspaceDialog } from '@features/workspace/components/EditWorkspaceDialog';
 import { useUpdateWorkspace } from '@features/workspace/hooks/useWorkspaces';
@@ -150,5 +151,48 @@ describe('EditWorkspaceDialog', () => {
 
     expect(screen.getByRole('button', { name: 'Saving...' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+  });
+
+  it('shows an error toast and keeps the dialog open when the update fails', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = jest.fn();
+    const err = { message: 'Update rejected' };
+    const mutate = jest.fn(
+      (
+        _values: { id: number; payload: { name: string; description: string } },
+        options?: { onError?: (e: unknown) => void },
+      ) => {
+        options?.onError?.(err);
+      },
+    );
+    mockedUseUpdateWorkspace.mockReturnValue({ mutate, isPending: false });
+
+    render(<EditWorkspaceDialog open workspace={workspace} onOpenChange={onOpenChange} />);
+
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+    await waitFor(() => expect(mutate).toHaveBeenCalled());
+    expect(toast.error).toHaveBeenCalledWith('Update rejected');
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it('falls back to a generic error toast when the update failure has no message', async () => {
+    const user = userEvent.setup();
+    const mutate = jest.fn(
+      (
+        _values: { id: number; payload: { name: string; description: string } },
+        options?: { onError?: (e: unknown) => void },
+      ) => {
+        options?.onError?.({});
+      },
+    );
+    mockedUseUpdateWorkspace.mockReturnValue({ mutate, isPending: false });
+
+    render(<EditWorkspaceDialog open workspace={workspace} onOpenChange={jest.fn()} />);
+
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+    await waitFor(() => expect(mutate).toHaveBeenCalled());
+    expect(toast.error).toHaveBeenCalledWith('Failed to update workspace. Please try again.');
   });
 });

@@ -92,4 +92,28 @@ describe('WorkspaceMentorIntake', () => {
     expect(screen.getByText('Fleet Route Optimizer')).toBeInTheDocument();
     expect(screen.getByText('Lifestyle Health Tracker')).toBeInTheDocument();
   });
+
+  it('fills the title and description when an example idea is clicked', async () => {
+    const onSubmit = jest.fn();
+    const user = userEvent.setup();
+
+    render(<WorkspaceMentorIntake onSubmit={onSubmit} isPending={false} />);
+
+    await user.click(screen.getByText('Fleet Route Optimizer'));
+
+    expect(screen.getByLabelText('Idea Title')).toHaveValue('Fleet Route Optimizer');
+    expect(screen.getByLabelText('Describe your Idea….')).toHaveValue(
+      'An intelligent route planning system for delivery fleets that dynamically avoids traffic, reduces fuel costs, and lowers CO2 emission.',
+    );
+
+    const visibleContinueButton = screen
+      .getAllByRole('button', { name: /continue/i })
+      .find((button) => !button.className.includes('hidden'));
+    if (!visibleContinueButton) throw new Error('No visible continue button found');
+    await user.click(visibleContinueButton);
+
+    expect(onSubmit).toHaveBeenCalledWith(
+      'Idea title: Fleet Route Optimizer\n\nAn intelligent route planning system for delivery fleets that dynamically avoids traffic, reduces fuel costs, and lowers CO2 emission.',
+    );
+  });
 });

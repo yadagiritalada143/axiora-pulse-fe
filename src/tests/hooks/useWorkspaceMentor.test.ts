@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { queryKeys } from '@constants/queryKeys';
 import { workspaceService } from '@features/workspace/api';
 import {
+  useDownloadCertificate,
   useExportWorkspaceReport,
   useResetWorkspaceMentor,
   useWorkspaceChat,
@@ -22,6 +23,7 @@ jest.mock('@features/workspace/api', () => ({
     chatWithMentor: jest.fn(),
     resetMentor: jest.fn(),
     exportReport: jest.fn(),
+    downloadCertificate: jest.fn(),
   },
 }));
 
@@ -366,6 +368,89 @@ describe('useExportWorkspaceReport', () => {
 
     expect(mockedToast.error).toHaveBeenCalledWith(
       'Failed to export the report. Please try again.',
+    );
+  });
+});
+
+describe('useDownloadCertificate', () => {
+  const createObjectURL = jest.fn(() => 'blob:cert-url');
+  const revokeObjectURL = jest.fn();
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    Object.assign(URL, { createObjectURL, revokeObjectURL });
+  });
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+    jest.clearAllMocks();
+  });
+
+  it('triggers a browser download and shows a success toast', async () => {
+    const blob = new Blob(['cert content'], { type: 'application/pdf' });
+    mockedWorkspaceService.downloadCertificate.mockResolvedValue({ blob, filename: 'cert.pdf' });
+
+    const clickSpy = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+
+    const queryClient = createQueryClient();
+    const { result } = renderHook(() => useDownloadCertificate(1), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    act(() => {
+      result.current.mutate();
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(mockedWorkspaceService.downloadCertificate).toHaveBeenCalledWith(1);
+    expect(createObjectURL).toHaveBeenCalledWith(blob);
+    expect(clickSpy).toHaveBeenCalled();
+
+    act(() => {
+      jest.advanceTimersByTime(100);
+    });
+
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:cert-url');
+    expect(mockedToast.success).toHaveBeenCalledWith('Certificate downloaded successfully.');
+
+    clickSpy.mockRestore();
+  });
+
+  it('shows an error toast when the download fails', async () => {
+    mockedWorkspaceService.downloadCertificate.mockRejectedValue(new Error('Download failed'));
+
+    const queryClient = createQueryClient();
+    const { result } = renderHook(() => useDownloadCertificate(1), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    act(() => {
+      result.current.mutate();
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+
+    expect(mockedToast.error).toHaveBeenCalledWith('Download failed');
+  });
+
+  it('shows a generic error toast when the failure is not an Error instance', async () => {
+    mockedWorkspaceService.downloadCertificate.mockRejectedValue('not an error');
+
+    const queryClient = createQueryClient();
+    const { result } = renderHook(() => useDownloadCertificate(1), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    act(() => {
+      result.current.mutate();
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+
+    expect(mockedToast.error).toHaveBeenCalledWith(
+      'Failed to download certificate. Please try again.',
     );
   });
 });
