@@ -1,4 +1,4 @@
-import { Loader2 } from 'lucide-react';
+import { Loader2, PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -15,6 +15,7 @@ import {
 import { ApiErrorMessage } from '@components/common/ApiErrorMessage';
 import { Button } from '@components/ui/button';
 import { IdeaValidationReport, WebSearchDrawer } from '@features/ideaValidation/components';
+import { cn } from '@lib/utils';
 
 import { workspaceService } from '../api';
 import { useWorkspaceChat, useWorkspaceState } from '../hooks/useWorkspaceMentor';
@@ -92,6 +93,7 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
     }
   }
   const [isTriggeringValidation, setIsTriggeringValidation] = useState(false);
+  const [isStepsCollapsed, setIsStepsCollapsed] = useState(false);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -268,7 +270,12 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
   ) : null;
 
   return (
-    <div className="mx-auto flex h-full min-h-0 w-full max-w-6xl min-w-0 flex-1 items-stretch gap-6 overflow-hidden">
+    <div
+      className={cn(
+        'mx-auto flex h-full min-h-0 w-full min-w-0 flex-1 items-stretch overflow-hidden',
+        isStepsCollapsed ? 'max-w-4xl gap-0 lg:max-w-5xl' : 'max-w-6xl gap-6',
+      )}
+    >
       <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
         <AgentStepProgress
           currentStep={currentStep}
@@ -276,10 +283,26 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
           className="mb-4 block shrink-0 lg:hidden"
         />
 
-        <div className="border-border flex shrink-0 items-center gap-6 border-b text-sm">
-          <span className="text-primary border-primary -mb-px border-b-2 pb-2 font-medium">
-            Arya
-          </span>
+        <div className="border-border flex shrink-0 items-center justify-between border-b text-sm">
+          <div className="flex items-center gap-6">
+            <span className="text-primary border-primary -mb-px border-b-2 pb-1.5 font-medium">
+              Arya
+            </span>
+          </div>
+
+          <button
+            type="button"
+            aria-label={isStepsCollapsed ? 'Expand workflow steps' : 'Collapse workflow steps'}
+            title={isStepsCollapsed ? 'Expand workflow steps' : 'Collapse workflow steps'}
+            onClick={() => setIsStepsCollapsed((prev) => !prev)}
+            className="text-muted-foreground hover:bg-accent hover:text-foreground hidden size-8 cursor-pointer items-center justify-center rounded-lg transition-colors lg:flex"
+          >
+            {isStepsCollapsed ? (
+              <PanelRightOpen className="size-4" />
+            ) : (
+              <PanelRightClose className="size-4" />
+            )}
+          </button>
         </div>
 
         <div className="min-h-0 flex-1 space-y-4 overflow-x-hidden overflow-y-auto pt-4 pr-1 pb-4">
@@ -406,7 +429,7 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
 
         {chat.error ? <ApiErrorMessage error={chat.error} className="mb-3 shrink-0" /> : null}
 
-        <div className="w-full shrink-0 pt-2">
+        <div className="w-full shrink-0 pt-1.5 pb-0.5">
           <ChatInput
             value={draft}
             onChange={setDraft}
@@ -420,12 +443,19 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
         </div>
       </div>
 
-      <div className="hidden h-full w-72 shrink-0 overflow-hidden lg:block">
-        <AgentStepProgress
-          currentStep={currentStep}
-          isRunning={data.state === 'VALIDATING'}
-          className="h-full"
-        />
+      <div
+        className={cn(
+          'hidden shrink-0 overflow-hidden transition-all duration-300 ease-in-out lg:block',
+          isStepsCollapsed ? 'w-0 opacity-0' : 'w-72 opacity-100',
+        )}
+      >
+        <div className="h-full w-72">
+          <AgentStepProgress
+            currentStep={currentStep}
+            isRunning={data.state === 'VALIDATING'}
+            className="h-full"
+          />
+        </div>
       </div>
     </div>
   );

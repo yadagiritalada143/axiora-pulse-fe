@@ -121,7 +121,23 @@ describe('MentorShell', () => {
 
     await user.click(screen.getByRole('button', { name: /account menu/i }));
     await user.click(screen.getByRole('menuitem', { name: 'Log out' }));
-
     expect(handleLogout).toHaveBeenCalledTimes(1);
+  });
+
+  it('collapses and expands the sidebar on desktop via the toggle buttons', async () => {
+    const user = userEvent.setup();
+    renderShell();
+
+    const nav = screen.getByRole('complementary');
+    expect(nav.className).not.toContain('lg:w-0');
+    expect(screen.queryByRole('button', { name: 'Expand sidebar' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Collapse sidebar' }));
+    expect(nav.className).toContain('lg:w-0');
+    expect(screen.getByRole('button', { name: 'Expand sidebar' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Expand sidebar' }));
+    expect(nav.className).not.toContain('lg:w-0');
+    expect(screen.queryByRole('button', { name: 'Expand sidebar' })).not.toBeInTheDocument();
   });
 });

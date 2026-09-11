@@ -1,4 +1,4 @@
-import { MessageSquarePlus } from 'lucide-react';
+import { MessageSquarePlus, PanelLeftClose } from 'lucide-react';
 
 import type { Conversation } from '@/types/chat.types';
 import { Button } from '@components/ui/button';
@@ -10,6 +10,7 @@ interface ConversationListProps {
   activeConversationId: string | null;
   onSelect: (id: string) => void;
   onCreate: () => void;
+  onCollapse?: () => void;
 }
 
 export function ConversationList({
@@ -17,11 +18,26 @@ export function ConversationList({
   activeConversationId,
   onSelect,
   onCreate,
+  onCollapse,
 }: ConversationListProps) {
   return (
     <div className="border-border flex h-full w-72 shrink-0 flex-col border-r">
       <div className="border-border flex items-center justify-between border-b p-3">
-        <span className="text-foreground text-sm font-semibold">Conversations</span>
+        <div className="flex items-center gap-1.5">
+          {onCollapse ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Collapse conversations"
+              title="Collapse conversations"
+              onClick={onCollapse}
+              className="size-8"
+            >
+              <PanelLeftClose className="size-4" />
+            </Button>
+          ) : null}
+          <span className="text-foreground text-sm font-semibold">Conversations</span>
+        </div>
         <Button variant="ghost" size="icon" aria-label="New conversation" onClick={onCreate}>
           <MessageSquarePlus className="size-4" />
         </Button>

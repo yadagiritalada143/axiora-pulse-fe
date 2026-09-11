@@ -22,11 +22,16 @@ export function ChatBubble({ align, avatarLabel, timestamp, children }: ChatBubb
         </AvatarFallback>
       </Avatar>
 
-      <div className={cn('flex max-w-[75%] flex-col gap-1', isRight && 'items-end')}>
+      <div
+        className={cn(
+          'flex flex-col gap-1',
+          isRight ? 'max-w-[85%] items-end sm:max-w-[75%]' : 'w-full max-w-full min-w-0 flex-1',
+        )}
+      >
         <div
           className={cn(
             'bg-muted text-foreground rounded-2xl px-4 py-2.5',
-            isRight ? 'rounded-tr-sm' : 'rounded-tl-sm',
+            isRight ? 'rounded-tr-sm' : 'w-full rounded-tl-sm',
           )}
         >
           {children}

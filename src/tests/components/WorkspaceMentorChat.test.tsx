@@ -276,6 +276,28 @@ describe('WorkspaceMentorChat', () => {
     expect(bubbles[1]).toHaveTextContent('Hi, tell me more');
   });
 
+  it('renders the Arya header and toggles workflow steps minimize/expand button', async () => {
+    const user = userEvent.setup();
+    setup({
+      data: buildState({
+        conversation_history: [{ role: 'user', content: 'Hello' }],
+      }),
+    });
+
+    render(<WorkspaceMentorChat workspaceId={1} />);
+
+    expect(screen.getByText('Arya')).toBeInTheDocument();
+
+    const toggleBtn = screen.getByRole('button', { name: 'Collapse workflow steps' });
+    expect(toggleBtn).toBeInTheDocument();
+
+    await user.click(toggleBtn);
+    expect(screen.getByRole('button', { name: 'Expand workflow steps' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Expand workflow steps' }));
+    expect(screen.getByRole('button', { name: 'Collapse workflow steps' })).toBeInTheDocument();
+  });
+
   it('rewrites the raw validation-trigger message into a friendlier label in the transcript', () => {
     setup({
       data: buildState({

@@ -46,7 +46,7 @@ export default function WorkspaceDetailPage() {
     <MentorShell
       navItems={navItems}
       navSectionLabel={workspace?.name ?? 'Workspace'}
-      mainClassName="p-3 sm:p-5 lg:p-6 flex flex-col overflow-hidden min-h-0 min-w-0"
+      mainClassName="flex flex-col min-h-0 min-w-0 flex-1 overflow-hidden px-3 sm:px-5 lg:px-6 pt-1 pb-1"
     >
       {isLoading ? (
         <div className="flex h-[60vh] items-center justify-center">
