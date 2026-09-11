@@ -1,33 +1,10 @@
-import { Loader2, MapPin, Sparkles } from 'lucide-react';
+import { Loader2, MapPin } from 'lucide-react';
 import { useState } from 'react';
 
 import { ApiErrorMessage } from '@components/common/ApiErrorMessage';
 import { Input } from '@components/ui/input';
 import { Textarea } from '@components/ui/textarea';
 import { cn } from '@lib/utils';
-
-const EXAMPLE_IDEAS = [
-  {
-    title: 'AI Micro-SaaS Accelerator',
-    description:
-      'A dev-tool that generates production-ready SaaS boilerplates with auth, database, and stripe billing configured in under 5 minutes.',
-  },
-  {
-    title: 'Visual Math AI Tutor',
-    description:
-      'An interactive mobile learning platform that provides step-by-step visual explanations and personalized AI coaching for students.',
-  },
-  {
-    title: 'Fleet Route Optimizer',
-    description:
-      'An intelligent route planning system for delivery fleets that dynamically avoids traffic, reduces fuel costs, and lowers CO2 emission.',
-  },
-  {
-    title: 'Lifestyle Health Tracker',
-    description:
-      'An AI-powered wellness dashboard that monitors habits, provides proactive symptoms screening, and recommends preventative health actions.',
-  },
-];
 
 interface WorkspaceMentorIntakeProps {
   onSubmit: (message: string) => void;
@@ -95,34 +72,6 @@ export function WorkspaceMentorIntake({ onSubmit, isPending, error }: WorkspaceM
           onClick={handleContinue}
           className="w-full"
         />
-      </div>
-
-      <div>
-        <p className="text-foreground mb-3 text-sm font-medium">Need help getting started?</p>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {EXAMPLE_IDEAS.map((example, index) => (
-            <button
-              key={index}
-              type="button"
-              onClick={() => {
-                setTitle(example.title);
-                setDescription(example.description);
-              }}
-              disabled={isPending}
-              className="border-border group cursor-pointer rounded-lg border p-4 text-left transition-all duration-200 hover:border-[#FF4500]/50 hover:bg-[#FF4500]/5 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-[#FF4500] focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <span className="mb-3 flex size-8 items-center justify-center rounded-full bg-[#FF4500]/10 text-[#FF4500] transition-transform duration-200 group-hover:scale-110">
-                <Sparkles className="size-4" aria-hidden />
-              </span>
-              <p className="text-foreground text-sm font-semibold transition-colors group-hover:text-[#FF4500]">
-                {example.title}
-              </p>
-              <p className="text-muted-foreground mt-1 line-clamp-3 text-xs leading-normal">
-                {example.description}
-              </p>
-            </button>
-          ))}
-        </div>
       </div>
 
       {error ? <ApiErrorMessage error={error} /> : null}
