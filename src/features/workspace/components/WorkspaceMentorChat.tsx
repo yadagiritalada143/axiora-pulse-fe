@@ -272,8 +272,10 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
   return (
     <div
       className={cn(
-        'mx-auto flex h-full min-h-0 w-full min-w-0 flex-1 items-stretch overflow-hidden',
-        isStepsCollapsed ? 'max-w-4xl gap-0 lg:max-w-5xl' : 'max-w-6xl gap-6',
+        'mx-auto flex h-full min-h-0 w-full min-w-0 flex-1 items-stretch overflow-hidden transition-all duration-300 ease-in-out',
+        isStepsCollapsed
+          ? 'max-w-6xl gap-0 xl:max-w-7xl 2xl:max-w-[1400px]'
+          : 'max-w-6xl gap-4 lg:gap-6 xl:max-w-7xl 2xl:max-w-[1400px]',
       )}
     >
       <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
@@ -305,7 +307,7 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 space-y-4 overflow-x-hidden overflow-y-auto pt-4 pr-1 pb-4">
+        <div className="min-h-0 flex-1 space-y-3 overflow-x-hidden overflow-y-auto pt-2.5 pr-1 pb-3">
           {effectiveReportAnchor === 0 ? reportNode : null}
 
           {data.conversation_history.map((message, index) => {
@@ -384,7 +386,7 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
             if (isPendingAssistant && !data.validation_result) {
               return (
                 <div className="py-2">
-                  <ChatBubble align="left" avatarLabel="AI">
+                  <ChatBubble align="left" avatarLabel="AI" bubbleClassName="w-fit self-start">
                     <TypingIndicator />
                   </ChatBubble>
                 </div>
@@ -405,7 +407,7 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
         </div>
 
         {showQuickActions ? (
-          <div className="text-foreground flex shrink-0 flex-wrap gap-2 pb-3">
+          <div className="text-foreground flex shrink-0 flex-wrap gap-2 pb-1">
             <Button
               type="button"
               variant="outline"
