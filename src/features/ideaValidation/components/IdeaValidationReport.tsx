@@ -14,7 +14,7 @@ import type { WorkspaceReportAgent } from '@features/workspace/types';
 import { cn } from '@lib/utils';
 
 import { InteractiveSurveyQuestions } from './InteractiveSurveyQuestions';
-import { ResearchStreamPanel } from './ResearchStreamPanel';
+// import { ResearchStreamPanel } from './ResearchStreamPanel';
 
 interface IdeaValidationReportProps {
   workspaceId: number;
@@ -72,6 +72,7 @@ export function IdeaValidationReport({
             </div>
           </div>
 
+          {/* "Live Web Research & Source Discovery" panel commented out for now
           <ResearchStreamPanel
             runId={result.orchestration_run_id}
             ideaTitle={ideaTitle}
@@ -79,6 +80,7 @@ export function IdeaValidationReport({
             isLive={false}
             defaultExpanded={false}
           />
+          */}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <ListSection title="Strengths" items={result.strengths} />

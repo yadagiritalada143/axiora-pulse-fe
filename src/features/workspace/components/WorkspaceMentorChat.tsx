@@ -14,7 +14,7 @@ import {
 } from '@components/chat';
 import { ApiErrorMessage } from '@components/common/ApiErrorMessage';
 import { Button } from '@components/ui/button';
-import { IdeaValidationReport, WebSearchDrawer } from '@features/ideaValidation/components';
+import { IdeaValidationReport /*, WebSearchDrawer */ } from '@features/ideaValidation/components';
 import { cn } from '@lib/utils';
 
 import { workspaceService } from '../api';
@@ -311,11 +311,13 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
           {effectiveReportAnchor === 0 ? reportNode : null}
 
           {data.conversation_history.map((message, index) => {
+            /*
             const isValidationTrigger =
               Boolean(validationResponse) &&
               (message.content === VALIDATION_TRIGGER_MESSAGE ||
                 message.content.includes('[TRIGGER_VALIDATION]') ||
                 index === (reportAnchorIndex ?? data.conversation_history.length) - 2);
+            */
 
             return (
               <Fragment key={index}>
@@ -324,6 +326,7 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
                     <ChatBubble align="right" avatarLabel="U">
                       <MarkdownRenderer content={displayMessageContent(message.content)} />
                     </ChatBubble>
+                    {/* "Arya researched sources" WebSearchDrawer commented out for now
                     {isValidationTrigger && validationResponse ? (
                       <div className="py-2 pl-12">
                         <WebSearchDrawer
@@ -335,6 +338,7 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
                         />
                       </div>
                     ) : null}
+                    */}
                   </Fragment>
                 ) : (
                   <ChatBubble align="left" avatarLabel="AI">
@@ -369,6 +373,7 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
             const isPendingAssistant =
               chat.isPending || (isLastFromUser && !data.validation_result);
 
+            /* "Arya is researching... / Arya researched sources" WebSearchDrawer commented out for now
             if (isValidating) {
               return (
                 <div className="py-2">
@@ -382,8 +387,9 @@ export function WorkspaceMentorChat({ workspaceId }: WorkspaceMentorChatProps) {
                 </div>
               );
             }
+            */
 
-            if (isPendingAssistant && !data.validation_result) {
+            if ((isPendingAssistant || isValidating) && !data.validation_result) {
               return (
                 <div className="py-2">
                   <ChatBubble align="left" avatarLabel="AI" bubbleClassName="w-fit self-start">
