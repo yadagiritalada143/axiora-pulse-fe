@@ -3,6 +3,7 @@ import { apiClient } from '@services/api';
 
 import type {
   AdminDashboardStatsResponse,
+  AdminDeleteUserResponse,
   AdminSurveyListResponse,
   AdminSurveyResponseDetailResponse,
   AdminSurveyResponsesListResponse,
@@ -76,14 +77,19 @@ export const adminService = {
     userId: number,
     payload: SetProfileStatusPayload,
   ): Promise<AdminUserSurveySummaryResponse> => {
-    const response = await apiClient.post<AdminUserSurveySummaryResponse>(
+    const response = await apiClient.patch<AdminUserSurveySummaryResponse>(
       API_ENDPOINTS.ADMIN.SET_USER_STATUS(userId),
       payload,
     );
     return response.data;
   },
 
-  // ── New Analytics & Dashboard Stats ──
+  deleteUser: async (userId: number): Promise<AdminDeleteUserResponse> => {
+    const response = await apiClient.delete<AdminDeleteUserResponse>(
+      API_ENDPOINTS.ADMIN.DELETE_USER(userId),
+    );
+    return response.data;
+  },
 
   getDashboardStats: async (): Promise<AdminDashboardStatsResponse> => {
     const response = await apiClient.get<AdminDashboardStatsResponse>(

@@ -7,6 +7,7 @@ import { useAdminAnalyticsRevenue } from '@features/admin/hooks/useAdminAnalytic
 import { useAdminAnalyticsUserGrowth } from '@features/admin/hooks/useAdminAnalyticsUserGrowth';
 import { useAdminAnalyticsUsersByPlan } from '@features/admin/hooks/useAdminAnalyticsUsersByPlan';
 import { useAdminDashboardStats } from '@features/admin/hooks/useAdminDashboardStats';
+import { useAdminDeleteUser } from '@features/admin/hooks/useAdminDeleteUser';
 import { useAdminSetUserStatus } from '@features/admin/hooks/useAdminSetUserStatus';
 import { useAdminSurveyResponseDetail } from '@features/admin/hooks/useAdminSurveyResponseDetail';
 import { useAdminSurveyResponses } from '@features/admin/hooks/useAdminSurveyResponses';
@@ -26,6 +27,7 @@ jest.mock('@services/admin/admin.service', () => ({
     listSurveyResponses: jest.fn(),
     getSurveyResponseDetail: jest.fn(),
     setUserStatus: jest.fn(),
+    deleteUser: jest.fn(),
     listUsers: jest.fn(),
     getUserGrowth: jest.fn(),
     getInteractiveQuestions: jest.fn(),
@@ -332,5 +334,37 @@ describe('useAdminSetUserStatus', () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(toast.error).toHaveBeenCalledWith('boom');
+  });
+});
+
+describe('useAdminDeleteUser', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('calls deleteUser and shows success toast on success', async () => {
+    const mockResponse = {
+      deleted: true,
+      user_id: 1,
+      message: 'User permanently deleted.',
+    };
+    mockedAdminService.deleteUser.mockResolvedValue(mockResponse);
+
+    const { result } = renderHook(() => useAdminDeleteUser(), { wrapper: createWrapper() });
+
+    result.current.mutate(1);
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(mockedAdminService.deleteUser).toHaveBeenCalledWith(1);
+    expect(toast.success).toHaveBeenCalledWith('User permanently deleted.');
+  });
+
+  it('shows error toast when deleteUser mutation fails', async () => {
+    mockedAdminService.deleteUser.mockRejectedValue(new Error('Failed to delete'));
+
+    const { result } = renderHook(() => useAdminDeleteUser(), { wrapper: createWrapper() });
+
+    result.current.mutate(1);
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(toast.error).toHaveBeenCalledWith('Failed to delete');
   });
 });

@@ -111,6 +111,7 @@ export const API_ENDPOINTS = {
     SURVEY_RESPONSE_DETAIL: (surveyId: number, responseId: number) =>
       `/v1/admin/surveys/${surveyId}/responses/${responseId}`,
     SET_USER_STATUS: (userId: number) => `/v1/admin/user-details/${userId}/status`,
+    DELETE_USER: (userId: number) => `/v1/admin/users/${userId}`,
   },
 
   CONTACT: {

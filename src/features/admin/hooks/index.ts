@@ -14,3 +14,4 @@ export { useAdminSurveys } from './useAdminSurveys';
 export { useAdminSurveyResponses } from './useAdminSurveyResponses';
 export { useAdminSurveyResponseDetail } from './useAdminSurveyResponseDetail';
 export { useAdminSetUserStatus } from './useAdminSetUserStatus';
+export { useAdminDeleteUser } from './useAdminDeleteUser';

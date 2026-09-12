@@ -6,6 +6,8 @@ import { apiClient } from '@services/api';
 jest.mock('@services/api', () => ({
   apiClient: {
     get: jest.fn(),
+    patch: jest.fn(),
+    delete: jest.fn(),
   },
 }));
 
@@ -221,5 +223,38 @@ describe('adminService', () => {
       params: { period: 'month' },
     });
     expect(result).toEqual(mockRevenue);
+  });
+
+  it('setUserStatus calls PATCH API_ENDPOINTS.ADMIN.SET_USER_STATUS and returns data', async () => {
+    const mockResponse = {
+      user_id: 1,
+      profile_status: 'Active',
+    };
+
+    mockedApiClient.patch.mockResolvedValue({ data: mockResponse });
+
+    const payload = { profile_status: 'Active' as const };
+    const result = await adminService.setUserStatus(1, payload);
+
+    expect(mockedApiClient.patch).toHaveBeenCalledWith(
+      API_ENDPOINTS.ADMIN.SET_USER_STATUS(1),
+      payload,
+    );
+    expect(result).toEqual(mockResponse);
+  });
+
+  it('deleteUser calls DELETE API_ENDPOINTS.ADMIN.DELETE_USER and returns data', async () => {
+    const mockResponse = {
+      deleted: true,
+      user_id: 1,
+      message: 'User deleted successfully',
+    };
+
+    mockedApiClient.delete.mockResolvedValue({ data: mockResponse });
+
+    const result = await adminService.deleteUser(1);
+
+    expect(mockedApiClient.delete).toHaveBeenCalledWith(API_ENDPOINTS.ADMIN.DELETE_USER(1));
+    expect(result).toEqual(mockResponse);
   });
 });

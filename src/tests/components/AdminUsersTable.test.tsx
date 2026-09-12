@@ -5,8 +5,19 @@ import { MemoryRouter } from 'react-router-dom';
 import { AdminUsersTable } from '@features/admin/components/AdminUsersTable';
 import { useAdminUsers } from '@features/admin/hooks';
 
+const mockSetStatusMutate = jest.fn();
+const mockDeleteUserMutate = jest.fn();
+
 jest.mock('@features/admin/hooks', () => ({
   useAdminUsers: jest.fn(),
+  useAdminSetUserStatus: jest.fn(() => ({
+    mutate: mockSetStatusMutate,
+    isPending: false,
+  })),
+  useAdminDeleteUser: jest.fn(() => ({
+    mutate: mockDeleteUserMutate,
+    isPending: false,
+  })),
 }));
 
 const mockedUseAdminUsers = jest.mocked(useAdminUsers);
@@ -151,5 +162,73 @@ describe('AdminUsersTable', () => {
     expect(screen.getByText(/showing/i).closest('p')).toHaveTextContent(
       'Showing 11 to 20 of 25 users',
     );
+  });
+
+  it('updates user status via actions dropdown', async () => {
+    const user = userEvent.setup();
+
+    mockedUseAdminUsers.mockReturnValue({
+      data: {
+        users: [
+          {
+            id: 2,
+            username: 'user@example.com',
+            display_name: 'Regular User',
+            role: 'user',
+            created_at: '2026-07-30T09:39:44.020Z',
+            workspace_count: 0,
+          },
+        ],
+        pagination: { total: 1, limit: 10, offset: 0 },
+      },
+      isLoading: false,
+      isError: false,
+      error: null,
+    } as unknown as ReturnType<typeof useAdminUsers>);
+
+    renderWithRouter(<AdminUsersTable />);
+
+    await user.click(screen.getByLabelText('User Options'));
+    await user.click(screen.getByText('Set as Inactive'));
+
+    expect(mockSetStatusMutate).toHaveBeenCalledWith({
+      userId: 2,
+      payload: { profile_status: 'Inactive' },
+    });
+  });
+
+  it('clicking suspend account opens delete confirmation popup and permanently deletes user on confirm', async () => {
+    const user = userEvent.setup();
+
+    mockedUseAdminUsers.mockReturnValue({
+      data: {
+        users: [
+          {
+            id: 2,
+            username: 'user@example.com',
+            display_name: 'Regular User',
+            role: 'user',
+            created_at: '2026-07-30T09:39:44.020Z',
+            workspace_count: 0,
+          },
+        ],
+        pagination: { total: 1, limit: 10, offset: 0 },
+      },
+      isLoading: false,
+      isError: false,
+      error: null,
+    } as unknown as ReturnType<typeof useAdminUsers>);
+
+    renderWithRouter(<AdminUsersTable />);
+
+    await user.click(screen.getByLabelText('User Options'));
+    await user.click(screen.getByText('Suspend Account'));
+
+    expect(
+      await screen.findByText(/Are you sure you want to permanently delete/i),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Delete Permanently/i }));
+
+    expect(mockDeleteUserMutate).toHaveBeenCalledWith(2, expect.any(Object));
   });
 });

@@ -1,5 +1,15 @@
 import { format } from 'date-fns';
-import { ChevronRightIcon, Search, Shield, User, Users } from 'lucide-react';
+import {
+  CheckCircle2,
+  ChevronRightIcon,
+  MoreVertical,
+  Search,
+  Shield,
+  ShieldAlert,
+  User,
+  Users,
+  XCircle,
+} from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,10 +19,20 @@ import { TablePagination } from '@components/common/TablePagination';
 import { Badge } from '@components/ui/badge';
 import { Button } from '@components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@components/ui/dropdown-menu';
 import { Input } from '@components/ui/input';
 import { buildAdminUserDetailRoute } from '@constants/routes';
-import { useAdminUsers } from '@features/admin/hooks';
+import { useAdminDeleteUser, useAdminSetUserStatus, useAdminUsers } from '@features/admin/hooks';
 import { useDebouncedValue } from '@hooks/useDebouncedValue';
+
+import { DeleteUserDialog } from './DeleteUserDialog';
 
 const PAGE_SIZE = 10;
 
@@ -20,6 +40,14 @@ export function AdminUsersTable() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [offset, setOffset] = useState(0);
+  const [userToDelete, setUserToDelete] = useState<{
+    id: number;
+    name?: string;
+    email?: string;
+  } | null>(null);
+
+  const deleteUserMutation = useAdminDeleteUser();
+  const setStatusMutation = useAdminSetUserStatus();
   const debouncedSearch = useDebouncedValue(search, 300);
 
   // Query for paginated & filtered table rows
@@ -41,6 +69,17 @@ export function AdminUsersTable() {
 
   const handleRowClick = (userId: number) => {
     void navigate(buildAdminUserDetailRoute(userId));
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!userToDelete) return;
+    deleteUserMutation.mutate(userToDelete.id, {
+      onSuccess: () => setUserToDelete(null),
+    });
+  };
+
+  const handleSetStatus = (userId: number, profile_status: 'Active' | 'Inactive' | 'Suspended') => {
+    setStatusMutation.mutate({ userId, payload: { profile_status } });
   };
 
   return (
@@ -159,7 +198,7 @@ export function AdminUsersTable() {
                             className="px-4 py-3 text-center"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <div className="flex justify-center">
+                            <div className="flex items-center justify-center gap-1">
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -169,6 +208,55 @@ export function AdminUsersTable() {
                                 View Details
                                 <ChevronRightIcon className="size-3.5" />
                               </Button>
+
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-muted-foreground hover:text-foreground size-8 cursor-pointer rounded-lg"
+                                    aria-label="User Options"
+                                  >
+                                    <MoreVertical className="size-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-48">
+                                  <DropdownMenuLabel className="text-muted-foreground text-xs">
+                                    Status
+                                  </DropdownMenuLabel>
+                                  <DropdownMenuItem
+                                    disabled={setStatusMutation.isPending}
+                                    onClick={() => handleSetStatus(user.id, 'Active')}
+                                    className="cursor-pointer gap-2"
+                                  >
+                                    <CheckCircle2 className="size-4 text-emerald-500" />
+                                    Set as Active
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    disabled={setStatusMutation.isPending}
+                                    onClick={() => handleSetStatus(user.id, 'Inactive')}
+                                    className="cursor-pointer gap-2"
+                                  >
+                                    <XCircle className="size-4 text-amber-500" />
+                                    Set as Inactive
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    disabled={user.role === 'admin' || deleteUserMutation.isPending}
+                                    onClick={() =>
+                                      setUserToDelete({
+                                        id: user.id,
+                                        name: user.display_name || user.username,
+                                        email: user.username,
+                                      })
+                                    }
+                                    className="text-destructive focus:text-destructive cursor-pointer gap-2"
+                                  >
+                                    <ShieldAlert className="text-destructive size-4" />
+                                    Suspend Account
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
                           </td>
                         </tr>
@@ -191,6 +279,17 @@ export function AdminUsersTable() {
           )}
         </CardContent>
       </Card>
+
+      <DeleteUserDialog
+        open={Boolean(userToDelete)}
+        onOpenChange={(open) => {
+          if (!open) setUserToDelete(null);
+        }}
+        userName={userToDelete?.name}
+        userEmail={userToDelete?.email}
+        loading={deleteUserMutation.isPending}
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 }
