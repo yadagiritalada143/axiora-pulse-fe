@@ -1,12 +1,22 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { toast } from 'sonner';
+import { MemoryRouter } from 'react-router-dom';
 
 import { AdminUserSummaryCard } from '@features/admin/components/AdminUserSummaryCard';
 import type { AdminUserSurveySummaryResponse } from '@features/admin/types';
 
-jest.mock('sonner', () => ({
-  toast: { success: jest.fn(), error: jest.fn() },
+const mockSetStatusMutate = jest.fn();
+const mockDeleteUserMutate = jest.fn();
+
+jest.mock('@features/admin/hooks', () => ({
+  useAdminSetUserStatus: jest.fn(() => ({
+    mutate: mockSetStatusMutate,
+    isPending: false,
+  })),
+  useAdminDeleteUser: jest.fn(() => ({
+    mutate: mockDeleteUserMutate,
+    isPending: false,
+  })),
 }));
 
 const baseSummary: AdminUserSurveySummaryResponse = {
@@ -20,7 +30,11 @@ const baseSummary: AdminUserSurveySummaryResponse = {
 };
 
 function renderCard(summary: AdminUserSurveySummaryResponse = baseSummary) {
-  return render(<AdminUserSummaryCard summary={summary} />);
+  return render(
+    <MemoryRouter>
+      <AdminUserSummaryCard summary={summary} />
+    </MemoryRouter>,
+  );
 }
 
 describe('AdminUserSummaryCard', () => {
@@ -62,11 +76,26 @@ describe('AdminUserSummaryCard', () => {
     expect(screen.getByText('A')).toBeInTheDocument();
   });
 
-  it('changes status via dropdown and shows success toast', async () => {
+  it('changes status via dropdown and triggers setStatus mutation', async () => {
     const user = userEvent.setup();
     renderCard();
     await user.click(screen.getByLabelText('User Options'));
     await user.click(screen.getByText('Set as Inactive'));
-    expect(toast.success).toHaveBeenCalledWith('User status updated to Inactive.');
+    expect(mockSetStatusMutate).toHaveBeenCalledWith({
+      userId: 1,
+      payload: { profile_status: 'Inactive' },
+    });
+  });
+
+  it('clicking suspend account opens delete confirmation popup and permanently deletes user on confirm', async () => {
+    const user = userEvent.setup();
+    renderCard();
+    await user.click(screen.getByLabelText('User Options'));
+    await user.click(screen.getByText('Suspend Account'));
+    expect(
+      await screen.findByText(/Are you sure you want to permanently delete/i),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Delete Permanently/i }));
+    expect(mockDeleteUserMutate).toHaveBeenCalledWith(1, expect.any(Object));
   });
 });

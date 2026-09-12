@@ -240,7 +240,7 @@ function NewPasswordStep() {
                     <Input
                       type={showPassword ? 'text' : 'password'}
                       autoComplete="new-password"
-                      placeholder="••••••••"
+                      placeholder="Enter new password"
                       className="pr-10"
                       {...field}
                     />
@@ -270,7 +270,7 @@ function NewPasswordStep() {
                     <Input
                       type={showConfirm ? 'text' : 'password'}
                       autoComplete="new-password"
-                      placeholder="••••••••"
+                      placeholder="Enter your password"
                       className="pr-10"
                       {...field}
                     />

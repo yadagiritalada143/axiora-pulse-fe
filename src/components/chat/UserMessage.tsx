@@ -6,7 +6,7 @@ import { ChatBubble } from './ChatBubble';
 export function UserMessage({ message }: { message: ChatMessage }) {
   return (
     <ChatBubble align="right" avatarLabel="U" timestamp={formatRelativeTime(message.createdAt)}>
-      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+      <p className="text-[13px] leading-relaxed whitespace-pre-wrap">{message.content}</p>
     </ChatBubble>
   );
 }

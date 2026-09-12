@@ -3,6 +3,8 @@ import {
   LayoutGrid,
   LogOut,
   Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
   Settings,
   User2Icon,
   X,
@@ -66,6 +68,7 @@ export function MentorShell({
   mainClassName,
 }: MentorShellProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const { data: currentUser } = useCurrentUser();
   const storeUser = useAuthStore((state) => state.user);
   const user = currentUser ?? storeUser;
@@ -100,8 +103,8 @@ export function MentorShell({
   ];
 
   return (
-    <div className="bg-muted flex h-dvh w-full items-stretch justify-center overflow-hidden sm:p-3">
-      <div className="bg-background border-border relative flex w-full overflow-hidden sm:rounded-2xl sm:border sm:shadow-sm">
+    <div className="bg-background flex h-dvh w-full items-stretch justify-center overflow-hidden">
+      <div className="bg-background relative flex w-full overflow-hidden">
         {isNavOpen ? (
           <div
             className="fixed inset-0 z-40 bg-black/40 lg:hidden"
@@ -112,21 +115,35 @@ export function MentorShell({
 
         <aside
           className={cn(
-            'border-border bg-background fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col border-r transition-transform duration-200 ease-out',
-            'lg:static lg:z-auto lg:w-60 lg:translate-x-0 lg:transition-none',
-            isNavOpen ? 'translate-x-0' : '-translate-x-full',
+            'border-border bg-background fixed inset-y-0 left-0 z-50 flex shrink-0 flex-col border-r transition-all duration-300 ease-in-out',
+            isNavOpen ? 'w-64 translate-x-0' : 'w-64 -translate-x-full',
+            'lg:static lg:z-auto lg:translate-x-0',
+            isSidebarCollapsed
+              ? 'lg:w-0 lg:overflow-hidden lg:border-r-0 lg:opacity-0'
+              : 'lg:w-60 lg:opacity-100',
           )}
         >
-          <div className="flex h-16 items-center justify-between px-5">
+          <div className="flex h-11 items-center justify-between px-4 sm:h-12 sm:px-5">
             <Logo />
-            <button
-              type="button"
-              aria-label="Close menu"
-              onClick={closeNav}
-              className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-8 cursor-pointer items-center justify-center rounded-full transition-colors lg:hidden"
-            >
-              <X className="size-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                aria-label="Collapse sidebar"
+                title="Collapse sidebar"
+                onClick={() => setIsSidebarCollapsed(true)}
+                className="text-muted-foreground hover:bg-accent hover:text-foreground hidden size-8 cursor-pointer items-center justify-center rounded-lg transition-colors lg:flex"
+              >
+                <PanelLeftClose className="size-4" />
+              </button>
+              <button
+                type="button"
+                aria-label="Close menu"
+                onClick={closeNav}
+                className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-8 cursor-pointer items-center justify-center rounded-full transition-colors lg:hidden"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
           </div>
 
           <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-2" aria-label="Primary">
@@ -153,7 +170,7 @@ export function MentorShell({
         </aside>
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-          <header className="border-border flex h-14 shrink-0 items-center gap-2 border-b px-3 sm:h-16 sm:gap-4 sm:px-6">
+          <header className="border-border flex h-11 shrink-0 items-center gap-2 border-b px-3 sm:h-12 sm:gap-4 sm:px-6">
             <button
               type="button"
               aria-label="Open menu"
@@ -162,6 +179,18 @@ export function MentorShell({
             >
               <Menu className="size-4" />
             </button>
+
+            {isSidebarCollapsed ? (
+              <button
+                type="button"
+                aria-label="Expand sidebar"
+                title="Expand sidebar"
+                onClick={() => setIsSidebarCollapsed(false)}
+                className="text-muted-foreground hover:bg-accent hover:text-foreground hidden size-9 shrink-0 cursor-pointer items-center justify-center rounded-lg transition-colors lg:flex"
+              >
+                <PanelLeftOpen className="size-4" />
+              </button>
+            ) : null}
 
             <div className="flex flex-1 items-center justify-end gap-1.5 sm:gap-3">
               <ThemeToggle />
@@ -205,8 +234,8 @@ export function MentorShell({
 
           <main
             className={cn(
-              'min-h-0 min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8',
-              mainClassName,
+              'min-h-0 min-w-0 flex-1 overflow-y-auto',
+              mainClassName ?? 'p-4 sm:p-6 lg:p-8',
             )}
           >
             {children}

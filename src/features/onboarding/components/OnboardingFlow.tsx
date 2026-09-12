@@ -45,7 +45,7 @@ function GlowDot() {
 function Tagline() {
   return (
     <p className="text-muted-foreground max-w-2xl text-xs sm:text-sm">
-      Build smarter. Decide faster. Scale confidently with your AI-powered Mentor Operating System.
+      Start your entrepreneurial journey today with your personal AI Mentor.
     </p>
   );
 }
@@ -83,8 +83,6 @@ function WelcomeStep({ onContinue }: { onContinue: () => void }) {
 function GuideStep({ onChoosePlan }: { onChoosePlan: () => void }) {
   return (
     <div className="flex h-full flex-col items-center gap-4 overflow-y-auto px-4 py-6 text-center sm:gap-6 sm:px-6 sm:py-12">
-      <GlowDot />
-
       <div className="space-y-1.5 sm:space-y-3">
         <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl">
           Welcome to Axiora Pulse
@@ -93,7 +91,7 @@ function GuideStep({ onChoosePlan }: { onChoosePlan: () => void }) {
         <Tagline />
       </div>
 
-      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col justify-center">
+      <div className="flex w-full flex-1 flex-col justify-center">
         <div className="bg-muted overflow-hidden rounded-xl border p-1.5 shadow-lg sm:rounded-2xl sm:p-3">
           <div className="aspect-video max-h-[45vh] w-full overflow-hidden rounded-lg bg-black sm:max-h-none sm:rounded-xl">
             <video className="h-full w-full object-contain" controls preload="metadata" playsInline>

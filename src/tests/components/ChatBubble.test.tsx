@@ -46,4 +46,24 @@ describe('ChatBubble', () => {
     const outer = container.firstChild as HTMLElement;
     expect(outer).not.toHaveClass('flex-row-reverse');
   });
+
+  it('applies custom className to the outer wrapper and bubbleClassName to the inner bubble', () => {
+    const { container } = render(
+      <ChatBubble
+        align="left"
+        avatarLabel="AI"
+        className="custom-outer-class"
+        bubbleClassName="w-fit self-start"
+      >
+        <p>Content</p>
+      </ChatBubble>,
+    );
+
+    const outer = container.firstChild as HTMLElement;
+    expect(outer).toHaveClass('custom-outer-class');
+
+    const bubble = screen.getByText('Content').parentElement;
+    expect(bubble).toHaveClass('w-fit', 'self-start');
+    expect(bubble).not.toHaveClass('w-full');
+  });
 });

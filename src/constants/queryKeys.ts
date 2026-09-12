@@ -51,15 +51,20 @@ export const queryKeys = {
     analyticsUsersByPlan: () => ['admin', 'analyticsUsersByPlan'] as const,
     analyticsRevenue: (period: string) => ['admin', 'analyticsRevenue', period] as const,
     users: (params?: { limit?: number; offset?: number; search?: string }) =>
-      ['admin', 'users', params] as const,
+      params !== undefined ? (['admin', 'users', params] as const) : (['admin', 'users'] as const),
     userGrowth: (granularity: 'month' | 'year') => ['admin', 'userGrowth', granularity] as const,
     userSurveySummary: (userId: number) => ['admin', 'userSurveySummary', userId] as const,
     surveys: (params?: { limit?: number; offset?: number; search?: string; user_id?: number }) =>
-      ['admin', 'surveys', params] as const,
+      params !== undefined
+        ? (['admin', 'surveys', params] as const)
+        : (['admin', 'surveys'] as const),
     surveyResponses: (
       surveyId: number,
       params?: { limit?: number; offset?: number; search?: string },
-    ) => ['admin', 'surveyResponses', surveyId, params] as const,
+    ) =>
+      params !== undefined
+        ? (['admin', 'surveyResponses', surveyId, params] as const)
+        : (['admin', 'surveyResponses', surveyId] as const),
     surveyResponseDetail: (surveyId: number, responseId: number) =>
       ['admin', 'surveyResponseDetail', surveyId, responseId] as const,
   },

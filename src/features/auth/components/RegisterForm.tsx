@@ -72,7 +72,7 @@ export function RegisterForm() {
                   <Input
                     type="password"
                     autoComplete="new-password"
-                    placeholder="••••••••"
+                    placeholder="Enter your password"
                     {...field}
                   />
                 </FormControl>

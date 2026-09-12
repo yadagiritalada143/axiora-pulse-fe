@@ -128,6 +128,12 @@ export interface SetProfileStatusPayload {
   profile_status: 'Active' | 'Inactive' | 'Suspended';
 }
 
+export interface AdminDeleteUserResponse {
+  deleted: boolean;
+  user_id: number;
+  message: string;
+}
+
 export interface AdminDashboardGrowth {
   total_users: number;
   paid_users: number;

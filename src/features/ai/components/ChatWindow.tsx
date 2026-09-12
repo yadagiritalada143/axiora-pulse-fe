@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { PanelLeftOpen } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 import {
   AIMessage,
@@ -9,6 +10,7 @@ import {
   UserMessage,
 } from '@components/chat';
 import { ApiErrorMessage } from '@components/common/ApiErrorMessage';
+import { Button } from '@components/ui/button';
 import {
   useConversations,
   useCreateConversation,
@@ -16,9 +18,11 @@ import {
   useModels,
   useSendMessage,
 } from '@features/ai/hooks';
+import { cn } from '@lib/utils';
 import { useChatStore } from '@store/chat.store';
 
 export function ChatWindow() {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const { data: conversations = [], isLoading: conversationsLoading } = useConversations();
   const { data: models = [] } = useModels();
 
@@ -52,24 +56,46 @@ export function ChatWindow() {
 
   return (
     <div className="border-border flex h-full overflow-hidden rounded-lg border">
-      <ConversationList
-        conversations={conversations}
-        activeConversationId={activeConversationId}
-        onSelect={setActiveConversationId}
-        onCreate={() => {
-          if (!selectedModelId) return;
-          createConversation.mutate(selectedModelId, {
-            onSuccess: (conversation) => setActiveConversationId(conversation.id),
-          });
-        }}
-      />
+      <div
+        className={cn(
+          'transition-all duration-300 ease-in-out',
+          isSidebarCollapsed ? 'w-0 overflow-hidden opacity-0' : 'w-72 opacity-100',
+        )}
+      >
+        <ConversationList
+          conversations={conversations}
+          activeConversationId={activeConversationId}
+          onSelect={setActiveConversationId}
+          onCreate={() => {
+            if (!selectedModelId) return;
+            createConversation.mutate(selectedModelId, {
+              onSuccess: (conversation) => setActiveConversationId(conversation.id),
+            });
+          }}
+          onCollapse={() => setIsSidebarCollapsed(true)}
+        />
+      </div>
 
       <div className="flex flex-1 flex-col">
         <div className="border-border flex items-center justify-between border-b p-3">
-          <span className="text-foreground text-sm font-semibold">
-            {conversations.find((c) => c.id === activeConversationId)?.title ??
-              'Let’s start with your idea'}
-          </span>
+          <div className="flex items-center gap-2">
+            {isSidebarCollapsed && (
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Expand conversations"
+                title="Expand conversations"
+                onClick={() => setIsSidebarCollapsed(false)}
+                className="size-8"
+              >
+                <PanelLeftOpen className="size-4" />
+              </Button>
+            )}
+            <span className="text-foreground text-sm font-semibold">
+              {conversations.find((c) => c.id === activeConversationId)?.title ??
+                'Let’s start with your idea'}
+            </span>
+          </div>
           <ModelSelector
             models={models}
             selectedModelId={selectedModelId}
