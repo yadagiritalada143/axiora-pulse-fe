@@ -21,14 +21,28 @@ export function useCurrentUser() {
     queryKey: queryKeys.user.profile(),
     queryFn: async () => {
       const user = await authService.getCurrentUser();
-      updateUser(user);
+
+      const firstName = (user.firstName ?? user.first_name)?.trim();
+      const lastName = (user.lastName ?? user.last_name)?.trim();
+      const fullName = [firstName, lastName].filter(Boolean).join(' ').trim();
+      const profileStatus = user.profileStatus ?? user.profile_status;
+
+      const normalizedUser: User = {
+        ...user,
+        ...(firstName ? { firstName, first_name: firstName } : {}),
+        ...(lastName ? { lastName, last_name: lastName } : {}),
+        ...(fullName ? { name: fullName } : {}),
+        ...(profileStatus ? { profileStatus, profile_status: profileStatus } : {}),
+      };
+
+      updateUser(normalizedUser);
 
       const state = typeof useAuthStore.getState === 'function' ? useAuthStore.getState() : null;
-      if (user.role && state?.setRole) {
-        state.setRole(user.role);
+      if (normalizedUser.role && state?.setRole) {
+        state.setRole(normalizedUser.role);
       }
 
-      const rawUser = user as UserWithAuthActions;
+      const rawUser = normalizedUser as UserWithAuthActions;
       if (rawUser?.auth_actions) {
         const { payment, interactive_questions } = rawUser.auth_actions;
         state?.setHasActivePlan?.(payment);
@@ -38,7 +52,7 @@ export function useCurrentUser() {
         state?.setHasActivePlan?.(rawUser.hasActivePlan);
       }
 
-      return user;
+      return normalizedUser;
     },
     enabled: isAuthenticated,
   });

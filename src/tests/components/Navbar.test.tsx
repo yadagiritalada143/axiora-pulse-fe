@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 
 import type { User } from '@/types/api.types';
 import { Navbar } from '@components/layout/Navbar';
+import { useUserDetails } from '@features/settings/hooks/useUserDetails';
 import { useAuthStore } from '@store/auth.store';
 import { useUIStore } from '@store/ui.store';
 
@@ -17,6 +18,12 @@ jest.mock('@features/auth/hooks', () => ({
   useLogout: () => mockLogout,
   useCurrentUser: jest.fn(() => ({ data: null, isLoading: false })),
 }));
+
+jest.mock('@features/settings/hooks/useUserDetails', () => ({
+  useUserDetails: jest.fn(() => ({ data: null, isLoading: false })),
+}));
+
+const mockedUseUserDetails = useUserDetails as jest.Mock;
 
 const mockUser: User = {
   id: 'user-1',
@@ -41,6 +48,7 @@ describe('Navbar', () => {
   const initialUIState = useUIStore.getState();
 
   afterEach(() => {
+    mockedUseUserDetails.mockReturnValue({ data: null, isLoading: false });
     act(() => {
       useAuthStore.setState(initialAuthState, true);
       useUIStore.setState(initialUIState, true);
@@ -63,6 +71,40 @@ describe('Navbar', () => {
 
     expect(screen.getByText('Jane Doe')).toBeInTheDocument();
     expect(screen.getByText('J')).toBeInTheDocument();
+  });
+
+  it('renders full name from firstName and lastName when provided on user', () => {
+    act(() => {
+      useAuthStore.getState().updateUser({
+        ...mockUser,
+        firstName: 'Alex',
+        lastName: 'Morgan',
+        name: 'old_name',
+      });
+    });
+
+    renderNavbar();
+
+    expect(screen.getByText('Alex Morgan')).toBeInTheDocument();
+    expect(screen.getByText('A')).toBeInTheDocument();
+  });
+
+  it('prioritizes userDetails first_name and last_name over user.name', () => {
+    act(() => {
+      useAuthStore.getState().updateUser(mockUser);
+    });
+    mockedUseUserDetails.mockReturnValueOnce({
+      data: {
+        first_name: 'Robert',
+        last_name: 'Fox',
+      },
+      isLoading: false,
+    });
+
+    renderNavbar();
+
+    expect(screen.getByText('Robert Fox')).toBeInTheDocument();
+    expect(screen.getByText('R')).toBeInTheDocument();
   });
 
   it('renders a search input and calls onSearch when provided', () => {

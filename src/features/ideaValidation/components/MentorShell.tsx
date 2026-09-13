@@ -25,8 +25,10 @@ import {
 } from '@components/ui/dropdown-menu';
 import { ROUTES } from '@constants/routes';
 import { useCurrentUser, useLogout } from '@features/auth/hooks';
+import { useUserDetails } from '@features/settings/hooks/useUserDetails';
 import { cn } from '@lib/utils';
 import { useAuthStore } from '@store/auth.store';
+import { getDisplayName } from '@utils/user';
 
 export interface MentorNavItem {
   label: string;
@@ -43,14 +45,6 @@ const WORKSPACE_NAV_ITEMS: MentorNavItem[] = [
   // { label: 'Documents & reports', icon: FileText, disabled: true },
   // { label: 'Risk Management', icon: ShieldCheck, disabled: true },
 ];
-
-function getDisplayName(user?: { name?: string | null; email?: string | null } | null): string {
-  const name = user?.name?.trim();
-  if (name) return name;
-  const emailPrefix = user?.email?.split('@')[0]?.trim();
-  if (emailPrefix) return emailPrefix;
-  return 'Account';
-}
 
 interface MentorShellProps {
   children: ReactNode;
@@ -70,6 +64,7 @@ export function MentorShell({
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const { data: currentUser } = useCurrentUser();
+  const { data: userDetails } = useUserDetails();
   const storeUser = useAuthStore((state) => state.user);
   const user = currentUser ?? storeUser;
   const rawAvatar =
@@ -78,7 +73,7 @@ export function MentorShell({
       : (storeUser?.avatarUrl ?? storeUser?.avatar_url);
   const avatarSrc =
     rawAvatar && typeof rawAvatar === 'string' && rawAvatar.trim() !== '' ? rawAvatar : undefined;
-  const displayName = getDisplayName(user);
+  const displayName = getDisplayName(user, userDetails);
   const role = useAuthStore((state) => state.role);
   const handleLogout = useLogout();
 
@@ -205,8 +200,8 @@ export function MentorShell({
                     <Avatar className="size-8">
                       <AvatarImage src={avatarSrc} alt="" />
                       <AvatarFallback>
-                        {user?.name?.trim() ? (
-                          user.name.trim().charAt(0).toUpperCase()
+                        {displayName && displayName !== 'Account' ? (
+                          displayName.charAt(0).toUpperCase()
                         ) : user?.email?.trim() ? (
                           user.email.trim().charAt(0).toUpperCase()
                         ) : (

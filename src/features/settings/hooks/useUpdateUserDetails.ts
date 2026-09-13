@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-import type { UpdateUserDetailsPayload, UserDetails } from '@/types/api.types';
+import type { UpdateUserDetailsPayload, User, UserDetails } from '@/types/api.types';
 import { isApiError } from '@/types/error.types';
 import { queryKeys } from '@constants/queryKeys';
 import { useAuthStore } from '@store/auth.store';
@@ -15,19 +15,50 @@ export function useUpdateUserDetails() {
   return useMutation({
     mutationFn: (payload: UpdateUserDetailsPayload) => userService.updateUserDetails(payload),
     onSuccess: (updatedDetails: UserDetails) => {
-      const fullName = [updatedDetails.first_name, updatedDetails.last_name]
-        .filter(Boolean)
-        .join(' ');
+      const firstName = updatedDetails.first_name?.trim() ?? '';
+      const lastName = updatedDetails.last_name?.trim() ?? '';
+      const fullName = [firstName, lastName].filter(Boolean).join(' ').trim();
+
       updateUser({
-        firstName: updatedDetails.first_name,
-        lastName: updatedDetails.last_name,
+        firstName,
+        first_name: firstName,
+        lastName,
+        last_name: lastName,
         name: fullName,
         mobileNumber: updatedDetails.mobile_number,
+        mobile_number: updatedDetails.mobile_number,
         dateOfBirth: updatedDetails.date_of_birth,
+        date_of_birth: updatedDetails.date_of_birth,
         gender: updatedDetails.gender,
         nationality: updatedDetails.nationality,
         profileStatus: updatedDetails.profile_status,
+        profile_status: updatedDetails.profile_status,
         communicationPreferences: updatedDetails.communication_preferences,
+        communication_preferences: updatedDetails.communication_preferences,
+      });
+
+      queryClient.setQueryData(queryKeys.user.details(), updatedDetails);
+
+      queryClient.setQueryData<User>(queryKeys.user.profile(), (prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          firstName,
+          first_name: firstName,
+          lastName,
+          last_name: lastName,
+          name: fullName || prev.name,
+          mobileNumber: updatedDetails.mobile_number,
+          mobile_number: updatedDetails.mobile_number,
+          dateOfBirth: updatedDetails.date_of_birth,
+          date_of_birth: updatedDetails.date_of_birth,
+          gender: updatedDetails.gender,
+          nationality: updatedDetails.nationality,
+          profileStatus: updatedDetails.profile_status,
+          profile_status: updatedDetails.profile_status,
+          communicationPreferences: updatedDetails.communication_preferences,
+          communication_preferences: updatedDetails.communication_preferences,
+        };
       });
 
       void queryClient.invalidateQueries({ queryKey: queryKeys.user.details() });

@@ -14,6 +14,10 @@ jest.mock('@features/auth/hooks', () => ({
   useCurrentUser: jest.fn(() => ({ data: null, isLoading: false })),
 }));
 
+jest.mock('@features/settings/hooks/useUserDetails', () => ({
+  useUserDetails: jest.fn(() => ({ data: null, isLoading: false })),
+}));
+
 // WorkspaceMentorChat pulls in `react-markdown` (ESM-only) via `@components/chat`. This page's
 // own composition logic (loading/error/success + MentorShell wiring) doesn't depend on how the
 // chat UI renders internally, so stub the whole components barrel like WorkspacePage.test.tsx does.

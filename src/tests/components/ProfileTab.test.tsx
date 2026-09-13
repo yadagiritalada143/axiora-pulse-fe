@@ -154,6 +154,30 @@ describe('ProfileTab', () => {
     expect(screen.getAllByText('Active').length).toBeGreaterThanOrEqual(1);
   });
 
+  it('displays Inactive badge and status when profile_status is Inactive', () => {
+    mockedUseUserDetails.mockReturnValue({
+      data: {
+        ...mockUserDetails,
+        profile_status: 'Inactive',
+      },
+    });
+
+    render(createElement(ProfileTab), { wrapper: createWrapper() });
+    expect(screen.getAllByText('Inactive').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('displays Suspended badge and status when profile_status is Suspended', () => {
+    mockedUseUserDetails.mockReturnValue({
+      data: {
+        ...mockUserDetails,
+        profile_status: 'Suspended',
+      },
+    });
+
+    render(createElement(ProfileTab), { wrapper: createWrapper() });
+    expect(screen.getAllByText('Suspended').length).toBeGreaterThanOrEqual(1);
+  });
+
   it('displays nationality', () => {
     render(createElement(ProfileTab), { wrapper: createWrapper() });
     expect(screen.getByText('Indian')).toBeInTheDocument();
