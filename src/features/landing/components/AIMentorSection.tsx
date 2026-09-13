@@ -5,15 +5,15 @@ const MENTOR_CARDS = [
     id: 'mentor-card-1',
     side: 'left',
     img: '/assets/landing/Rectangle 3.png',
-    title: 'Idea Validation Agent',
+    title: 'Idea Validation ',
     subtitle: 'Know if your idea is worth pursuing.',
     desc: 'Turn your idea into a clear, evidence-based opportunity with AI-powered validation. Analyze the problem, target customers, market potential, competition, feasibility, and key risks to understand your idea’s strengths and weaknesses before investing significant time or resources.',
   },
   {
     id: 'mentor-card-2',
     side: 'right',
-    img: '/assets/landing/Rectangle 4.png',
-    title: 'Market Research & Business Model Agent',
+    img: '/assets/landing/Rectangle 5.png',
+    title: 'Market Research & Business Model ',
     subtitle: 'Understand your market and monetize effectively.',
     desc: 'Get a deep view of your industry with AI-powered market intelligence. Analyze market trends, competitor benchmarks, customer personas, pricing strategies, and revenue models to differentiate your business and capture market share.',
   },
@@ -21,7 +21,7 @@ const MENTOR_CARDS = [
     id: 'mentor-card-3',
     side: 'left',
     img: '/assets/landing/Rectangle 4-1.png',
-    title: 'Survey Intelligence Agent',
+    title: 'Survey Intelligence ',
     subtitle: 'Discover what your customers really think.',
     desc: 'Create personalized surveys with AI based on your business idea and target audience, then turn responses into meaningful insights. Identify customer pain points, willingness to pay, and demand patterns based on real consumer data.',
   },
@@ -29,7 +29,7 @@ const MENTOR_CARDS = [
     id: 'mentor-card-4',
     side: 'right',
     img: '/assets/landing/Rectangle 6.png',
-    title: 'Financial & Capital Planning Agent',
+    title: 'Financial & Capital Planning ',
     subtitle: 'Know the numbers before you make the move.',
     desc: 'Analyze costs, pricing models, revenue projections, runway, burn rate, and break-even milestones. AI helps you evaluate the financial sustainability of your venture and construct investor-ready capital plans.',
   },
@@ -37,7 +37,7 @@ const MENTOR_CARDS = [
     id: 'mentor-card-5',
     side: 'left',
     img: '/assets/landing/Rectangle 5.png',
-    title: 'MVP & Execution Planning Agent',
+    title: 'MVP & Execution Planning ',
     subtitle: 'Build what matters, omit what doesn’t.',
     desc: 'Define your minimum viable product scope, prioritize must-have features, map development timelines, and structure engineering sprints to build faster while keeping development costs optimized.',
   },
@@ -45,15 +45,15 @@ const MENTOR_CARDS = [
     id: 'mentor-card-6',
     side: 'right',
     img: '/assets/landing/Rectangle 3.png',
-    title: 'Business Setup & Build Execution Agent',
+    title: 'Business Setup & Build Execution ',
     subtitle: 'Assemble the team, tools, and operations.',
     desc: 'Identify technical and non-technical talent needs, structure job descriptions, select tech stacks and vendors, and establish legal and compliance frameworks for smooth startup operations.',
   },
   {
     id: 'mentor-card-7',
     side: 'left',
-    img: '/assets/landing/Rectangle 4.png',
-    title: 'Pre-Traction & GTM Agent',
+    img: '/assets/landing/Rectangle 6.png',
+    title: 'Pre-Traction & Go-To-Market ',
     subtitle: 'Build momentum before you launch.',
     desc: 'Formulate a go-to-market strategy that connects with early adopters. Build waitlists, community engagement, brand positioning, educational content, and pre-sales channels to ensure day-one traction.',
   },
@@ -61,7 +61,7 @@ const MENTOR_CARDS = [
     id: 'mentor-card-8',
     side: 'right',
     img: '/assets/landing/Rectangle 4-1.png',
-    title: 'Testing, Pilot & Improvement Agent',
+    title: 'Testing, Pilot & Improvement ',
     subtitle: 'Refine quality with early beta users.',
     desc: 'Run user acceptance testing, gather structured beta feedback, identify bugs, optimize usability, and calculate your Launch Readiness Score to ensure a rock-solid release.',
   },
@@ -69,7 +69,7 @@ const MENTOR_CARDS = [
     id: 'mentor-card-9',
     side: 'left',
     img: '/assets/landing/Rectangle 5.png',
-    title: 'Launch, Traction & Customer Validation Agent',
+    title: 'Launch, Traction & Customer Validation ',
     subtitle: 'Turn early users into revenue and retention.',
     desc: 'Execute commercial launch campaigns, track customer acquisition costs (CAC), lifetime value (LTV), conversion rates, and retention to generate evidence of true product-market fit.',
   },
@@ -77,7 +77,7 @@ const MENTOR_CARDS = [
     id: 'mentor-card-10',
     side: 'right',
     img: '/assets/landing/Rectangle 6.png',
-    title: 'Break-Even & Growth Agent',
+    title: 'Break-Even & Growth ',
     subtitle: 'Scale profitably and optimize unit economics.',
     desc: 'Monitor break-even targets, implement upselling and referral loops, increase team productivity with AI automation, and run high-velocity growth experiments.',
   },
@@ -85,7 +85,7 @@ const MENTOR_CARDS = [
     id: 'mentor-card-11',
     side: 'left',
     img: '/assets/landing/Rectangle 3.png',
-    title: 'Scale, Expansion & Strategic Future Agent',
+    title: 'Scale, Expansion & Strategic Future ',
     subtitle: 'Expand into new markets and strategic horizons.',
     desc: 'Scale teams, expand to new geographic markets, diversify product offerings, prepare for institutional fundraising, M&A opportunities, or founder exit strategies.',
   },
@@ -146,12 +146,18 @@ export function AIMentorSection() {
 
           const absDelta = Math.abs(delta);
 
-          const verticalMultiplier = isMobile ? windowH * 4.0 : windowH * 6.5;
+          const verticalMultiplier = isMobile ? windowH * 5.2 : windowH * 6.5;
           const offsetY = -delta * verticalMultiplier;
 
           let opacity = 1;
-          if (absDelta > 0.06) {
-            opacity = Math.max(0, Math.min(1, 1 - (absDelta - 0.06) / 0.06));
+          if (isMobile) {
+            if (absDelta > 0.04) {
+              opacity = Math.max(0, Math.min(1, 1 - (absDelta - 0.04) / 0.035));
+            }
+          } else {
+            if (absDelta > 0.06) {
+              opacity = Math.max(0, Math.min(1, 1 - (absDelta - 0.06) / 0.06));
+            }
           }
 
           if (absDelta <= 0.04) {
@@ -219,7 +225,8 @@ export function AIMentorSection() {
               <img src={card.img} alt={card.title} className="mentor-card-img" />
               <div className="mentor-card-overlay" />
               <div className="mentor-card-content">
-                <h3 className="mentor-card-title">{card.title}</h3>
+                <div className="mentor-card-step-badge">{`0${idx + 1}`.slice(-2)} / 11</div>
+                <h4 className="mentor-card-title">{card.title}</h4>
                 <p className="mentor-card-subtitle">{card.subtitle}</p>
                 <p className="mentor-card-desc">{card.desc}</p>
               </div>

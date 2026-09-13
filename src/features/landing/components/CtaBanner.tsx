@@ -16,8 +16,8 @@ export function CtaBanner() {
     <section className="cta-banner-section" id="cta-banner">
       <div className="cta-banner-bg">
         <img
-          src="https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=1600&h=700&fit=crop&q=85"
-          alt="Desert dunes"
+          src="/assets/landing/why_you_late_bg.jpg"
+          alt="Why You Late - Start Now"
           className="cta-banner-img"
         />
         <div className="cta-banner-overlay" />

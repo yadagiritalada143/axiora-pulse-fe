@@ -42,15 +42,15 @@ export function AboutSection() {
 
         <div className="about-cards-grid">
           <div className="about-story-card">
-            <img src="/assets/landing/our_story_bg.jpg" alt="Our Story" className="story-bg-img" />
+            <img src="/assets/landing/our_story_bg.png" alt="Our Story" className="story-bg-img" />
             <div className="story-gradient-overlay" />
             <div className="story-content">
               <h3 className="story-title">Our Story</h3>
               <p className="story-text">
                 Axiora Pulse was built to make business validation simpler, faster, and more
                 accessible. Instead of spending weeks researching and analyzing an idea manually,
-                founders can use AI-powered agents to turn an idea into meaningful insights and
-                actionable reports.
+                founders can use Arya to turn an idea into meaningful insights and actionable
+                reports.
               </p>
             </div>
           </div>

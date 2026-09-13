@@ -75,9 +75,9 @@ describe('AIMentorSection', () => {
     render(<AIMentorSection />);
 
     expect(screen.getByText('Meet Your AI Mentor')).toBeInTheDocument();
-    expect(screen.getByText('Idea Validation Agent')).toBeInTheDocument();
-    expect(screen.getByText('Market Research & Business Model Agent')).toBeInTheDocument();
-    expect(screen.getByText('Survey Intelligence Agent')).toBeInTheDocument();
+    expect(screen.getByText(/Idea Validation/)).toBeInTheDocument();
+    expect(screen.getByText(/Market Research & Business Model/)).toBeInTheDocument();
+    expect(screen.getByText(/Survey Intelligence/)).toBeInTheDocument();
   });
 
   it('updates text reveal progress and skips card layout when scrollable distance is not positive', () => {
