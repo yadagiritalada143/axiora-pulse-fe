@@ -1,5 +1,5 @@
 import { FileText, Image, Loader2, Mic, Paperclip, Send, X } from 'lucide-react';
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 
 import {
   BACKEND_SUPPORTED_FILE_TYPES,
@@ -18,9 +18,11 @@ export interface ChatAttachment {
   mimeType?: string;
 }
 
+export const DEFAULT_CHAT_DISCLAIMER = 'ARYA may make mistakes. Check important info.';
+
 const MAX_RECORDING_MS = 20_000;
 
-interface ChatInputProps {
+export interface ChatInputProps {
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
@@ -30,6 +32,8 @@ interface ChatInputProps {
   disabled?: boolean;
   placeholder?: string;
   supportedFileTypes?: SupportedFileTypeOption[];
+  disclaimer?: ReactNode | null;
+  className?: string;
 }
 
 const DEFAULT_ALL_ACCEPT = BACKEND_SUPPORTED_FILE_TYPES.map((t) => t.accept).join(',');
@@ -44,6 +48,8 @@ export function ChatInput({
   disabled,
   placeholder,
   supportedFileTypes = BACKEND_SUPPORTED_FILE_TYPES,
+  disclaimer = DEFAULT_CHAT_DISCLAIMER,
+  className,
 }: ChatInputProps) {
   const [isListening, setIsListening] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -228,163 +234,174 @@ export function ChatInput({
   const isUploadingAny = attachments.some((att) => att.isUploading);
 
   return (
-    <div className="border-input bg-background rounded-lg border p-3 shadow-sm">
-      {attachments.length > 0 && (
-        <div className="mb-3 flex flex-wrap gap-2">
-          {attachments.map((file) => (
-            <div
-              key={file.id}
-              className="bg-muted/40 border-border relative flex items-center gap-2 rounded-lg border px-3 py-2 text-xs"
-            >
-              {file.isUploading ? (
-                <Loader2 className="text-muted-foreground h-3.5 w-3.5 animate-spin" />
-              ) : file.type === 'image' ? (
-                <Image className="h-3.5 w-3.5 text-blue-500" />
-              ) : file.type === 'pdf' ? (
-                <FileText className="h-3.5 w-3.5 text-red-500" />
-              ) : file.type === 'link' ? (
-                <FileText className="h-3.5 w-3.5 text-green-500" />
-              ) : (
-                <FileText className="h-3.5 w-3.5 text-orange-500" />
-              )}
-              <span className="text-foreground max-w-[120px] truncate font-medium">
-                {file.name}
-              </span>
-              {onRemoveAttachment && (
-                <button
+    <div className={cn('w-full', className)}>
+      <div className="border-input bg-background rounded-lg border p-3 shadow-sm">
+        {attachments.length > 0 && (
+          <div className="mb-3 flex flex-wrap gap-2">
+            {attachments.map((file) => (
+              <div
+                key={file.id}
+                className="bg-muted/40 border-border relative flex items-center gap-2 rounded-lg border px-3 py-2 text-xs"
+              >
+                {file.isUploading ? (
+                  <Loader2 className="text-muted-foreground h-3.5 w-3.5 animate-spin" />
+                ) : file.type === 'image' ? (
+                  <Image className="h-3.5 w-3.5 text-blue-500" />
+                ) : file.type === 'pdf' ? (
+                  <FileText className="h-3.5 w-3.5 text-red-500" />
+                ) : file.type === 'link' ? (
+                  <FileText className="h-3.5 w-3.5 text-green-500" />
+                ) : (
+                  <FileText className="h-3.5 w-3.5 text-orange-500" />
+                )}
+                <span className="text-foreground max-w-[120px] truncate font-medium">
+                  {file.name}
+                </span>
+                {onRemoveAttachment && (
+                  <button
+                    type="button"
+                    onClick={() => onRemoveAttachment(file.id)}
+                    className="text-muted-foreground hover:text-foreground ml-1.5 cursor-pointer focus:outline-none"
+                    aria-label={`Remove ${file.name}`}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        <textarea
+          ref={textareaRef}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder ?? 'Describe your Idea...'}
+          rows={1}
+          style={{ minHeight: '30px', maxHeight: '200px' }}
+          className="text-foreground placeholder:text-muted-foreground w-full resize-none overflow-y-auto border-none bg-transparent p-0 text-sm font-normal shadow-none outline-none focus:ring-0"
+          disabled={disabled}
+        />
+
+        {isListening && (
+          <div className="my-2 flex items-center gap-2 px-1 text-xs font-medium text-red-500">
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span>
+            </span>
+            <span className="animate-pulse">Listening...</span>
+          </div>
+        )}
+
+        <div className="mt-2 flex items-center justify-between">
+          <div className="text-foreground flex items-center gap-1">
+            {onAttach && (
+              <div className="relative">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept={currentAccept}
+                  className="hidden"
+                  onChange={(event) => {
+                    if (event.target.files?.length) onAttach(event.target.files);
+                    event.target.value = '';
+                  }}
+                />
+                <Button
+                  ref={attachButtonRef}
                   type="button"
-                  onClick={() => onRemoveAttachment(file.id)}
-                  className="text-muted-foreground hover:text-foreground ml-1.5 cursor-pointer focus:outline-none"
-                  aria-label={`Remove ${file.name}`}
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Attach files"
+                  aria-haspopup="menu"
+                  aria-expanded={isMenuOpen}
+                  onClick={() => setIsMenuOpen((prev) => !prev)}
+                  disabled={disabled}
                 >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+                  <Paperclip className="size-4" />
+                </Button>
 
-      <textarea
-        ref={textareaRef}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder ?? 'Describe your Idea...'}
-        rows={1}
-        style={{ minHeight: '30px', maxHeight: '200px' }}
-        className="text-foreground placeholder:text-muted-foreground w-full resize-none overflow-y-auto border-none bg-transparent p-0 text-sm font-normal shadow-none outline-none focus:ring-0"
-        disabled={disabled}
-      />
+                {isMenuOpen && (
+                  <div
+                    ref={menuRef}
+                    role="menu"
+                    aria-label="Select file type to upload"
+                    className="bg-popover text-popover-foreground border-border/80 animate-in fade-in zoom-in-95 absolute bottom-full left-0 z-50 mb-2 min-w-[210px] overflow-hidden rounded-xl border p-1.5 shadow-lg backdrop-blur-xs duration-100 select-none"
+                  >
+                    <div className="text-muted-foreground px-2.5 py-1 text-[10px] font-semibold tracking-wider uppercase">
+                      Select File Type
+                    </div>
+                    {supportedFileTypes.map((typeOption) => (
+                      <button
+                        key={typeOption.id}
+                        type="button"
+                        role="menuitem"
+                        onClick={() => handleSelectFileType(typeOption)}
+                        className="hover:bg-accent hover:text-accent-foreground flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors"
+                      >
+                        {typeOption.id === 'image' ? (
+                          <Image className="size-4 shrink-0 text-blue-500" />
+                        ) : typeOption.id === 'pdf' ? (
+                          <FileText className="size-4 shrink-0 text-red-500" />
+                        ) : (
+                          <FileText className="size-4 shrink-0 text-orange-500" />
+                        )}
+                        <div className="flex flex-col text-left">
+                          <span className="text-foreground">{typeOption.label}</span>
+                          <span className="text-muted-foreground font-mono text-[10px]">
+                            {typeOption.sublabel}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
-      {isListening && (
-        <div className="my-2 flex items-center gap-2 px-1 text-xs font-medium text-red-500">
-          <span className="relative flex h-2 w-2 shrink-0">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span>
-          </span>
-          <span className="animate-pulse">Listening...</span>
-        </div>
-      )}
-
-      <div className="mt-2 flex items-center justify-between">
-        <div className="text-foreground flex items-center gap-1">
-          {onAttach && (
-            <div className="relative">
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept={currentAccept}
-                className="hidden"
-                onChange={(event) => {
-                  if (event.target.files?.length) onAttach(event.target.files);
-                  event.target.value = '';
-                }}
-              />
+            {isSpeechSupported && (
               <Button
-                ref={attachButtonRef}
                 type="button"
                 variant="ghost"
                 size="icon"
-                aria-label="Attach files"
-                aria-haspopup="menu"
-                aria-expanded={isMenuOpen}
-                onClick={() => setIsMenuOpen((prev) => !prev)}
+                aria-label={isListening ? 'Stop voice typing' : 'Start voice typing'}
+                onClick={toggleListening}
                 disabled={disabled}
+                className={cn(
+                  'transition-all duration-200',
+                  isListening &&
+                    'scale-105 bg-red-500/10 text-red-500 hover:bg-red-500/20 hover:text-red-600',
+                )}
               >
-                <Paperclip className="size-4" />
+                <Mic className={cn('size-4', isListening && 'animate-pulse')} />
               </Button>
+            )}
+          </div>
 
-              {isMenuOpen && (
-                <div
-                  ref={menuRef}
-                  role="menu"
-                  aria-label="Select file type to upload"
-                  className="bg-popover text-popover-foreground border-border/80 animate-in fade-in zoom-in-95 absolute bottom-full left-0 z-50 mb-2 min-w-[210px] overflow-hidden rounded-xl border p-1.5 shadow-lg backdrop-blur-xs duration-100 select-none"
-                >
-                  <div className="text-muted-foreground px-2.5 py-1 text-[10px] font-semibold tracking-wider uppercase">
-                    Select File Type
-                  </div>
-                  {supportedFileTypes.map((typeOption) => (
-                    <button
-                      key={typeOption.id}
-                      type="button"
-                      role="menuitem"
-                      onClick={() => handleSelectFileType(typeOption)}
-                      className="hover:bg-accent hover:text-accent-foreground flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors"
-                    >
-                      {typeOption.id === 'image' ? (
-                        <Image className="size-4 shrink-0 text-blue-500" />
-                      ) : typeOption.id === 'pdf' ? (
-                        <FileText className="size-4 shrink-0 text-red-500" />
-                      ) : (
-                        <FileText className="size-4 shrink-0 text-orange-500" />
-                      )}
-                      <div className="flex flex-col text-left">
-                        <span className="text-foreground">{typeOption.label}</span>
-                        <span className="text-muted-foreground font-mono text-[10px]">
-                          {typeOption.sublabel}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {isSpeechSupported && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label={isListening ? 'Stop voice typing' : 'Start voice typing'}
-              onClick={toggleListening}
-              disabled={disabled}
-              className={cn(
-                'transition-all duration-200',
-                isListening &&
-                  'scale-105 bg-red-500/10 text-red-500 hover:bg-red-500/20 hover:text-red-600',
-              )}
-            >
-              <Mic className={cn('size-4', isListening && 'animate-pulse')} />
-            </Button>
-          )}
+          <Button
+            type="button"
+            size="sm"
+            className="cursor-pointer gap-1.5 bg-[#FF4500] font-semibold text-white hover:bg-[#FF4500]/90"
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- boolean OR, not a fallback
+            disabled={disabled || (!value.trim() && attachments.length === 0) || isUploadingAny}
+            onClick={onSubmit}
+          >
+            Send
+            <Send className="size-3.5" />
+          </Button>
         </div>
-
-        <Button
-          type="button"
-          size="sm"
-          className="cursor-pointer gap-1.5 bg-[#FF4500] font-semibold text-white hover:bg-[#FF4500]/90"
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- boolean OR, not a fallback
-          disabled={disabled || (!value.trim() && attachments.length === 0) || isUploadingAny}
-          onClick={onSubmit}
-        >
-          Send
-          <Send className="size-3.5" />
-        </Button>
       </div>
+
+      {disclaimer ? (
+        <p
+          data-testid="chat-disclaimer"
+          className="text-muted-foreground/60 mt-1.5 text-center text-[11px] tracking-normal select-none sm:text-xs"
+        >
+          {disclaimer}
+        </p>
+      ) : null}
     </div>
   );
 }

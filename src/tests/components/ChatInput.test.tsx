@@ -278,4 +278,34 @@ describe('ChatInput', () => {
       expect(onSubmit).not.toHaveBeenCalled();
     });
   });
+
+  describe('disclaimer', () => {
+    it('renders the default ARYA disclaimer below the input', () => {
+      render(<ChatInput value="" onChange={jest.fn()} onSubmit={jest.fn()} />);
+
+      expect(screen.getByText('ARYA may make mistakes. Check important info.')).toBeInTheDocument();
+    });
+
+    it('renders a custom disclaimer when provided', () => {
+      render(
+        <ChatInput
+          value=""
+          onChange={jest.fn()}
+          onSubmit={jest.fn()}
+          disclaimer="Custom test disclaimer note."
+        />,
+      );
+
+      expect(screen.getByText('Custom test disclaimer note.')).toBeInTheDocument();
+    });
+
+    it('does not render a disclaimer when disclaimer is null', () => {
+      render(<ChatInput value="" onChange={jest.fn()} onSubmit={jest.fn()} disclaimer={null} />);
+
+      expect(screen.queryByTestId('chat-disclaimer')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('ARYA may make mistakes. Check important info.'),
+      ).not.toBeInTheDocument();
+    });
+  });
 });
