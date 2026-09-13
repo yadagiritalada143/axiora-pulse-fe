@@ -1,11 +1,21 @@
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+
 import { Logo } from '@components/common/Logo';
+import { ROUTES } from '@constants/routes';
 
 export function LandingFooter() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
     e.preventDefault();
-    const element = document.getElementById(targetId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (location.pathname === '/' || location.pathname === ROUTES.HOME) {
+      const element = document.getElementById(targetId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    } else {
+      void navigate(`/#${targetId}`);
     }
   };
 
@@ -70,6 +80,22 @@ export function LandingFooter() {
         </div>
 
         <div className="footer-col">
+          <h4 className="footer-col-title">Legal</h4>
+          <ul className="footer-links">
+            <li>
+              <Link to={ROUTES.PRIVACY_POLICY} className="footer-link" id="footer-privacy-policy">
+                Privacy Policy
+              </Link>
+            </li>
+            <li>
+              <Link to={ROUTES.TERMS_OF_USE} className="footer-link" id="footer-terms-of-use">
+                Terms & Conditions
+              </Link>
+            </li>
+          </ul>
+        </div>
+
+        <div className="footer-col">
           <h4 className="footer-col-title">Connect</h4>
           <ul className="footer-links">
             <li>
@@ -112,6 +138,21 @@ export function LandingFooter() {
               </a>
             </li>
           </ul>
+        </div>
+      </div>
+
+      <div className="footer-bottom-bar">
+        <p className="footer-bottom-copy">
+          &copy; {new Date().getFullYear()} Axiora Global Solutions Pvt. Ltd. All rights reserved.
+        </p>
+        <div className="footer-bottom-legal-links">
+          <Link to={ROUTES.PRIVACY_POLICY} className="footer-legal-link">
+            Privacy Policy
+          </Link>
+          <span className="footer-legal-divider">&bull;</span>
+          <Link to={ROUTES.TERMS_OF_USE} className="footer-legal-link">
+            Terms & Conditions
+          </Link>
         </div>
       </div>
     </footer>

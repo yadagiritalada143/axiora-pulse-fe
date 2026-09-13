@@ -75,9 +75,9 @@ describe('AIMentorSection', () => {
     render(<AIMentorSection />);
 
     expect(screen.getByText('Meet Your AI Mentor')).toBeInTheDocument();
-    expect(screen.getByText('Idea Validation Agent')).toBeInTheDocument();
-    expect(screen.getByText('Market Research & Business Model Agent')).toBeInTheDocument();
-    expect(screen.getByText('Survey Intelligence Agent')).toBeInTheDocument();
+    expect(screen.getByText(/Idea Validation/)).toBeInTheDocument();
+    expect(screen.getByText(/Market Research & Business Model/)).toBeInTheDocument();
+    expect(screen.getByText(/Survey Intelligence/)).toBeInTheDocument();
   });
 
   it('updates text reveal progress and skips card layout when scrollable distance is not positive', () => {
@@ -253,10 +253,10 @@ describe('TestimonialsSection', () => {
     expect(screen.getByText('TESTIMONIALS')).toBeInTheDocument();
     expect(screen.getByText(/Hear it from our partners/)).toBeInTheDocument();
 
-    const alexCards = screen.getAllByText('Alex M.');
-    expect(alexCards.length).toBe(2);
+    const vamsiCards = screen.getAllByText('Vamsi Krishna');
+    expect(vamsiCards.length).toBe(2);
 
-    expect(screen.getAllByText('Sarah K.').length).toBe(2);
+    expect(screen.getAllByText('Sravani P').length).toBe(2);
     expect(screen.getAllByText('Startup Founder').length).toBe(2);
   });
 });

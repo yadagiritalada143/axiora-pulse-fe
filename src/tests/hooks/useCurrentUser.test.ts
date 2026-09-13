@@ -142,4 +142,29 @@ describe('useCurrentUser', () => {
     expect(setHasActivePlan).not.toHaveBeenCalled();
     expect(setShowQuestionnaireIntro).not.toHaveBeenCalled();
   });
+
+  it('normalizes name from firstName and lastName when provided', async () => {
+    const userWithSeparateNames: User = {
+      ...baseUser,
+      name: 'old_username',
+      firstName: 'Jane',
+      lastName: 'Smith',
+    };
+
+    const { updateUser: mockUpdateUser } = mockStore();
+    mockedAuthService.getCurrentUser.mockResolvedValue(userWithSeparateNames);
+
+    const { result } = renderHook(() => useCurrentUser(), { wrapper: createWrapper() });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(mockUpdateUser).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'Jane Smith',
+        firstName: 'Jane',
+        lastName: 'Smith',
+      }),
+    );
+    expect(result.current.data?.name).toBe('Jane Smith');
+  });
 });

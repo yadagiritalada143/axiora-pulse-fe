@@ -1,5 +1,7 @@
 import { format } from 'date-fns';
 import {
+  AlertCircle,
+  Ban,
   Calendar,
   CalendarDays,
   Camera,
@@ -26,6 +28,7 @@ import { Badge } from '@components/ui/badge';
 import { Button } from '@components/ui/button';
 import { Card, CardContent } from '@components/ui/card';
 import { useCurrentUser } from '@features/auth/hooks';
+import { cn } from '@lib/utils';
 import { useAuthStore } from '@store/auth.store';
 
 import { useUpdateProfile } from '../hooks/useUpdateProfile';
@@ -118,8 +121,14 @@ export function ProfileTab() {
   const rawDob = userDetails?.date_of_birth ?? user?.date_of_birth ?? user?.dateOfBirth;
   const dateOfBirth = rawDob ? format(new Date(rawDob), 'dd/MM/yyyy') : 'N/A';
   const gender = userDetails?.gender ?? user?.gender ?? 'N/A';
-  const profileStatus =
+  const rawStatus =
     userDetails?.profile_status ?? user?.profile_status ?? user?.profileStatus ?? 'Active';
+  const profileStatus =
+    rawStatus.trim() !== ''
+      ? rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1).toLowerCase()
+      : 'Active';
+  const isStatusActive = profileStatus.toLowerCase() === 'active';
+  const isStatusSuspended = profileStatus.toLowerCase() === 'suspended';
   const nationality = userDetails?.nationality ?? user?.nationality ?? 'N/A';
   const commPrefs =
     (userDetails?.communication_preferences && userDetails.communication_preferences.length > 0
@@ -158,7 +167,7 @@ export function ProfileTab() {
         : 'U';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-1">
       <Card className="border-border/80 bg-card rounded-none border-0 border-b pb-6 shadow-none">
         <CardContent className="p-0">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -412,9 +421,27 @@ export function ProfileTab() {
           </div>
         </div>
 
-        <div className="border-border/70 bg-card/60 flex items-center justify-between rounded-xl border-0 border-b p-4 transition-colors hover:border-emerald-500/40">
+        <div
+          className={cn(
+            'border-border/70 bg-card/60 flex items-center justify-between rounded-xl border-0 border-b p-4 transition-colors',
+            isStatusActive
+              ? 'hover:border-emerald-500/40'
+              : isStatusSuspended
+                ? 'hover:border-red-500/40'
+                : 'hover:border-amber-500/40',
+          )}
+        >
           <div className="flex min-w-0 items-center gap-3.5">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            <div
+              className={cn(
+                'flex size-10 shrink-0 items-center justify-center rounded-xl',
+                isStatusActive
+                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                  : isStatusSuspended
+                    ? 'bg-red-500/10 text-red-600 dark:text-red-400'
+                    : 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+              )}
+            >
               <ShieldCheck className="size-4.5" />
             </div>
             <div className="min-w-0 flex-1">
@@ -428,10 +455,23 @@ export function ProfileTab() {
           </div>
           <Badge
             variant="outline"
-            className="border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400"
+            className={cn(
+              'px-2.5 py-0.5 text-[11px] font-semibold',
+              isStatusActive
+                ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                : isStatusSuspended
+                  ? 'border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400'
+                  : 'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400',
+            )}
           >
-            <Check className="mr-1 size-3" />
-            Active
+            {isStatusActive ? (
+              <Check className="mr-1 size-3" />
+            ) : isStatusSuspended ? (
+              <Ban className="mr-1 size-3" />
+            ) : (
+              <AlertCircle className="mr-1 size-3" />
+            )}
+            {profileStatus}
           </Badge>
         </div>
 

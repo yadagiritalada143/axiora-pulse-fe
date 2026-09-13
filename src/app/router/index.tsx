@@ -27,6 +27,18 @@ export const router = createBrowserRouter([
         path: '/surveys/public/:surveyId',
         element: lazyPage(() => import('@pages/PublicSurveyPage')),
       },
+      {
+        path: ROUTES.PRIVACY_POLICY,
+        element: lazyPage(() => import('@pages/PrivacyPolicyPage')),
+      },
+      {
+        path: ROUTES.TERMS_OF_USE,
+        element: lazyPage(() => import('@pages/TermsOfUsePage')),
+      },
+      {
+        path: ROUTES.TERMS_AND_CONDITIONS,
+        element: lazyPage(() => import('@pages/TermsOfUsePage')),
+      },
     ],
   },
   {

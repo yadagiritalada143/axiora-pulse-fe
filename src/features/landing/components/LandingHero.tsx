@@ -21,8 +21,10 @@ export function LandingHero() {
       <div className="hero-content">
         <h1 className="hero-title">Great Ideas Don&apos;t Need Luck. They Need Validation.</h1>
         <p className="hero-subtitle">
-          Know the Market. Get the Guidance. Build with Confidence. Validate every decision with AI
-          mentor insights before you invest your time, money, and effort.
+          Know the Market. Get the Guidance. Build with Confidence.
+          <br />
+          Validate every decision with AI-mentor insights before you invest your time, money, and
+          effort.
         </p>
 
         <div className="hero-cta-wrapper">

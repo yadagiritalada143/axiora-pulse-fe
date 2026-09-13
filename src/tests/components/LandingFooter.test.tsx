@@ -1,24 +1,36 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 
 import { LandingFooter } from '@features/landing/components/LandingFooter';
 
 describe('LandingFooter', () => {
-  it('renders brand, quick links and connect links', () => {
-    render(<LandingFooter />);
+  it('renders brand, quick links, legal links, and connect links', () => {
+    render(
+      <MemoryRouter>
+        <LandingFooter />
+      </MemoryRouter>,
+    );
 
     expect(screen.getByText('Quick Links')).toBeInTheDocument();
+    expect(screen.getByText('Legal')).toBeInTheDocument();
     expect(screen.getByText('Connect')).toBeInTheDocument();
     expect(screen.getByText('Product')).toBeInTheDocument();
     expect(screen.getByText('Solutions')).toBeInTheDocument();
     expect(screen.getByText('About Us')).toBeInTheDocument();
     expect(screen.getByText('FAQ')).toBeInTheDocument();
+    expect(screen.getAllByText('Privacy Policy').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Terms & Conditions').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Twitter / X')).toBeInTheDocument();
     expect(screen.getByText('LinkedIn')).toBeInTheDocument();
     expect(screen.getByText('Instagram')).toBeInTheDocument();
   });
 
   it('prevents default and scrolls to section on quick link click', () => {
-    render(<LandingFooter />);
+    render(
+      <MemoryRouter>
+        <LandingFooter />
+      </MemoryRouter>,
+    );
 
     const faqLink = screen.getByText('FAQ').closest('a');
     expect(faqLink).not.toBeNull();

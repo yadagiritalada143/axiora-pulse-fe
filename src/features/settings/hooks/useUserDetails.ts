@@ -13,7 +13,7 @@ export function useUserDetails() {
     queryKey: queryKeys.user.details(),
     queryFn: () => userService.getUserDetails(),
     enabled: isAuthenticated,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 30,
     retry: 1,
   });
 }
