@@ -46,7 +46,7 @@ describe('router', () => {
   it('renders HomeRedirect at the index of the public group', () => {
     const publicGroup = defined(router.routes[0]);
 
-    expect(publicGroup.children).toHaveLength(2);
+    expect(publicGroup.children).toHaveLength(5);
     expect(defined(publicGroup.children?.[0]).index).toBe(true);
   });
 

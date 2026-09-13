@@ -5,13 +5,16 @@ import { ThemeToggle } from '@components/common/ThemeToggle';
 import { Button } from '@components/ui/button';
 import { ROUTES } from '@constants/routes';
 
-/** Layout for marketing/public pages (pricing, landing) that need a simple top nav. */
 export function PublicLayout() {
   const location = useLocation();
   const isPublicSurvey = location.pathname.startsWith('/surveys/public/');
   const isLandingPage = location.pathname === ROUTES.HOME || location.pathname === '/';
+  const isLegalPage =
+    location.pathname === ROUTES.PRIVACY_POLICY ||
+    location.pathname === ROUTES.TERMS_OF_USE ||
+    location.pathname === ROUTES.TERMS_AND_CONDITIONS;
 
-  if (isPublicSurvey || isLandingPage) {
+  if (isPublicSurvey || isLandingPage || isLegalPage) {
     return <Outlet />;
   }
 

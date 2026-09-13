@@ -10,6 +10,9 @@ export const ROUTES = {
   RESET_PASSWORD: '/reset-password',
 
   PRICING: '/pricing',
+  PRIVACY_POLICY: '/privacy-policy',
+  TERMS_OF_USE: '/terms-of-use',
+  TERMS_AND_CONDITIONS: '/terms-and-conditions',
 
   ONBOARDING: '/onboarding',
   DASHBOARD: '/dashboard',
