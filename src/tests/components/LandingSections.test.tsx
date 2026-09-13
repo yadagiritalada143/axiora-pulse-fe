@@ -253,10 +253,10 @@ describe('TestimonialsSection', () => {
     expect(screen.getByText('TESTIMONIALS')).toBeInTheDocument();
     expect(screen.getByText(/Hear it from our partners/)).toBeInTheDocument();
 
-    const alexCards = screen.getAllByText('Alex M.');
-    expect(alexCards.length).toBe(2);
+    const vamsiCards = screen.getAllByText('Vamsi Krishna');
+    expect(vamsiCards.length).toBe(2);
 
-    expect(screen.getAllByText('Sarah K.').length).toBe(2);
+    expect(screen.getAllByText('Sravani P').length).toBe(2);
     expect(screen.getAllByText('Startup Founder').length).toBe(2);
   });
 });
