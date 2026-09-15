@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import type { PricingPlan } from '@/types/api.types';
-import type { BillingPeriod } from '@/types/billing.types';
 import { ApiErrorMessage } from '@components/common/ApiErrorMessage';
 import { Button } from '@components/ui/button';
 import { ROUTES } from '@constants/routes';
@@ -19,12 +18,7 @@ interface StaticPlanConfig {
   name: string;
   description: string;
   priceMonthly: number;
-  priceYearly: number;
   strikePriceMonthly: number;
-  strikePriceYearly: number;
-  buttonText: string;
-  buttonVariant: 'current' | 'builder' | 'pro';
-  headerStyle: 'gray' | 'gradient' | 'pro-gray';
   features: string[];
 }
 
@@ -35,12 +29,7 @@ const STATIC_PLANS_DATA: StaticPlanConfig[] = [
     description:
       'For students exploring and validating their first startup idea, turning an initial concept into a real-world opportunity.',
     priceMonthly: 0,
-    priceYearly: 0,
     strikePriceMonthly: 299,
-    strikePriceYearly: 2990,
-    buttonText: 'Current Plan',
-    buttonVariant: 'current',
-    headerStyle: 'gray',
     features: [
       '1 workspace/idea for 7 days',
       '2 survey regenerations per workspace',
@@ -56,12 +45,7 @@ const STATIC_PLANS_DATA: StaticPlanConfig[] = [
     description:
       'For students building projects and early-stage startups who need deeper validation and research.',
     priceMonthly: 499,
-    priceYearly: 4990,
     strikePriceMonthly: 999,
-    strikePriceYearly: 9990,
-    buttonText: 'Choose Builder',
-    buttonVariant: 'builder',
-    headerStyle: 'gradient',
     features: [
       '3 workspaces/ideas',
       '5 survey regenerations per workspace',
@@ -78,12 +62,7 @@ const STATIC_PLANS_DATA: StaticPlanConfig[] = [
     description:
       'For student founders and power users who need advanced validation, insights, and greater workspace capacity.',
     priceMonthly: 999,
-    priceYearly: 9990,
     strikePriceMonthly: 1999,
-    strikePriceYearly: 19990,
-    buttonText: 'Choose Pro',
-    buttonVariant: 'pro',
-    headerStyle: 'pro-gray',
     features: [
       '10 workspaces/ideas',
       '10 survey regenerations per workspace',
@@ -101,12 +80,7 @@ const DEFAULT_STATIC_PLAN: StaticPlanConfig = {
   name: 'Starter',
   description: 'For students exploring and validating their first startup idea.',
   priceMonthly: 0,
-  priceYearly: 0,
   strikePriceMonthly: 299,
-  strikePriceYearly: 2990,
-  buttonText: 'Current Plan',
-  buttonVariant: 'current',
-  headerStyle: 'gray',
   features: [
     '1 workspace/idea for 7 days',
     '2 survey regenerations per workspace',
@@ -121,17 +95,27 @@ function getStaticPlan(index: number): StaticPlanConfig {
   return STATIC_PLANS_DATA[index] ?? DEFAULT_STATIC_PLAN;
 }
 
+function getPlanButtonText(staticPlan: StaticPlanConfig, isActive: boolean): string {
+  if (staticPlan.id === 'starter') {
+    return 'Current Starter (Free)';
+  }
+  if (isActive) {
+    return `Current ${staticPlan.name}`;
+  }
+  return `Choose ${staticPlan.name}`;
+}
+
 function PlanCard({
   plan,
   index = 0,
-  billingPeriod,
+  isActive = false,
   onSelect,
   isSubmitting,
   submittingId,
 }: {
   plan: PricingPlan;
   index?: number;
-  billingPeriod: BillingPeriod;
+  isActive?: boolean;
   onSelect: (id: string) => void;
   isSubmitting: boolean;
   submittingId: string | null;
@@ -139,76 +123,68 @@ function PlanCard({
   const planId = String(plan.id);
   const isThisSubmitting = submittingId === planId;
 
-  // Use the static content matching the tier/index
   const staticData = getStaticPlan(index);
-
-  const price = billingPeriod === 'monthly' ? staticData.priceMonthly : staticData.priceYearly;
-  const strikePrice =
-    billingPeriod === 'monthly' ? staticData.strikePriceMonthly : staticData.strikePriceYearly;
+  const buttonLabel = getPlanButtonText(staticData, isActive);
 
   return (
-    <div className="flex h-full flex-col overflow-visible rounded-2xl bg-white shadow-xs transition-all duration-200 hover:-translate-y-1 hover:shadow-md dark:bg-neutral-900">
+    <div
+      className={cn(
+        'flex h-full flex-col overflow-visible rounded-2xl bg-white shadow-xs transition-all duration-200 hover:-translate-y-1 hover:shadow-md dark:bg-neutral-900',
+        isActive && 'shadow-md ring-2 ring-[#FF4500]/30',
+      )}
+    >
       <div
         className={cn(
           'relative rounded-t-2xl px-6 pt-5 pb-7 transition-all',
-          staticData.headerStyle === 'gradient'
-            ? 'bg-gradient-to-r from-[#4B2301] via-[#581E01] to-[#7B6B53]'
-            : staticData.headerStyle === 'pro-gray'
-              ? 'bg-[#F5F5F5] dark:bg-neutral-800'
-              : 'bg-[#ECECEC] dark:bg-neutral-800/90',
+          isActive
+            ? 'bg-gradient-to-r from-[#FF4500] via-[#FF5722] to-[#FFA07A]'
+            : 'bg-[#ECECEC] dark:bg-neutral-800/90',
         )}
       >
-        <h3
-          className={cn(
-            'text-lg font-bold tracking-tight',
-            staticData.headerStyle === 'gradient'
-              ? 'text-white'
-              : 'text-neutral-900 dark:text-white',
-          )}
-        >
-          {staticData.name}
-          {plan.name && plan.name !== staticData.name ? (
-            <span className="sr-only">{plan.name}</span>
+        <div className="flex items-center justify-between">
+          <h3
+            className={cn(
+              'text-lg font-bold tracking-tight',
+              isActive ? 'text-white' : 'text-neutral-900 dark:text-white',
+            )}
+          >
+            {staticData.name}
+            {plan.name && plan.name !== staticData.name ? (
+              <span className="sr-only">{plan.name}</span>
+            ) : null}
+          </h3>
+          {isActive ? (
+            <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-semibold text-white backdrop-blur-xs">
+              Active Plan
+            </span>
           ) : null}
-        </h3>
+        </div>
       </div>
 
-      {/* ── Card Body (curved upward into header banner) ── */}
       <div className="relative -mt-4 flex flex-1 flex-col rounded-t-2xl rounded-b-2xl bg-white px-6 pt-5 pb-8 shadow-xs dark:bg-neutral-900">
-        {/* Description / Subtitle */}
         <p className="min-h-[44px] text-xs leading-relaxed text-neutral-600 sm:text-[13px] dark:text-neutral-400">
           {staticData.description}
         </p>
 
-        {/* Inset Pricing Card */}
         <div className="mt-4 rounded-2xl border border-neutral-200/90 bg-[#FCFCFC] p-5 dark:border-neutral-800 dark:bg-neutral-900/80">
-          {/* Price Row */}
           <div className="flex items-baseline gap-1">
             <span className="text-3xl font-extrabold tracking-tight text-neutral-950 sm:text-[32px] dark:text-white">
-              ₹{price.toLocaleString('en-IN')}
+              ₹{staticData.priceMonthly.toLocaleString('en-IN')}
             </span>
             <span className="text-xs font-normal text-neutral-500 dark:text-neutral-400">
-              / {billingPeriod === 'monthly' ? 'month' : 'year'}
+              / month
             </span>
             {plan.priceMonthly !== undefined ? (
-              <span className="sr-only">
-                ₹
-                {billingPeriod === 'monthly'
-                  ? plan.priceMonthly.toLocaleString('en-IN')
-                  : plan.priceYearly.toLocaleString('en-IN')}
-              </span>
+              <span className="sr-only">₹{plan.priceMonthly.toLocaleString('en-IN')}</span>
             ) : null}
           </div>
 
-          {/* Strikethrough original price */}
           <div className="mt-1">
             <span className="text-xs font-normal text-neutral-400 line-through dark:text-neutral-500">
-              ₹{strikePrice.toLocaleString('en-IN')} /{' '}
-              {billingPeriod === 'monthly' ? 'month' : 'year'}
+              ₹{staticData.strikePriceMonthly.toLocaleString('en-IN')} / month
             </span>
           </div>
 
-          {/* Action button */}
           <button
             type="button"
             aria-label="Choose plan"
@@ -216,12 +192,9 @@ function PlanCard({
             disabled={isSubmitting}
             className={cn(
               'mt-4 flex h-10 w-full cursor-pointer items-center justify-center rounded-xl text-sm font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50',
-              staticData.buttonVariant === 'current' &&
-                'bg-[#EAEAEA] font-medium text-neutral-700 hover:bg-[#E0E0E0] dark:bg-neutral-800 dark:text-neutral-200',
-              staticData.buttonVariant === 'builder' &&
-                'bg-[#E3E5E8] font-semibold text-neutral-900 hover:bg-[#D5D9DF] dark:bg-neutral-800 dark:text-neutral-100',
-              staticData.buttonVariant === 'pro' &&
-                'bg-[#212328] font-semibold text-white shadow-xs hover:bg-[#181A1E]',
+              isActive
+                ? 'bg-[#FF4500] font-semibold text-white shadow-xs hover:bg-[#FF4500]/90'
+                : 'bg-[#E3E5E8] font-semibold text-neutral-900 hover:bg-[#D5D9DF] dark:bg-neutral-800 dark:text-neutral-100',
             )}
           >
             {isThisSubmitting ? (
@@ -230,12 +203,11 @@ function PlanCard({
                 Processing…
               </>
             ) : (
-              staticData.buttonText
+              buttonLabel
             )}
           </button>
         </div>
 
-        {/* Features Checklist */}
         <div className="mt-6 flex-1">
           <ul className="space-y-3">
             {staticData.features.map((feature) => (
@@ -255,21 +227,18 @@ function PlanCard({
 
 function MobileCarousel({
   plans,
-  billingPeriod,
+  activePlanId,
   onSelect,
   isSubmitting,
   submittingId,
 }: {
   plans: PricingPlan[];
-  billingPeriod: BillingPeriod;
+  activePlanId: string;
   onSelect: (id: string) => void;
   isSubmitting: boolean;
   submittingId: string | null;
 }) {
-  const initialIdx = Math.max(
-    0,
-    plans.findIndex((p) => p.popular),
-  );
+  const initialIdx = 0;
   const [activeIdx, setActiveIdx] = useState(initialIdx);
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
@@ -308,25 +277,29 @@ function MobileCarousel({
     <div className="relative left-1/2 w-screen -translate-x-1/2">
       <div ref={emblaRef} className="overflow-hidden px-[8vw]">
         <div className="-ml-4 flex items-stretch">
-          {plans.map((plan, idx) => (
-            <div key={String(plan.id)} className="min-w-0 shrink-0 grow-0 basis-full pl-4">
-              <div
-                className={cn(
-                  'h-full transition-all duration-300 ease-in-out',
-                  idx === activeIdx ? 'scale-100 opacity-100' : 'scale-95 opacity-60',
-                )}
-              >
-                <PlanCard
-                  plan={plan}
-                  index={idx}
-                  billingPeriod={billingPeriod}
-                  onSelect={onSelect}
-                  isSubmitting={isSubmitting}
-                  submittingId={submittingId}
-                />
+          {plans.map((plan, idx) => {
+            const staticPlan = getStaticPlan(idx);
+            const isActive = staticPlan.id === activePlanId || String(plan.id) === activePlanId;
+            return (
+              <div key={String(plan.id)} className="min-w-0 shrink-0 grow-0 basis-full pl-4">
+                <div
+                  className={cn(
+                    'h-full transition-all duration-300 ease-in-out',
+                    idx === activeIdx ? 'scale-100 opacity-100' : 'scale-95 opacity-60',
+                  )}
+                >
+                  <PlanCard
+                    plan={plan}
+                    index={idx}
+                    isActive={isActive}
+                    onSelect={onSelect}
+                    isSubmitting={isSubmitting}
+                    submittingId={submittingId}
+                  />
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -376,39 +349,12 @@ function MobileCarousel({
   );
 }
 
-function BillingToggle({
-  value,
-  onChange,
-}: {
-  value: BillingPeriod;
-  onChange: (v: BillingPeriod) => void;
-}) {
-  return (
-    <div className="border-border bg-muted mx-auto mt-6 inline-flex items-center gap-1 rounded-full border p-1">
-      {(['monthly', 'yearly'] as const).map((period) => (
-        <button
-          key={period}
-          type="button"
-          onClick={() => onChange(period)}
-          className={cn(
-            'cursor-pointer rounded-full px-5 py-1.5 text-sm font-medium capitalize transition-colors',
-            value === period
-              ? 'bg-background text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground',
-          )}
-        >
-          {period === 'monthly' ? 'Monthly' : 'Annually'}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 export function PricingPlans() {
-  const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>('monthly');
   const navigate = useNavigate();
   const setHasActivePlan = useAuthStore((state) => state.setHasActivePlan);
   const setOnboardingPending = useAuthStore((state) => state.setOnboardingPending);
+
+  const activePlanId = 'starter';
 
   const { data: plans, isLoading, isError, error, refetch } = usePricingPlans();
   const subscribe = useSubscribe();
@@ -426,32 +372,19 @@ export function PricingPlans() {
       const planList = plans ?? [];
       const index = planList.findIndex((p) => String(p.id) === planId);
       const staticData = getStaticPlan(index >= 0 ? index : 0);
-      const selectedPlan = planList.find((p) => String(p.id) === planId);
 
-      const isFree = staticData.priceMonthly <= 0 && (selectedPlan?.priceMonthly ?? 0) <= 0;
-
-      if (isFree) {
+      if (staticData.id === 'starter' || planId === 'starter' || planId === 'free') {
         proceedToOnboarding();
         return;
       }
 
-      subscribe.mutate(
-        { planId, billingPeriod },
-        {
-          onSuccess: () => proceedToOnboarding(),
-          onError: (err) => {
-            if (err.message === 'Checkout was dismissed.') return;
-            toast.error(err.message || 'Could not start the subscription. Please try again.');
-          },
-        },
-      );
+      toast.info('This plans is not available it will be active on 7 days ');
     },
-    [billingPeriod, plans, proceedToOnboarding, subscribe],
+    [plans, proceedToOnboarding, subscribe.isPending],
   );
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 text-center sm:px-6">
-      {/* ── Heading ── */}
       <h1 className="text-3xl font-bold tracking-tight text-neutral-900 sm:text-4xl dark:text-white">
         Choose your plan
         <span className="sr-only">Pricing Plans</span>
@@ -459,8 +392,6 @@ export function PricingPlans() {
       <p className="mt-2 text-sm font-normal text-neutral-600 sm:text-base dark:text-neutral-400">
         Choose the Plan that fits your business needs
       </p>
-
-      <BillingToggle value={billingPeriod} onChange={setBillingPeriod} />
 
       {isLoading ? (
         <div className="mt-16 flex justify-center">
@@ -475,26 +406,29 @@ export function PricingPlans() {
         </div>
       ) : (
         <>
-          {/* Desktop: 3-column grid */}
           <div className="mt-12 hidden gap-6 text-left sm:grid sm:grid-cols-2 md:grid-cols-3 lg:gap-8">
-            {(plans ?? []).map((plan, idx) => (
-              <PlanCard
-                key={String(plan.id)}
-                plan={plan}
-                index={idx}
-                billingPeriod={billingPeriod}
-                onSelect={handleSelect}
-                isSubmitting={subscribe.isPending}
-                submittingId={subscribe.isPending ? (subscribe.variables?.planId ?? null) : null}
-              />
-            ))}
+            {(plans ?? []).map((plan, idx) => {
+              const staticPlan = getStaticPlan(idx);
+              const isActive = staticPlan.id === activePlanId || String(plan.id) === activePlanId;
+              return (
+                <PlanCard
+                  key={String(plan.id)}
+                  plan={plan}
+                  index={idx}
+                  isActive={isActive}
+                  onSelect={handleSelect}
+                  isSubmitting={subscribe.isPending}
+                  submittingId={subscribe.isPending ? (subscribe.variables?.planId ?? null) : null}
+                />
+              );
+            })}
           </div>
 
           {/* Mobile: full-bleed carousel */}
           <div className="mt-10 sm:hidden">
             <MobileCarousel
               plans={plans ?? []}
-              billingPeriod={billingPeriod}
+              activePlanId={activePlanId}
               onSelect={handleSelect}
               isSubmitting={subscribe.isPending}
               submittingId={subscribe.isPending ? (subscribe.variables?.planId ?? null) : null}

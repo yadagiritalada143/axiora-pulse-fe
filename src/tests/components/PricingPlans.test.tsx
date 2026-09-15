@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -11,7 +11,7 @@ import { useSubscribe } from '@features/pricing/hooks/useSubscribe';
 import { useAuthStore } from '@store/auth.store';
 
 jest.mock('sonner', () => ({
-  toast: { error: jest.fn(), success: jest.fn() },
+  toast: { error: jest.fn(), success: jest.fn(), info: jest.fn() },
 }));
 
 jest.mock('react-router-dom', () => ({
@@ -32,7 +32,6 @@ jest.mock('@features/pricing/hooks/useSubscribe', () => ({
 
 // embla-carousel-react relies on layout APIs (ResizeObserver, matchMedia) that
 // jsdom doesn't implement; stub it so the mobile carousel branch doesn't crash.
-// The carousel's own scroll/drag behavior is therefore not covered here.
 jest.mock('embla-carousel-react', () => ({
   __esModule: true,
   default: () => [jest.fn(), undefined],
@@ -47,28 +46,30 @@ const PLANS: PricingPlan[] = [
   {
     id: 'starter',
     name: 'Starter Plan',
-    priceMonthly: 799,
-    priceYearly: 7990,
-    features: ['AI Co-Founder (Basic)'],
-    description: 'Perfect for individuals exploring startup ideas.',
+    priceMonthly: 0,
+    priceYearly: 0,
+    features: ['1 workspace/idea for 7 days'],
+    description: 'For students exploring and validating their first startup idea.',
     popular: false,
   },
   {
-    id: 'professional',
-    name: 'Professional',
-    priceMonthly: 999,
-    priceYearly: 9990,
-    features: ['AI Co-Founder (Basic)'],
-    description: 'Perfect for individuals exploring startup ideas.',
+    id: 'builder',
+    name: 'Builder',
+    priceMonthly: 499,
+    priceYearly: 4990,
+    features: ['3 workspaces/ideas'],
+    description:
+      'For students building projects and early-stage startups who need deeper validation and research.',
     popular: true,
   },
   {
-    id: 'enterprise',
-    name: 'Enterprise',
-    priceMonthly: 1499,
-    priceYearly: 14990,
-    features: ['AI Co-Founder (Basic)'],
-    description: 'Perfect for individuals exploring startup ideas.',
+    id: 'pro',
+    name: 'Pro',
+    priceMonthly: 999,
+    priceYearly: 9990,
+    features: ['10 workspaces/ideas'],
+    description:
+      'For student founders and power users who need advanced validation, insights, and greater workspace capacity.',
     popular: false,
   },
 ];
@@ -77,8 +78,6 @@ describe('PricingPlans', () => {
   const navigate = jest.fn();
   const setHasActivePlan = jest.fn();
   const setShowQuestionnaireIntro = jest.fn();
-  // A subscribe mock that immediately resolves the success path, like an
-  // authorized Checkout would.
   const subscribeMutate = jest.fn((_vars: unknown, opts?: { onSuccess?: () => void }) =>
     opts?.onSuccess?.(),
   );
@@ -118,82 +117,69 @@ describe('PricingPlans', () => {
     jest.clearAllMocks();
   });
 
-  it('renders the desktop grid with all plans', () => {
+  it('renders the desktop grid with all plans and active styling for Starter', () => {
     render(<PricingPlans />);
 
+    expect(screen.getByText('Choose your plan')).toBeInTheDocument();
     expect(screen.getByText('Pricing Plans')).toBeInTheDocument();
-    expect(screen.getAllByText('Starter Plan').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Professional').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Enterprise').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Starter').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Builder').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Pro').length).toBeGreaterThan(0);
+
+    // Starter should be marked as Active Plan
+    expect(screen.getAllByText('Active Plan').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Current Starter (Free)').length).toBeGreaterThan(0);
   });
 
-  it('toggles between monthly and yearly pricing', async () => {
+  it('renders only monthly pricing and does not render yearly billing toggle', () => {
+    render(<PricingPlans />);
+
+    expect(screen.queryByRole('button', { name: 'Annually' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Monthly' })).not.toBeInTheDocument();
+    expect(screen.getAllByText(/\/ month/).length).toBeGreaterThan(0);
+  });
+
+  it('navigates straight to dashboard when clicking the active free Starter plan', async () => {
     const user = userEvent.setup();
     render(<PricingPlans />);
 
-    expect(screen.getAllByText(/₹799/).length).toBeGreaterThan(0);
-
-    await user.click(screen.getByRole('button', { name: 'Annually' }));
-
-    expect(screen.getAllByText(/₹7,990/).length).toBeGreaterThan(0);
-  });
-
-  it('marks the user as having an active plan, shows questionnaire intro, and navigates to questionnaire intro on select', async () => {
-    const user = userEvent.setup();
-    render(<PricingPlans />);
-
-    const desktopGrid = screen.getAllByText('Starter Plan')[0]?.closest('.sm\\:grid');
-    if (!desktopGrid) throw new Error('desktop grid not found');
-
-    const starterCard = within(desktopGrid as HTMLElement)
-      .getByText('Starter Plan')
-      .closest('.rounded-2xl');
-
-    expect(starterCard).not.toBeNull();
-
-    await user.click(
-      within(starterCard as HTMLElement).getByRole('button', { name: 'Choose plan' }),
-    );
-
-    // Paid plan → goes through Razorpay Checkout (subscribe.mutate), not a direct nav.
-    expect(subscribeMutate).toHaveBeenCalledWith(
-      { planId: 'starter', billingPeriod: 'monthly' },
-      expect.objectContaining({ onSuccess: expect.any(Function) }),
-    );
-    // The mock invokes onSuccess synchronously, so onboarding should advance.
-    expect(setHasActivePlan).toHaveBeenCalledWith(true);
-    expect(navigate).toHaveBeenCalledWith(ROUTES.DASHBOARD);
-  });
-
-  it('skips payment for a free (₹0) plan and proceeds straight to dashboard', async () => {
-    mockedUsePricingPlans.mockReturnValue({
-      data: [
-        {
-          id: 'free',
-          name: 'Free',
-          priceMonthly: 0,
-          priceYearly: 0,
-          features: ['Basic'],
-          description: 'Free forever.',
-          popular: false,
-        } satisfies PricingPlan,
-      ],
-      isLoading: false,
-      isError: false,
-      error: null,
-      refetch: jest.fn(),
-    });
-
-    const user = userEvent.setup();
-    render(<PricingPlans />);
-
-    const [chooseButton] = screen.getAllByRole('button', { name: 'Choose plan' });
-    if (!chooseButton) throw new Error('choose button not found');
-    await user.click(chooseButton);
+    const [starterButton] = screen.getAllByText('Current Starter (Free)');
+    if (!starterButton) throw new Error('starterButton not found');
+    await user.click(starterButton);
 
     expect(subscribeMutate).not.toHaveBeenCalled();
     expect(setHasActivePlan).toHaveBeenCalledWith(true);
     expect(navigate).toHaveBeenCalledWith(ROUTES.DASHBOARD);
+  });
+
+  it('shows unavailable toast when clicking Builder plan', async () => {
+    const user = userEvent.setup();
+    render(<PricingPlans />);
+
+    const [chooseBuilderButton] = screen.getAllByText('Choose Builder');
+    if (!chooseBuilderButton) throw new Error('chooseBuilderButton not found');
+    await user.click(chooseBuilderButton);
+
+    expect(toast.info).toHaveBeenCalledWith(
+      'This plans is not available it will be active on 7 days ',
+    );
+    expect(subscribeMutate).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('shows unavailable toast when clicking Pro plan', async () => {
+    const user = userEvent.setup();
+    render(<PricingPlans />);
+
+    const [chooseProButton] = screen.getAllByText('Choose Pro');
+    if (!chooseProButton) throw new Error('chooseProButton not found');
+    await user.click(chooseProButton);
+
+    expect(toast.info).toHaveBeenCalledWith(
+      'This plans is not available it will be active on 7 days ',
+    );
+    expect(subscribeMutate).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
   });
 
   it('renders an error message and retries via the Try again button', async () => {
@@ -215,58 +201,19 @@ describe('PricingPlans', () => {
     expect(refetch).toHaveBeenCalled();
   });
 
-  it('does not navigate or toast when a paid subscription is dismissed', async () => {
-    const user = userEvent.setup();
-    const errorMutate = jest.fn((_vars: unknown, opts?: { onError?: (err: Error) => void }) =>
-      opts?.onError?.(new Error('Checkout was dismissed.')),
-    );
-    mockedUseSubscribe.mockReturnValue({
-      mutate: errorMutate,
-      isPending: false,
-      variables: undefined,
+  it('renders loading spinner when plans are loading', () => {
+    mockedUsePricingPlans.mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
     });
 
     render(<PricingPlans />);
 
-    const desktopGrid = screen.getAllByText('Starter Plan')[0]?.closest('.sm\\:grid');
-    if (!desktopGrid) throw new Error('desktop grid not found');
-    const starterCard = within(desktopGrid as HTMLElement)
-      .getByText('Starter Plan')
-      .closest('.rounded-2xl');
-
-    await user.click(
-      within(starterCard as HTMLElement).getByRole('button', { name: 'Choose plan' }),
-    );
-
-    expect(errorMutate).toHaveBeenCalled();
-    expect(toast.error).not.toHaveBeenCalled();
-    expect(navigate).not.toHaveBeenCalled();
-    expect(setHasActivePlan).not.toHaveBeenCalled();
-  });
-
-  it('shows an error toast when a paid subscription fails', async () => {
-    const user = userEvent.setup();
-    const errorMutate = jest.fn((_vars: unknown, opts?: { onError?: (err: Error) => void }) =>
-      opts?.onError?.(new Error('Payment failed.')),
-    );
-    mockedUseSubscribe.mockReturnValue({
-      mutate: errorMutate,
-      isPending: false,
-      variables: undefined,
-    });
-
-    render(<PricingPlans />);
-
-    const desktopGrid = screen.getAllByText('Starter Plan')[0]?.closest('.sm\\:grid');
-    if (!desktopGrid) throw new Error('desktop grid not found');
-    const starterCard = within(desktopGrid as HTMLElement)
-      .getByText('Starter Plan')
-      .closest('.rounded-2xl');
-
-    await user.click(
-      within(starterCard as HTMLElement).getByRole('button', { name: 'Choose plan' }),
-    );
-
-    expect(toast.error).toHaveBeenCalledWith('Payment failed.');
+    const heading = screen.getByText('Choose your plan');
+    expect(heading).toBeInTheDocument();
+    expect(screen.queryByText('Current Starter (Free)')).not.toBeInTheDocument();
   });
 });
