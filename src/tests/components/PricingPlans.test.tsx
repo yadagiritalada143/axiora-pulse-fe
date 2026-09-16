@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
 
 import type { PricingPlan } from '@/types/api.types';
 import { ROUTES } from '@constants/routes';
@@ -9,10 +8,6 @@ import { PricingPlans } from '@features/pricing/components/PricingPlans';
 import { usePricingPlans } from '@features/pricing/hooks/usePricingPlans';
 import { useSubscribe } from '@features/pricing/hooks/useSubscribe';
 import { useAuthStore } from '@store/auth.store';
-
-jest.mock('sonner', () => ({
-  toast: { error: jest.fn(), success: jest.fn(), info: jest.fn() },
-}));
 
 jest.mock('react-router-dom', () => ({
   useNavigate: jest.fn(),
@@ -55,8 +50,8 @@ const PLANS: PricingPlan[] = [
   {
     id: 'builder',
     name: 'Builder',
-    priceMonthly: 499,
-    priceYearly: 4990,
+    priceMonthly: 299,
+    priceYearly: 2990,
     features: ['3 workspaces/ideas'],
     description:
       'For students building projects and early-stage startups who need deeper validation and research.',
@@ -65,8 +60,8 @@ const PLANS: PricingPlan[] = [
   {
     id: 'pro',
     name: 'Pro',
-    priceMonthly: 999,
-    priceYearly: 9990,
+    priceMonthly: 799,
+    priceYearly: 7990,
     features: ['10 workspaces/ideas'],
     description:
       'For student founders and power users who need advanced validation, insights, and greater workspace capacity.',
@@ -129,6 +124,10 @@ describe('PricingPlans', () => {
     // Starter should be marked as Active Plan
     expect(screen.getAllByText('Active Plan').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Current Starter (Free)').length).toBeGreaterThan(0);
+
+    // Pricing checks: 299 for Builder, 799 for Pro
+    expect(screen.getAllByText('₹299').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('₹799').length).toBeGreaterThan(0);
   });
 
   it('renders only monthly pricing and does not render yearly billing toggle', () => {
@@ -152,7 +151,7 @@ describe('PricingPlans', () => {
     expect(navigate).toHaveBeenCalledWith(ROUTES.DASHBOARD);
   });
 
-  it('shows unavailable toast when clicking Builder plan', async () => {
+  it('shows unavailable alert dialog when clicking Builder plan', async () => {
     const user = userEvent.setup();
     render(<PricingPlans />);
 
@@ -160,14 +159,19 @@ describe('PricingPlans', () => {
     if (!chooseBuilderButton) throw new Error('chooseBuilderButton not found');
     await user.click(chooseBuilderButton);
 
-    expect(toast.info).toHaveBeenCalledWith(
-      'This plans is not available it will be active on 7 days ',
-    );
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    expect(screen.getByText('Stay Tuned !')).toBeInTheDocument();
+    expect(screen.getByText('This plan will be available after 7 days.')).toBeInTheDocument();
     expect(subscribeMutate).not.toHaveBeenCalled();
     expect(navigate).not.toHaveBeenCalled();
+
+    // Dismiss dialog
+    const gotItButton = screen.getByRole('button', { name: 'Got it' });
+    await user.click(gotItButton);
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
-  it('shows unavailable toast when clicking Pro plan', async () => {
+  it('shows unavailable alert dialog when clicking Pro plan', async () => {
     const user = userEvent.setup();
     render(<PricingPlans />);
 
@@ -175,9 +179,9 @@ describe('PricingPlans', () => {
     if (!chooseProButton) throw new Error('chooseProButton not found');
     await user.click(chooseProButton);
 
-    expect(toast.info).toHaveBeenCalledWith(
-      'This plans is not available it will be active on 7 days ',
-    );
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    expect(screen.getByText('Stay Tuned !')).toBeInTheDocument();
+    expect(screen.getByText('This plan will be available after 7 days.')).toBeInTheDocument();
     expect(subscribeMutate).not.toHaveBeenCalled();
     expect(navigate).not.toHaveBeenCalled();
   });
