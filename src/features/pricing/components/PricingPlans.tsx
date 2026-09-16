@@ -1,11 +1,19 @@
 import useEmblaCarousel from 'embla-carousel-react';
-import { Check, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Clock3, Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
 
 import type { PricingPlan } from '@/types/api.types';
 import { ApiErrorMessage } from '@components/common/ApiErrorMessage';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@components/ui/alert-dialog';
 import { Button } from '@components/ui/button';
 import { ROUTES } from '@constants/routes';
 import { usePricingPlans } from '@features/pricing/hooks/usePricingPlans';
@@ -44,7 +52,7 @@ const STATIC_PLANS_DATA: StaticPlanConfig[] = [
     name: 'Builder',
     description:
       'For students building projects and early-stage startups who need deeper validation and research.',
-    priceMonthly: 499,
+    priceMonthly: 299,
     strikePriceMonthly: 999,
     features: [
       '3 workspaces/ideas',
@@ -61,7 +69,7 @@ const STATIC_PLANS_DATA: StaticPlanConfig[] = [
     name: 'Pro',
     description:
       'For student founders and power users who need advanced validation, insights, and greater workspace capacity.',
-    priceMonthly: 999,
+    priceMonthly: 799,
     strikePriceMonthly: 1999,
     features: [
       '10 workspaces/ideas',
@@ -353,7 +361,9 @@ export function PricingPlans() {
   const navigate = useNavigate();
   const setHasActivePlan = useAuthStore((state) => state.setHasActivePlan);
   const setOnboardingPending = useAuthStore((state) => state.setOnboardingPending);
+  const [isUnavailableAlertOpen, setIsUnavailableAlertOpen] = useState(false);
 
+  // Default active plan is Starter (Free)
   const activePlanId = 'starter';
 
   const { data: plans, isLoading, isError, error, refetch } = usePricingPlans();
@@ -378,7 +388,7 @@ export function PricingPlans() {
         return;
       }
 
-      toast.info('This plans is not available it will be active on 7 days ');
+      setIsUnavailableAlertOpen(true);
     },
     [plans, proceedToOnboarding, subscribe.isPending],
   );
@@ -436,6 +446,34 @@ export function PricingPlans() {
           </div>
         </>
       )}
+
+      {/* Unavailable Plan Alert Dialog */}
+      <AlertDialog open={isUnavailableAlertOpen} onOpenChange={setIsUnavailableAlertOpen}>
+        <AlertDialogContent className="max-w-md rounded-2xl p-6 text-center">
+          <AlertDialogHeader className="flex flex-col items-center text-center">
+            <div className="mb-2 flex size-12 items-center justify-center rounded-full bg-[#FF4500]/10 text-[#FF4500]">
+              <Clock3 className="size-6 text-[#FF4500]" />
+            </div>
+            <AlertDialogTitle className="text-xl font-bold text-neutral-900 dark:text-white">
+              Stay Tuned !
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-sm text-neutral-600 sm:text-base dark:text-neutral-400">
+              This plan will be available after 7 days.
+              <span className="sr-only">
+                Stay Tuned ! This plan will be available after 7 days.
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4 sm:justify-center">
+            <AlertDialogAction
+              onClick={() => setIsUnavailableAlertOpen(false)}
+              className="min-w-[120px] rounded-xl bg-[#FF4500] font-semibold text-white hover:bg-[#FF4500]/90"
+            >
+              Got it
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
