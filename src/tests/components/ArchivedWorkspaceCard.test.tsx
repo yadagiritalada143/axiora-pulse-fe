@@ -69,14 +69,13 @@ describe('ArchivedWorkspaceCard', () => {
     expect(onRestore).toHaveBeenCalledWith(3);
   });
 
-  it('calls onDeletePermanent with the workspace id from the actions menu', async () => {
+  it('does not render Delete Permanently option in the actions menu for now', async () => {
     const user = userEvent.setup();
-    const { onDeletePermanent } = renderCard();
+    renderCard();
 
     await user.click(screen.getByRole('button', { name: 'Workspace actions' }));
-    await user.click(await screen.findByText('Delete Permanently'));
-
-    expect(onDeletePermanent).toHaveBeenCalledWith(3);
+    expect(await screen.findByText('Restore')).toBeInTheDocument();
+    expect(screen.queryByText('Delete Permanently')).not.toBeInTheDocument();
   });
 
   it('shows restoring copy and disables both actions while restoring', async () => {
@@ -98,7 +97,6 @@ describe('ArchivedWorkspaceCard', () => {
 
     await user.click(screen.getByRole('button', { name: 'Workspace actions' }));
 
-    await screen.findByText('Delete Permanently');
     for (const item of screen.getAllByRole('menuitem')) {
       expect(item).toHaveAttribute('aria-disabled', 'true');
     }

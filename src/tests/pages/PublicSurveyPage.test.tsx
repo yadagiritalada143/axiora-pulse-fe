@@ -1,10 +1,17 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { toast } from 'sonner';
 
 import { usePublicSurvey, useSubmitPublicSurvey } from '@features/survey/hooks/useSurveys';
 import type { PublicSurveyDetailResponse, SubmitPublicSurveyRequest } from '@features/survey/types';
 import PublicSurveyPage from '@pages/PublicSurveyPage';
+
+jest.mock('sonner', () => ({
+  toast: { success: jest.fn(), error: jest.fn(), info: jest.fn() },
+}));
+
+const mockedToast = toast as jest.Mocked<typeof toast>;
 
 jest.mock('@features/survey/hooks/useSurveys', () => ({
   usePublicSurvey: jest.fn(),
@@ -183,13 +190,17 @@ describe('PublicSurveyPage', () => {
     await user.click(await screen.findByRole('option', { name: 'Founder' }));
     await user.click(screen.getByRole('button', { name: /Continue/i }));
 
-    // Step 4: Final Email & Submit Step
-    await user.type(await screen.findByLabelText(/Your Email Address/), 'me@example.test');
+    // Step 4: Final Details & Submit Step
+    await user.type(await screen.findByLabelText(/Full Name/), 'Jane Doe');
+    await user.type(screen.getByLabelText(/Email Address/), 'me@example.test');
+    await user.type(screen.getByLabelText(/Contact Number/), '+91 9876543210');
     await user.click(screen.getByRole('button', { name: /Submit Response/i }));
 
     expect(mutate).toHaveBeenCalledWith(
       {
+        respondentName: 'Jane Doe',
         respondentEmail: 'me@example.test',
+        contactNumber: '+91 9876543210',
         answers: [
           { questionId: 1, answer: 'Churn' },
           { questionId: 2, answer: 'Daily' },
@@ -217,6 +228,69 @@ describe('PublicSurveyPage', () => {
     ).toBeInTheDocument();
   });
 
+  it('shows an error when submitting without filling in full name and email', async () => {
+    mockedUsePublicSurvey.mockReturnValue({
+      data: {
+        ...survey,
+        questions: [{ id: 1, question: 'Question 1', questionType: 'text', options: [] }],
+      },
+      isLoading: false,
+      isError: false,
+    });
+    const user = userEvent.setup();
+    const mutate = jest.fn();
+    mockSubmit({ mutate });
+
+    renderPage();
+
+    await user.type(screen.getByPlaceholderText('Type your answer here...'), 'My Answer');
+    await user.click(screen.getByRole('button', { name: /Continue/i }));
+
+    // Wait for final step to be displayed
+    await screen.findByLabelText(/Full Name/);
+
+    // Initial view of final step should not display error messages or error toast
+    expect(screen.queryByText('Please enter your full name.')).not.toBeInTheDocument();
+    expect(screen.queryByText('Please enter your email address.')).not.toBeInTheDocument();
+    expect(mockedToast.error).not.toHaveBeenCalled();
+
+    // Click submit without entering name or email
+    await user.click(screen.getByRole('button', { name: /Submit Response/i }));
+
+    expect(mutate).not.toHaveBeenCalled();
+    expect(mockedToast.error).toHaveBeenCalledWith(
+      'Please provide your name and a valid email address.',
+    );
+    expect(await screen.findByText('Please enter your full name.')).toBeInTheDocument();
+    expect(await screen.findByText('Please enter your email address.')).toBeInTheDocument();
+  });
+
+  it('shows validation error when entering an invalid email address', async () => {
+    mockedUsePublicSurvey.mockReturnValue({
+      data: {
+        ...survey,
+        questions: [{ id: 1, question: 'Question 1', questionType: 'text', options: [] }],
+      },
+      isLoading: false,
+      isError: false,
+    });
+    const user = userEvent.setup();
+    const mutate = jest.fn();
+    mockSubmit({ mutate });
+
+    renderPage();
+
+    await user.type(screen.getByPlaceholderText('Type your answer here...'), 'My Answer');
+    await user.click(screen.getByRole('button', { name: /Continue/i }));
+
+    await user.type(await screen.findByLabelText(/Full Name/), 'Valid Name');
+    await user.type(screen.getByLabelText(/Email Address/), 'not-an-email');
+    await user.click(screen.getByRole('button', { name: /Submit Response/i }));
+
+    expect(mutate).not.toHaveBeenCalled();
+    expect(screen.getByText('Please enter a valid email address.')).toBeInTheDocument();
+  });
+
   it('records the selected dropdown option and submits when all questions answered', async () => {
     mockedUsePublicSurvey.mockReturnValue({
       data: {
@@ -239,10 +313,17 @@ describe('PublicSurveyPage', () => {
     await user.click(screen.getByRole('button', { name: /Continue/i }));
 
     // Final step
+    await user.type(await screen.findByLabelText(/Full Name/), 'Alice Smith');
+    await user.type(screen.getByLabelText(/Email Address/), 'alice@example.test');
     await user.click(screen.getByRole('button', { name: /Submit Response/i }));
 
     expect(mutate).toHaveBeenCalledWith(
-      { respondentEmail: undefined, answers: [{ questionId: 4, answer: 'Founder' }] },
+      {
+        respondentName: 'Alice Smith',
+        respondentEmail: 'alice@example.test',
+        contactNumber: undefined,
+        answers: [{ questionId: 4, answer: 'Founder' }],
+      },
       expect.any(Object),
     );
   });
@@ -263,6 +344,8 @@ describe('PublicSurveyPage', () => {
 
     await user.type(screen.getByPlaceholderText('Type your answer here...'), 'My Answer');
     await user.click(screen.getByRole('button', { name: /Continue/i }));
+    await user.type(await screen.findByLabelText(/Full Name/), 'Bob Builder');
+    await user.type(screen.getByLabelText(/Email Address/), 'bob@example.test');
     await user.click(screen.getByRole('button', { name: /Submit Response/i }));
 
     expect(screen.getByText('Thank You!')).toBeInTheDocument();
@@ -305,6 +388,8 @@ describe('PublicSurveyPage', () => {
 
     await user.type(screen.getByPlaceholderText('Type your answer here...'), 'My Answer');
     await user.click(screen.getByRole('button', { name: /Continue/i }));
+    await user.type(await screen.findByLabelText(/Full Name/), 'Charlie Brown');
+    await user.type(screen.getByLabelText(/Email Address/), 'charlie@example.test');
     await user.click(screen.getByRole('button', { name: /Submit Response/i }));
 
     expect(mockedUseSubmitPublicSurvey).toHaveBeenCalled();
@@ -335,11 +420,15 @@ describe('PublicSurveyPage', () => {
     await user.click(screen.getByRole('button', { name: /Continue/i }));
 
     // Final step
+    await user.type(await screen.findByLabelText(/Full Name/), 'Dana Scully');
+    await user.type(screen.getByLabelText(/Email Address/), 'dana@example.test');
     await user.click(screen.getByRole('button', { name: /Submit Response/i }));
 
     expect(mutate).toHaveBeenCalledWith(
       {
-        respondentEmail: undefined,
+        respondentName: 'Dana Scully',
+        respondentEmail: 'dana@example.test',
+        contactNumber: undefined,
         answers: [{ questionId: 1, answer: 'Mandatory answer' }],
       },
       expect.any(Object),

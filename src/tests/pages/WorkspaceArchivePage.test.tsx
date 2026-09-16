@@ -156,7 +156,19 @@ describe('WorkspaceArchivePage', () => {
     );
   });
 
-  it('asks for confirmation before permanently deleting', async () => {
+  it('does not show Delete Permanently in the workspace actions menu for now', async () => {
+    const user = userEvent.setup();
+    withWorkspaces([workspace]);
+
+    render(<WorkspaceArchivePage />);
+    await user.click(screen.getByRole('button', { name: 'Workspace actions' }));
+
+    expect(await screen.findByText('Restore')).toBeInTheDocument();
+    expect(screen.queryByText('Delete Permanently')).not.toBeInTheDocument();
+  });
+
+  // Skipped while "Delete Permanently" option is temporarily commented out in archive menu
+  it.skip('asks for confirmation before permanently deleting', async () => {
     const user = userEvent.setup();
     withWorkspaces([workspace]);
     const mutate = jest.fn();
@@ -169,7 +181,8 @@ describe('WorkspaceArchivePage', () => {
     expect(mutate).not.toHaveBeenCalled();
   });
 
-  it('closes the confirmation dialog on Cancel without deleting', async () => {
+  // Skipped while "Delete Permanently" option is temporarily commented out in archive menu
+  it.skip('closes the confirmation dialog on Cancel without deleting', async () => {
     const user = userEvent.setup();
     withWorkspaces([workspace]);
     const mutate = jest.fn();
@@ -183,7 +196,7 @@ describe('WorkspaceArchivePage', () => {
     expect(screen.queryByText('Delete Workspace Permanently')).not.toBeInTheDocument();
   });
 
-  it('permanently deletes the workspace and closes the dialog on success', async () => {
+  it.skip('permanently deletes the workspace and closes the dialog on success', async () => {
     const user = userEvent.setup();
     withWorkspaces([workspace]);
     const mutate = succeedingMutate();
@@ -198,7 +211,7 @@ describe('WorkspaceArchivePage', () => {
     expect(screen.queryByText('Delete Workspace Permanently')).not.toBeInTheDocument();
   });
 
-  it('toasts an error and keeps the dialog open when the delete fails', async () => {
+  it.skip('toasts an error and keeps the dialog open when the delete fails', async () => {
     const user = userEvent.setup();
     withWorkspaces([workspace]);
     mockedUsePermanentDeleteWorkspace.mockReturnValue({ mutate: failingMutate() });

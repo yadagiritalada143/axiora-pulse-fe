@@ -1,4 +1,4 @@
-import { Building2, Clock, MoreHorizontal, RotateCcw, Trash2 } from 'lucide-react';
+import { Building2, Clock, MoreHorizontal, RotateCcw /* , Trash2 */ } from 'lucide-react';
 
 import { Button } from '@components/ui/button';
 import { Card } from '@components/ui/card';
@@ -15,7 +15,7 @@ import type { Workspace } from '../types';
 interface ArchivedWorkspaceCardProps {
   workspace: Workspace;
   onRestore: (workspaceId: number) => void;
-  onDeletePermanent: (workspaceId: number) => void;
+  onDeletePermanent?: (workspaceId: number) => void;
   isRestoring?: boolean;
   isDeleting?: boolean;
 }
@@ -23,7 +23,7 @@ interface ArchivedWorkspaceCardProps {
 export function ArchivedWorkspaceCard({
   workspace,
   onRestore,
-  onDeletePermanent,
+  // onDeletePermanent,
   isRestoring,
   isDeleting,
 }: ArchivedWorkspaceCardProps) {
@@ -66,14 +66,16 @@ export function ArchivedWorkspaceCard({
               <RotateCcw className="size-4" />
               {isRestoring ? 'Restoring…' : 'Restore'}
             </DropdownMenuItem>
+            {/*
             <DropdownMenuItem
               disabled={Boolean(isRestoring) || Boolean(isDeleting)}
-              onClick={() => onDeletePermanent(workspace.id)}
+              onClick={() => onDeletePermanent?.(workspace.id)}
               className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
             >
               <Trash2 className="size-4" />
               Delete Permanently
             </DropdownMenuItem>
+            */}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

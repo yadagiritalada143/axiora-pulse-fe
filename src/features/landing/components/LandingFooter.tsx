@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import { Logo } from '@components/common/Logo';
 import { ROUTES } from '@constants/routes';
+import { SOCIAL_LINKS } from '@constants/socialLinks';
 
 export function LandingFooter() {
   const location = useLocation();
@@ -100,17 +101,7 @@ export function LandingFooter() {
           <ul className="footer-links">
             <li>
               <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noreferrer"
-                className="footer-link"
-              >
-                Twitter / X
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://linkedin.com"
+                href={SOCIAL_LINKS.LINKEDIN}
                 target="_blank"
                 rel="noreferrer"
                 className="footer-link"
@@ -120,12 +111,37 @@ export function LandingFooter() {
             </li>
             <li>
               <a
-                href="https://instagram.com"
+                href={SOCIAL_LINKS.INSTAGRAM}
                 target="_blank"
                 rel="noreferrer"
                 className="footer-link"
               >
                 Instagram
+              </a>
+            </li>
+            <li>
+              <a
+                href={SOCIAL_LINKS.FACEBOOK}
+                target="_blank"
+                rel="noreferrer"
+                className="footer-link"
+              >
+                Facebook
+              </a>
+            </li>
+            <li>
+              <a href={SOCIAL_LINKS.X} target="_blank" rel="noreferrer" className="footer-link">
+                Twitter / X
+              </a>
+            </li>
+            <li>
+              <a
+                href={SOCIAL_LINKS.YOUTUBE}
+                target="_blank"
+                rel="noreferrer"
+                className="footer-link"
+              >
+                YouTube
               </a>
             </li>
             <li>

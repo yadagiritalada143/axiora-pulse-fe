@@ -956,8 +956,19 @@ export default function WorkspaceSurveyPage() {
                         {responsesData.responses.map((resp) => (
                           <tr key={resp.id} className="hover:bg-muted/30 transition-colors">
                             <td className="px-4 py-3.5 font-medium">
-                              {resp.respondent_email ?? (
-                                <span className="text-muted-foreground/60 italic">Anonymous</span>
+                              {resp.respondent_name ? (
+                                <div>
+                                  <span className="text-foreground font-medium">
+                                    {resp.respondent_name}
+                                  </span>
+                                  <span className="text-muted-foreground block text-xs font-normal">
+                                    {resp.respondent_email}
+                                  </span>
+                                </div>
+                              ) : (
+                                (resp.respondent_email ?? (
+                                  <span className="text-muted-foreground/60 italic">Anonymous</span>
+                                ))
                               )}
                             </td>
                             <td className="text-muted-foreground px-4 py-3.5">
@@ -1011,7 +1022,19 @@ export default function WorkspaceSurveyPage() {
                     <span className="text-foreground block font-semibold uppercase">
                       Respondent
                     </span>
-                    {selectedResponse.respondent_email ?? 'Anonymous'}
+                    <span className="text-foreground font-medium">
+                      {selectedResponse.respondent_name || 'Anonymous'}
+                    </span>
+                    {selectedResponse.respondent_email && (
+                      <span className="text-muted-foreground block">
+                        {selectedResponse.respondent_email}
+                      </span>
+                    )}
+                    {selectedResponse.contact_number && (
+                      <span className="text-muted-foreground block">
+                        {selectedResponse.contact_number}
+                      </span>
+                    )}
                   </div>
                   <div>
                     <span className="text-foreground block font-semibold uppercase">
