@@ -143,11 +143,17 @@ describe('useSubmitPublicSurvey', () => {
     const { wrapper } = createWrapper();
     const { result } = renderHook(() => useSubmitPublicSurvey('abc123'), { wrapper });
 
-    result.current.mutate({ answers: [{ questionId: 1, answer: 'Weekly' }] });
+    result.current.mutate({
+      respondentName: 'Jane Doe',
+      respondentEmail: 'jane@example.test',
+      answers: [{ questionId: 1, answer: 'Weekly' }],
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(mockedApiClient.post).toHaveBeenCalledWith('/v1/surveys/public/abc123/submit', {
+      respondentName: 'Jane Doe',
+      respondentEmail: 'jane@example.test',
       answers: [{ questionId: 1, answer: 'Weekly' }],
     });
   });
@@ -158,7 +164,11 @@ describe('useSubmitPublicSurvey', () => {
     const { wrapper } = createWrapper();
     const { result } = renderHook(() => useSubmitPublicSurvey('abc123'), { wrapper });
 
-    result.current.mutate({ answers: [] });
+    result.current.mutate({
+      respondentName: 'Jane Doe',
+      respondentEmail: 'jane@example.test',
+      answers: [],
+    });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error).toBeInstanceOf(Error);

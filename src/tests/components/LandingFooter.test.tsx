@@ -20,9 +20,23 @@ describe('LandingFooter', () => {
     expect(screen.getByText('FAQ')).toBeInTheDocument();
     expect(screen.getAllByText('Privacy Policy').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('Terms & Conditions').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('Twitter / X')).toBeInTheDocument();
-    expect(screen.getByText('LinkedIn')).toBeInTheDocument();
-    expect(screen.getByText('Instagram')).toBeInTheDocument();
+    expect(screen.getByText('LinkedIn')).toHaveAttribute(
+      'href',
+      'https://www.linkedin.com/company/axiora-pulse',
+    );
+    expect(screen.getByText('Instagram')).toHaveAttribute(
+      'href',
+      'https://www.instagram.com/axiora.pulse',
+    );
+    expect(screen.getByText('Facebook')).toHaveAttribute(
+      'href',
+      'https://www.facebook.com/profile.php?id=61589602726557',
+    );
+    expect(screen.getByText('Twitter / X')).toHaveAttribute('href', 'https://x.com/AxioraPulse');
+    expect(screen.getByText('YouTube')).toHaveAttribute(
+      'href',
+      'https://www.youtube.com/@AxioraPulse',
+    );
   });
 
   it('prevents default and scrolls to section on quick link click', () => {

@@ -78,7 +78,9 @@ describe('surveyService', () => {
 
   it('submits a public survey response', async () => {
     const payload: SubmitPublicSurveyRequest = {
+      respondentName: 'Jane Doe',
       respondentEmail: 'person@example.test',
+      contactNumber: '+91 9876543210',
       answers: [{ questionId: 1, answer: 'Weekly' }],
     };
     const response: SubmitPublicSurveyResponse = {
@@ -105,7 +107,9 @@ describe('surveyService', () => {
         {
           id: 11,
           survey_id: 5,
-          respondent_email: null,
+          respondent_name: 'Jane Doe',
+          respondent_email: 'person@example.test',
+          contact_number: '+91 9876543210',
           answers: [{ questionId: 1, answer: 'Weekly' }],
           submitted_at: '2026-01-03T00:00:00.000Z',
         },

@@ -5,9 +5,9 @@ import {
   ArrowRight,
   CheckCircle2,
   Loader2,
-  Mail,
   Send,
   Sparkles,
+  User,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -59,7 +59,11 @@ export default function PublicSurveyPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [answers, setAnswers] = useState<Record<number, string | string[]>>({});
-  const [email, setEmail] = useState('');
+  const [respondentName, setRespondentName] = useState('');
+  const [respondentEmail, setRespondentEmail] = useState('');
+  const [contactNumber, setContactNumber] = useState('');
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [stepError, setStepError] = useState<string | null>(null);
 
@@ -111,9 +115,13 @@ export default function PublicSurveyPage() {
     return typeof val === 'string' && val.trim().length > 0;
   };
 
+  const isNameValid = () => {
+    return respondentName.trim().length > 0;
+  };
+
   const isEmailValid = () => {
-    const trimmed = email.trim();
-    if (!trimmed) return true;
+    const trimmed = respondentEmail.trim();
+    if (!trimmed) return false;
     return EMAIL_REGEX.test(trimmed);
   };
 
@@ -135,6 +143,10 @@ export default function PublicSurveyPage() {
       return;
     }
 
+    setNameError(null);
+    setEmailError(null);
+    setStepError(null);
+
     if (currentStep < totalQuestions) {
       setDirection(1);
       setCurrentStep((prev) => prev + 1);
@@ -142,6 +154,9 @@ export default function PublicSurveyPage() {
   };
 
   const handleBack = () => {
+    setNameError(null);
+    setEmailError(null);
+    setStepError(null);
     if (currentStep > 0) {
       setDirection(-1);
       setCurrentStep((prev) => prev - 1);
@@ -149,11 +164,29 @@ export default function PublicSurveyPage() {
   };
 
   const executeSubmit = () => {
-    if (!survey || !survey.questions) return;
+    if (!survey || !survey.questions || !isFinalReviewStep) return;
 
-    if (!isEmailValid()) {
-      toast.error('Please enter a valid email address.');
-      setStepError('Please enter a valid email address.');
+    let hasError = false;
+
+    if (!isNameValid()) {
+      setNameError('Please enter your full name.');
+      hasError = true;
+    } else {
+      setNameError(null);
+    }
+
+    if (!respondentEmail.trim()) {
+      setEmailError('Please enter your email address.');
+      hasError = true;
+    } else if (!isEmailValid()) {
+      setEmailError('Please enter a valid email address.');
+      hasError = true;
+    } else {
+      setEmailError(null);
+    }
+
+    if (hasError) {
+      toast.error('Please provide your name and a valid email address.');
       return;
     }
 
@@ -182,7 +215,9 @@ export default function PublicSurveyPage() {
 
     submitSurveyMutation.mutate(
       {
-        respondentEmail: email.trim() || undefined,
+        respondentName: respondentName.trim(),
+        respondentEmail: respondentEmail.trim(),
+        contactNumber: contactNumber.trim() || undefined,
         answers: formattedAnswers,
       },
       {
@@ -195,10 +230,13 @@ export default function PublicSurveyPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateCurrentQuestion()) {
-      return;
+  };
+
+  const handleFinalStepKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      executeSubmit();
     }
-    executeSubmit();
   };
 
   if (isLoading) {
@@ -489,19 +527,20 @@ export default function PublicSurveyPage() {
                   </motion.div>
                 ) : (
                   <motion.div
-                    key="step-final-email"
+                    key="step-final-details"
                     custom={direction}
                     variants={questionCardVariants}
                     initial="enter"
                     animate="center"
                     exit="exit"
                     transition={{ duration: 0.22, ease: 'easeOut' }}
+                    onKeyDown={handleFinalStepKeyDown}
                     className="flex flex-1 flex-col justify-between space-y-6"
                   >
                     <div>
                       <div className="mb-3 flex items-center gap-2">
                         <div className="flex size-7 items-center justify-center rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-400">
-                          <Mail className="size-4" />
+                          <User className="size-4" />
                         </div>
                         <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                           Final Step
@@ -509,37 +548,83 @@ export default function PublicSurveyPage() {
                       </div>
 
                       <h2 className="text-foreground text-xl leading-tight font-bold">
-                        Almost done! Leave your email to stay in touch
+                        Almost done! Tell us about yourself
                       </h2>
                       <p className="text-muted-foreground mt-1.5 text-xs">
-                        You answered {answeredCount} of {totalQuestions} questions. Enter your email
-                        if you&apos;d like to receive updates on product progress.
+                        You answered {answeredCount} of {totalQuestions} questions. Please provide
+                        your details to complete and submit your feedback.
                       </p>
                     </div>
 
-                    <div className="space-y-3 py-2">
-                      <Label htmlFor="respondent-email" className="text-sm font-semibold">
-                        Your Email Address{' '}
-                        <span className="text-muted-foreground text-xs font-normal">
-                          (Optional)
-                        </span>
-                      </Label>
-                      <Input
-                        id="respondent-email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="e.g. customer@example.com"
-                        className={cn(
-                          'bg-background h-11 rounded-xl text-sm',
-                          !isEmailValid() && 'border-destructive focus-visible:ring-destructive',
+                    <div className="space-y-4 py-2">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="respondent-name" className="text-sm font-semibold">
+                          Full Name <span className="font-bold text-[#FF4500]">*</span>
+                        </Label>
+                        <Input
+                          id="respondent-name"
+                          type="text"
+                          value={respondentName}
+                          onChange={(e) => {
+                            setRespondentName(e.target.value);
+                            if (nameError) setNameError(null);
+                          }}
+                          placeholder="e.g. Jane Doe"
+                          maxLength={255}
+                          className={cn(
+                            'bg-background h-11 rounded-xl text-sm',
+                            nameError && 'border-destructive focus-visible:ring-destructive',
+                          )}
+                        />
+                        {nameError && (
+                          <p className="text-destructive flex items-center gap-1 text-xs font-medium">
+                            <AlertCircle className="size-3.5" /> {nameError}
+                          </p>
                         )}
-                      />
-                      {!isEmailValid() && (
-                        <p className="text-destructive flex items-center gap-1 text-xs font-medium">
-                          <AlertCircle className="size-3.5" /> Please enter a valid email address.
-                        </p>
-                      )}
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label htmlFor="respondent-email" className="text-sm font-semibold">
+                          Email Address <span className="font-bold text-[#FF4500]">*</span>
+                        </Label>
+                        <Input
+                          id="respondent-email"
+                          type="email"
+                          value={respondentEmail}
+                          onChange={(e) => {
+                            setRespondentEmail(e.target.value);
+                            if (emailError) setEmailError(null);
+                          }}
+                          placeholder="e.g. jane@example.com"
+                          className={cn(
+                            'bg-background h-11 rounded-xl text-sm',
+                            emailError && 'border-destructive focus-visible:ring-destructive',
+                          )}
+                        />
+                        {emailError && (
+                          <p className="text-destructive flex items-center gap-1 text-xs font-medium">
+                            <AlertCircle className="size-3.5" /> {emailError}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label htmlFor="contact-number" className="text-sm font-semibold">
+                          Contact Number{' '}
+                          <span className="text-muted-foreground text-xs font-normal">
+                            (Optional)
+                          </span>
+                        </Label>
+                        <Input
+                          id="contact-number"
+                          type="tel"
+                          value={contactNumber}
+                          onChange={(e) => setContactNumber(e.target.value)}
+                          placeholder="e.g. +91 98765 43210"
+                          maxLength={20}
+                          className="bg-background h-11 rounded-xl text-sm"
+                        />
+                      </div>
                     </div>
                   </motion.div>
                 )}
@@ -547,6 +632,7 @@ export default function PublicSurveyPage() {
 
               <div className="border-border mt-6 flex items-center justify-between gap-3 border-t pt-5">
                 <Button
+                  key="survey-back-btn"
                   type="button"
                   variant="outline"
                   size="sm"
@@ -561,6 +647,7 @@ export default function PublicSurveyPage() {
                 <div className="flex items-center gap-2">
                   {!isFinalReviewStep && currentStep < totalQuestions - 1 ? (
                     <Button
+                      key="survey-next-btn"
                       type="button"
                       size="sm"
                       onClick={handleNext}
@@ -571,6 +658,7 @@ export default function PublicSurveyPage() {
                     </Button>
                   ) : !isFinalReviewStep ? (
                     <Button
+                      key="survey-continue-btn"
                       type="button"
                       size="sm"
                       onClick={handleNext}
@@ -581,7 +669,9 @@ export default function PublicSurveyPage() {
                     </Button>
                   ) : (
                     <Button
-                      type="submit"
+                      key="survey-submit-btn"
+                      type="button"
+                      onClick={executeSubmit}
                       disabled={submitSurveyMutation.isPending}
                       className="h-9 cursor-pointer gap-1.5 bg-[#FF4500] px-5 text-xs font-semibold text-white hover:bg-[#FF4500]/90"
                     >

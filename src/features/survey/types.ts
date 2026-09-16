@@ -28,7 +28,9 @@ export interface PublicAnswerItem {
 }
 
 export interface SubmitPublicSurveyRequest {
-  respondentEmail?: string;
+  respondentName: string;
+  respondentEmail: string;
+  contactNumber?: string;
   answers: PublicAnswerItem[];
 }
 
@@ -47,7 +49,9 @@ export interface PublicSurveyDetailResponse {
 export interface SingleSurveyResponseItem {
   id: number;
   survey_id: number;
-  respondent_email: string | null;
+  respondent_name: string;
+  respondent_email: string;
+  contact_number?: string | null;
   answers: { questionId: number; answer: unknown }[];
   submitted_at: string;
 }
