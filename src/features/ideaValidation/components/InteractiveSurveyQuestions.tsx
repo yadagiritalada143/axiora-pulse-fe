@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { Sparkles, Target } from 'lucide-react';
+import { Target } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -118,11 +118,6 @@ export function InteractiveSurveyQuestions({
                   ({currentQuestion.question_type})
                 </span>
               </p>
-
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#FF4500]">
-                <Sparkles className="size-3" />
-                AI Generated
-              </span>
             </div>
 
             <div className="mt-2 mb-6 flex items-baseline gap-1.5">
