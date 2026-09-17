@@ -95,7 +95,7 @@ describe('WorkspaceDetailPage', () => {
     expect(screen.getByText('Rocket Idea')).toBeInTheDocument();
   });
 
-  it('falls back to the dashboard route for the AI Co-Founder nav link when there is no workspace id in the URL', () => {
+  it('falls back to the dashboard route for the AI Mentor nav link when there is no workspace id in the URL', () => {
     mockedUseWorkspace.mockReturnValue({ data: undefined, isLoading: false, isError: true });
 
     // Render outside of a matching `/workspace/:workspaceId` route so `useParams` returns no
@@ -106,9 +106,6 @@ describe('WorkspaceDetailPage', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole('link', { name: /ai co-founder/i })).toHaveAttribute(
-      'href',
-      '/dashboard',
-    );
+    expect(screen.getByRole('link', { name: /ai mentor/i })).toHaveAttribute('href', '/dashboard');
   });
 });

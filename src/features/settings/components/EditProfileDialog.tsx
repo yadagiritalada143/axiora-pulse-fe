@@ -196,7 +196,7 @@ export function EditProfileDialog({
               <Input
                 id="mobileNumber"
                 aria-label="Mobile Number"
-                placeholder="9876543210"
+                placeholder="Enter mobile number"
                 className="h-9.5 text-sm"
                 {...register('mobileNumber', {
                   required: 'Mobile number is required',
