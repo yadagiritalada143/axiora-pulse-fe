@@ -23,7 +23,7 @@ export function LandingHero() {
         <p className="hero-subtitle">
           Know the Market. Get the Guidance. Build with Confidence.
           <br />
-          Validate every decision with AI-mentor insights before you invest your time, money, and
+          Validate every decision with AI-Mentor insights before you invest your time, money, and
           effort.
         </p>
 

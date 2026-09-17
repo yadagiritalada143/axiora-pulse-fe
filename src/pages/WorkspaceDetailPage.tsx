@@ -20,7 +20,7 @@ export default function WorkspaceDetailPage() {
 
   const navItems: MentorNavItem[] = [
     {
-      label: 'AI Co-Founder',
+      label: 'AI Mentor',
       icon: Bot,
       href: workspaceId ? buildWorkspaceRoute(workspaceId) : ROUTES.DASHBOARD,
       end: true,

@@ -369,10 +369,10 @@ describe('WorkspaceSurveyPage', () => {
       const radioCard = questionCard(1);
 
       await user.click(radioCard.getByRole('button', { name: /Add Option/ }));
-      expect(screen.getByDisplayValue('Option 3')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Option 3')).toBeInTheDocument();
+      expect(screen.queryByDisplayValue('Option 3')).not.toBeInTheDocument();
 
-      const optionInput = screen.getByDisplayValue('Option 3');
-      await user.clear(optionInput);
+      const optionInput = screen.getByPlaceholderText('Option 3');
       await user.type(optionInput, 'Monthly');
       expect(screen.getByDisplayValue('Monthly')).toBeInTheDocument();
 

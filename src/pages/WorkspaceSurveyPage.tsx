@@ -122,7 +122,7 @@ export default function WorkspaceSurveyPage() {
 
   const navItems: MentorNavItem[] = [
     {
-      label: 'AI Co-Founder',
+      label: 'AI Mentor',
       icon: Bot,
       href: workspaceId ? buildWorkspaceRoute(workspaceId) : ROUTES.DASHBOARD,
       end: true,
@@ -314,19 +314,7 @@ export default function WorkspaceSurveyPage() {
 
   const handleAddOption = (qIndex: number) => {
     setQuestions((prev) =>
-      prev.map((q, idx) => {
-        if (idx !== qIndex) return q;
-
-        let counter = q.options.length + 1;
-        let newOptName = `Option ${counter}`;
-        const existingLower = new Set(q.options.map((o) => o.trim().toLowerCase()));
-        while (existingLower.has(newOptName.toLowerCase())) {
-          counter++;
-          newOptName = `Option ${counter}`;
-        }
-
-        return { ...q, options: [...q.options, newOptName] };
-      }),
+      prev.map((q, idx) => (idx === qIndex ? { ...q, options: [...q.options, ''] } : q)),
     );
   };
 

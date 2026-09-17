@@ -28,8 +28,8 @@ export function LandingFooter() {
             <Logo size="lg" tone="dark" animated={true} />
           </div>
           <p className="footer-desc">
-            AI-powered tools and agents that help you validate ideas, understand your market, and
-            build with confidence.
+            Your AI Mentor for idea validation, market intelligence, and smarter business decisions
+            from idea to scale.
           </p>
         </div>
 

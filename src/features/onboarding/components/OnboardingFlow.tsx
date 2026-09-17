@@ -33,15 +33,6 @@ export function OnboardingFlow() {
   );
 }
 
-function GlowDot() {
-  return (
-    <span className="relative flex size-6 items-center justify-center" aria-hidden>
-      <span className="bg-primary/50 absolute inset-0 rounded-full blur-md" />
-      <span className="border-primary bg-background relative size-4 rounded-full border-4" />
-    </span>
-  );
-}
-
 function Tagline() {
   return (
     <p className="text-muted-foreground max-w-2xl text-xs sm:text-sm">
@@ -64,8 +55,6 @@ function WelcomeStep({ onContinue }: { onContinue: () => void }) {
       />
 
       <div className="relative flex flex-col items-center gap-5">
-        <GlowDot />
-
         <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
           Welcome to Axiora Pulse
         </h1>
