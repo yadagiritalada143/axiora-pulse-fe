@@ -3,7 +3,11 @@ import * as React from 'react';
 
 import { cn } from '@lib/utils';
 
-function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
+export interface InputProps extends React.ComponentProps<'input'> {
+  showPasswordToggle?: boolean;
+}
+
+function Input({ className, type, showPasswordToggle = true, ...props }: InputProps) {
   const [showPassword, setShowPassword] = React.useState(false);
 
   const isPassword = type === 'password';
@@ -22,11 +26,12 @@ function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
         {...props}
       />
 
-      {isPassword && (
+      {isPassword && showPasswordToggle && (
         <button
           type="button"
           onClick={() => setShowPassword((prev) => !prev)}
           className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+          aria-label={showPassword ? 'Hide password' : 'Show password'}
         >
           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>

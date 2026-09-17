@@ -110,6 +110,7 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
                 type={showCurrent ? 'text' : 'password'}
                 placeholder="Enter current password"
                 className="h-9.5 pr-10 text-sm"
+                showPasswordToggle={false}
                 {...register('currentPassword', {
                   required: 'Current password is required',
                 })}
@@ -150,6 +151,7 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
                 type={showNew ? 'text' : 'password'}
                 placeholder="Enter new password (min. 8 characters)"
                 className="h-9.5 pr-10 text-sm"
+                showPasswordToggle={false}
                 {...register('newPassword', {
                   required: 'New password is required',
                   minLength: {
@@ -204,6 +206,7 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
                 type={showConfirm ? 'text' : 'password'}
                 placeholder="Re-enter new password"
                 className="h-9.5 pr-10 text-sm"
+                showPasswordToggle={false}
                 {...register('confirmPassword', {
                   required: 'Please confirm your new password',
                   validate: (val) => val === getValues('newPassword') || 'Passwords do not match',
