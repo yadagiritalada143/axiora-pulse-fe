@@ -18,6 +18,11 @@ jest.mock('sonner', () => ({
   toast: { success: jest.fn(), error: jest.fn() },
 }));
 
+jest.mock('@features/feedback/components/user', () => ({
+  FeedbackQuestionnaireModal: ({ open }: { open: boolean }) =>
+    open ? <div data-testid="feedback-modal">Feedback Modal</div> : null,
+}));
+
 jest.mock('react-router-dom', () => ({
   Link: ({ to, children }: { to: string; children: React.ReactNode }) => (
     <a href={to}>{children}</a>
@@ -427,13 +432,8 @@ describe('IdeaValidationReport', () => {
     expect(screen.getByText('42')).toBeInTheDocument();
   });
 
-  it('renders certificate of completion card and triggers certificate download on click', async () => {
+  it('renders certificate of completion card and opens feedback questionnaire modal on click', async () => {
     const user = userEvent.setup();
-    const mockDownloadMutate = jest.fn();
-    mockedUseDownloadCertificate.mockReturnValue({
-      mutate: mockDownloadMutate,
-      isPending: false,
-    });
 
     render(
       <IdeaValidationReport
@@ -456,6 +456,6 @@ describe('IdeaValidationReport', () => {
     }
     await user.click(firstCertButton);
 
-    expect(mockDownloadMutate).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('feedback-modal')).toBeInTheDocument();
   });
 });

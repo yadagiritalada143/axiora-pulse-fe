@@ -121,6 +121,7 @@ describe('router', () => {
     expect(adminPaths).toEqual([
       ROUTES.ADMIN_DASHBOARD,
       ROUTES.ADMIN_INTERACTIVE_QUESTIONS,
+      ROUTES.ADMIN_FEEDBACK_QUESTIONS,
       ROUTES.ADMIN_USERS,
       ROUTES.ADMIN_USER_DETAIL,
     ]);

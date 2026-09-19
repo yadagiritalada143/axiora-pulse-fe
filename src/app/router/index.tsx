@@ -161,6 +161,10 @@ export const router = createBrowserRouter([
                 element: lazyPage(() => import('@pages/AdminInteractiveQuestionsPage')),
               },
               {
+                path: ROUTES.ADMIN_FEEDBACK_QUESTIONS,
+                element: lazyPage(() => import('@pages/AdminFeedbackQuestionnairePage')),
+              },
+              {
                 path: ROUTES.ADMIN_USERS,
                 element: lazyPage(() => import('@pages/AdminUsersPage')),
               },

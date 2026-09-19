@@ -68,4 +68,14 @@ export const queryKeys = {
     surveyResponseDetail: (surveyId: number, responseId: number) =>
       ['admin', 'surveyResponseDetail', surveyId, responseId] as const,
   },
+
+  feedback: {
+    all: () => ['feedback'] as const,
+    adminQuestions: () => ['feedback', 'adminQuestions'] as const,
+    userQuestions: (isDisplay = true) => ['feedback', 'userQuestions', isDisplay] as const,
+    adminSubmissions: (params?: unknown) =>
+      params !== undefined
+        ? (['feedback', 'adminSubmissions', params] as const)
+        : (['feedback', 'adminSubmissions'] as const),
+  },
 } as const;

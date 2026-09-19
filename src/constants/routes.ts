@@ -33,6 +33,7 @@ export const ROUTES = {
   ADMIN_LOGIN: '/admin/login',
   ADMIN_DASHBOARD: '/admin/dashboard',
   ADMIN_INTERACTIVE_QUESTIONS: '/admin/interactive-questions',
+  ADMIN_FEEDBACK_QUESTIONS: '/admin/feedback-questionnaire',
   ADMIN_USERS: '/admin/users',
   ADMIN_USER_DETAIL: '/admin/users/:userId',
 
@@ -68,6 +69,7 @@ export const PROTECTED_ROUTES: AppRoute[] = [
 
   ROUTES.ADMIN_DASHBOARD,
   ROUTES.ADMIN_INTERACTIVE_QUESTIONS,
+  ROUTES.ADMIN_FEEDBACK_QUESTIONS,
   ROUTES.ADMIN_USERS,
   ROUTES.ADMIN_USER_DETAIL,
 ];
