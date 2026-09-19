@@ -117,6 +117,14 @@ export const API_ENDPOINTS = {
   CONTACT: {
     SUBMIT: '/v1/contact',
   },
+
+  FEEDBACK: {
+    ADMIN_QUESTIONS: '/v1/admin/feedback-questionnaire',
+    ADMIN_QUESTION_DETAIL: (questionId: number) => `/v1/admin/feedback-questionnaire/${questionId}`,
+    USER_QUESTIONS: '/v1/feedback-questionnaire',
+    USER_SUBMIT: '/v1/user-feedback',
+    ADMIN_SUBMISSIONS: '/v1/user-feedback',
+  },
 } as const;
 
 export const HTTP_STATUS = {

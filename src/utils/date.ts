@@ -1,17 +1,68 @@
 import { formatDistanceToNow, format, isValid, parseISO } from 'date-fns';
+import dayjs from 'dayjs';
 
-function toDate(input: string | Date): Date {
-  return typeof input === 'string' ? parseISO(input) : input;
+export function toDate(input?: string | number | Date | null): Date | null {
+  if (!input) return null;
+  if (input instanceof Date) return Number.isNaN(input.getTime()) ? null : input;
+  if (typeof input === 'number') {
+    const d = new Date(input);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+  if (typeof input === 'string') {
+    const parsedIso = parseISO(input);
+    if (isValid(parsedIso)) return parsedIso;
+    const d = dayjs(input);
+    return d.isValid() ? d.toDate() : null;
+  }
+  return null;
 }
 
-/** Formats a date/ISO string using a date-fns pattern, e.g. "PP" -> "Jan 4, 2026". */
-export function formatDate(input: string | Date, pattern = 'PP'): string {
+export function formatDate(input?: string | number | Date | null, pattern = 'PP'): string {
+  if (!input) return '';
   const date = toDate(input);
-  return isValid(date) ? format(date, pattern) : '';
+  if (!date || !isValid(date)) return '';
+  if (/YYYY|DD/.test(pattern) && !/yyyy|dd/.test(pattern)) {
+    return dayjs(date).format(pattern);
+  }
+  try {
+    return format(date, pattern);
+  } catch {
+    return dayjs(date).format(pattern);
+  }
 }
 
-/** Renders a relative time, e.g. "3 minutes ago". Used in chat/timeline UIs. */
-export function formatRelativeTime(input: string | Date): string {
+export function formatRelativeTime(input?: string | number | Date | null): string {
+  if (!input) return '';
   const date = toDate(input);
-  return isValid(date) ? formatDistanceToNow(date, { addSuffix: true }) : '';
+  return date && isValid(date) ? formatDistanceToNow(date, { addSuffix: true }) : '';
 }
+
+export const fromNow = (value?: string | number | Date | null): string => {
+  return formatRelativeTime(value);
+};
+
+export const toDateInputValue = (value?: string | number | Date | null): string => {
+  const date = toDate(value);
+  return date && isValid(date) ? format(date, 'yyyy-MM-dd') : '';
+};
+
+export const formatDateTime = (value?: string | number | Date | null): string => {
+  const date = toDate(value);
+  return date && isValid(date) ? format(date, 'dd MMM yyyy, HH:mm') : '';
+};
+
+export const parseDate = (val: unknown): Date | null => {
+  return toDate(val as string | number | Date);
+};
+
+export const formatDateRange = (
+  range?: [unknown, unknown] | null,
+  pattern = 'dd MMM yyyy',
+): string => {
+  if (!range || (!range[0] && !range[1])) return '';
+  const start = formatDate(range[0] as string | Date, pattern);
+  const end = formatDate(range[1] as string | Date, pattern);
+  if (start && end) return `${start} - ${end}`;
+  if (start) return `${start} - ...`;
+  return '';
+};

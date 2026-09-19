@@ -1,11 +1,12 @@
 import { Award, Download, Loader2 } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import type { OrchestrationRunResponse } from '@/types/orchestration.types';
 import { Badge } from '@components/ui/badge';
 import { Button } from '@components/ui/button';
+import { FeedbackQuestionnaireModal } from '@features/feedback/components/user';
 import {
   useDownloadCertificate,
   useExportWorkspaceReport,
@@ -37,6 +38,7 @@ export function IdeaValidationReport({
 }: IdeaValidationReportProps) {
   const { result } = response;
   const downloadCertificate = useDownloadCertificate(workspaceId);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
 
   const verdictStyle = result
     ? (VERDICT_STYLES[result.verdict.toLowerCase()] ?? 'bg-primary/10 text-primary')
@@ -101,7 +103,7 @@ export function IdeaValidationReport({
                 workspaceId={workspaceId}
                 agentName="idea_validation_agent"
                 title="Idea Validation"
-                onDownloadCertificate={() => downloadCertificate.mutate()}
+                onDownloadCertificate={() => setIsFeedbackModalOpen(true)}
                 isDownloadingCertificate={downloadCertificate.isPending}
               >
                 <p className="text-foreground text-sm font-semibold">Problem Statement</p>
@@ -158,7 +160,7 @@ export function IdeaValidationReport({
                 </div>
                 <Button
                   size="sm"
-                  onClick={() => downloadCertificate.mutate()}
+                  onClick={() => setIsFeedbackModalOpen(true)}
                   disabled={downloadCertificate.isPending}
                   className="shrink-0 gap-2 self-start bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-xs hover:from-amber-600 hover:to-orange-700 sm:self-center"
                 >
@@ -260,6 +262,14 @@ export function IdeaValidationReport({
             Retake
           </Button>
         </div>
+      )}
+
+      {isFeedbackModalOpen && (
+        <FeedbackQuestionnaireModal
+          workspaceId={workspaceId}
+          open={isFeedbackModalOpen}
+          onOpenChange={setIsFeedbackModalOpen}
+        />
       )}
     </div>
   );

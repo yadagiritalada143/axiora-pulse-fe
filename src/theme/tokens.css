@@ -1,0 +1,71 @@
+:root {
+  /* Surfaces & backgrounds */
+  --app-bg: #ffffff;
+  --app-surface: #ffffff;
+  --app-surface-2: #f8fafc;
+  --app-surface-hover: #f1f5f9;
+
+  /* Borders */
+  --app-border: #e2e8f0;
+
+  /* Text */
+  --app-text: #0f172a;
+  --app-text-muted: #64748b;
+
+  /* Brand primary (Axiora Orange #FF4500) */
+  --app-primary: #ff4500;
+  --app-primary-hover: #e03e00;
+
+  /* Accent */
+  --app-accent: #ff4500;
+  --app-accent-fg: #e03e00;
+  --app-accent-soft: rgba(255, 69, 0, 0.1);
+
+  /* Semantic */
+  --app-success: #16a34a;
+  --app-warning: #d97706;
+  --app-danger: #dc2626;
+
+  /* Brand gradient */
+  --app-brand-gradient: linear-gradient(135deg, #ff4500, #ff7537, #ffa94d);
+  --app-brand-on: #ffffff;
+  --app-overlay: rgba(0, 0, 0, 0.5);
+  --app-glass-bg: rgba(255, 255, 255, 0.9);
+  --app-glass-border: rgba(255, 255, 255, 0.2);
+
+  /* Elevation */
+  --app-shadow: rgba(0, 0, 0, 0.08);
+
+  /* Scrollbar */
+  --app-scrollbar-thumb: #cbd5e1;
+  --app-scrollbar-thumb-hover: #94a3b8;
+}
+
+:root[data-mantine-color-scheme='dark'],
+.dark {
+  --app-bg: #0b0f17;
+  --app-surface: #111827;
+  --app-surface-2: #1e293b;
+  --app-surface-hover: #334155;
+
+  --app-border: #1e293b;
+
+  --app-text: #f8fafc;
+  --app-text-muted: #94a3b8;
+
+  --app-primary: #ff4500;
+  --app-primary-hover: #ff6a27;
+
+  --app-accent: #ff4500;
+  --app-accent-fg: #ff7537;
+  --app-accent-soft: rgba(255, 69, 0, 0.2);
+
+  --app-success: #22c55e;
+  --app-warning: #f59e0b;
+  --app-danger: #ef4444;
+
+  --app-shadow: rgba(0, 0, 0, 0.5);
+
+  --app-scrollbar-thumb: #334155;
+  --app-scrollbar-thumb-hover: #475569;
+}
