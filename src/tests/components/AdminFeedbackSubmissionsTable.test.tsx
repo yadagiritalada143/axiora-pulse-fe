@@ -117,4 +117,23 @@ describe('AdminFeedbackSubmissionsTable', () => {
 
     expect(screen.getByText('Submitted Answers')).toBeInTheDocument();
   });
+
+  it('renders Mantine DatePicker inputs for from and to date filtering', () => {
+    mockedUseAdminUserFeedbackSubmissions.mockReturnValue({
+      data: {
+        feedback: mockFeedbackItems,
+        pagination: { total: 3, limit: 50, offset: 0, has_more: false },
+      },
+      isLoading: false,
+      isError: false,
+    });
+
+    render(<AdminFeedbackSubmissionsTable />);
+
+    expect(screen.getByText('From date')).toBeInTheDocument();
+    expect(screen.getByText('To date')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /filter from date/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /filter to date/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^filter$/i })).toBeInTheDocument();
+  });
 });

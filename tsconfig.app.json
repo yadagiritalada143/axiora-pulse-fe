@@ -46,7 +46,9 @@
       "@schemas/*": ["./src/schemas/*"],
       "@store/*": ["./src/store/*"],
       "@pages/*": ["./src/pages/*"],
-      "@routes/*": ["./src/routes/*"]
+      "@routes/*": ["./src/routes/*"],
+      "@theme/*": ["./src/theme/*"],
+      "@theme": ["./src/theme/index"]
     }
   },
   "include": ["src"]

@@ -1,16 +1,32 @@
-import { MantineProvider } from '@mantine/core';
-import { DatePickerInput, type DatePickerInputProps } from '@mantine/dates';
-import dayjs from 'dayjs';
+import {
+  DateInput as MantineDateInput,
+  DatePickerInput as MantineDatePickerInput,
+  type DateInputProps as MantineDateInputProps,
+  type DatePickerInputProps as MantineDatePickerInputProps,
+  type DateValue,
+} from '@mantine/dates';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import * as React from 'react';
 
-import { cn } from '@lib/utils';
+import { parseDate, toDateInputValue } from '@/utils/date';
+import { SafeMantineWrapper } from '@components/ui/calendar';
 
-export interface DatePickerProps extends Omit<DatePickerInputProps, 'value' | 'onChange'> {
+export { CalendarIcon };
+export { MantineDatePickerInput as DatePickerInput, MantineDateInput as DateInput };
+export type {
+  MantineDatePickerInputProps as DatePickerInputProps,
+  MantineDateInputProps as DateInputProps,
+};
+
+export interface DatePickerProps extends Omit<
+  MantineDatePickerInputProps,
+  'value' | 'onChange' | 'error'
+> {
   value?: string | Date | null;
   onChange?: (dateString: string, date: Date | null) => void;
-  className?: string;
-  error?: boolean | string;
+  error?: React.ReactNode;
+  format?: string;
+  triggerClassName?: string;
 }
 
 export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
@@ -19,89 +35,66 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
       value,
       onChange,
       valueFormat = 'DD/MM/YYYY',
+      format: formatProp,
       placeholder = 'DD/MM/YYYY',
-      maxLevel = 'decade',
       clearable = true,
-      maxDate,
+      leftSection,
       minDate,
-      disabled = false,
-      className,
+      maxDate,
       error,
+      dropdownType = 'popover',
       popoverProps,
-      styles,
+      triggerClassName,
       ...props
     },
     ref,
   ) => {
-    const parsedDate = React.useMemo(() => {
-      if (!value) return null;
-      if (value instanceof Date) return value;
-      const d = dayjs(value);
-      return d.isValid() ? d.toDate() : null;
-    }, [value]);
+    const parsedValue = React.useMemo(() => parseDate(value), [value]);
+    const activeFormat = formatProp || valueFormat;
 
-    const handleChange = (val: unknown) => {
-      if (!onChange) return;
-      if (!val) {
-        onChange('', null);
-        return;
-      }
-      const dateObj =
-        typeof val === 'string' ? dayjs(val).toDate() : val instanceof Date ? val : null;
-      const dateString = dayjs(val as string | Date).format('YYYY-MM-DD');
-      onChange(dateString, dateObj);
+    const handleChange = (val: DateValue) => {
+      const str = val ? toDateInputValue(val) : '';
+      onChange?.(str, parseDate(val));
     };
 
     return (
-      <MantineProvider defaultColorScheme="auto">
-        <div className={cn('relative w-full', className)}>
-          <DatePickerInput
-            ref={ref}
-            value={parsedDate}
-            onChange={(val) => handleChange(val)}
-            valueFormat={valueFormat}
-            placeholder={placeholder}
-            maxLevel={maxLevel}
-            clearable={clearable}
-            maxDate={maxDate}
-            minDate={minDate}
-            disabled={disabled}
-            popoverProps={{
-              withinPortal: false,
-              zIndex: 1000,
-              shadow: 'md',
-              ...popoverProps,
-            }}
-            styles={{
-              input: {
-                height: '2.375rem',
-                fontSize: '0.875rem',
-                borderRadius: '0.5rem',
-                backgroundColor: 'var(--background)',
-                color: 'var(--foreground)',
-                borderColor: error ? 'var(--destructive)' : 'var(--border)',
-                cursor: disabled ? 'not-allowed' : 'pointer',
-                transition: 'all 150ms ease',
-              },
-              calendarHeaderLevel: {
-                fontWeight: 600,
-                cursor: 'pointer',
-              },
-              calendarHeaderControl: {
-                cursor: 'pointer',
-              },
-              day: {
-                cursor: 'pointer',
-              },
-              ...styles,
-            }}
-            {...props}
-          />
-        </div>
-      </MantineProvider>
+      <SafeMantineWrapper>
+        <MantineDatePickerInput
+          ref={ref}
+          value={parsedValue}
+          onChange={handleChange}
+          valueFormat={activeFormat}
+          placeholder={placeholder}
+          clearable={clearable}
+          clearButtonProps={{
+            'aria-label': 'Clear value',
+            ...props.clearButtonProps,
+          }}
+          leftSection={leftSection || <CalendarIcon className="size-4 text-[#FF4500]" />}
+          minDate={parseDate(minDate) || undefined}
+          maxDate={parseDate(maxDate) || undefined}
+          error={typeof error === 'boolean' ? (error ? true : undefined) : error}
+          dropdownType={dropdownType}
+          classNames={
+            triggerClassName
+              ? {
+                  input: triggerClassName,
+                  ...(typeof props.classNames === 'object' ? props.classNames : {}),
+                }
+              : props.classNames
+          }
+          popoverProps={{
+            shadow: 'md',
+            withinPortal:
+              process.env.NODE_ENV === 'test' ? false : (popoverProps?.withinPortal ?? true),
+            zIndex: 9999,
+            ...popoverProps,
+          }}
+          {...props}
+        />
+      </SafeMantineWrapper>
     );
   },
 );
 
 DatePicker.displayName = 'DatePicker';
-export { CalendarIcon };

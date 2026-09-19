@@ -1,6 +1,5 @@
 import { format } from 'date-fns';
 import {
-  Calendar,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -18,6 +17,7 @@ import { Loader } from '@components/common/Loader';
 import { Badge } from '@components/ui/badge';
 import { Button } from '@components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@components/ui/card';
+import { DatePicker } from '@components/ui/date-picker';
 import {
   Dialog,
   DialogContent,
@@ -189,7 +189,7 @@ export function AdminFeedbackSubmissionsTable() {
 
         <form onSubmit={handleSearchSubmit} className="space-y-3 pt-3">
           <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-12">
-            <div className="relative sm:col-span-5">
+            <div className="relative sm:col-span-4">
               <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
               <Input
                 placeholder="Search by question or answer..."
@@ -199,35 +199,39 @@ export function AdminFeedbackSubmissionsTable() {
               />
             </div>
 
-            <div className="flex items-center gap-1.5 sm:col-span-3">
-              <Calendar className="text-muted-foreground hidden size-4 shrink-0 sm:inline" />
-              <Input
-                type="date"
+            <div className="sm:col-span-3">
+              <DatePicker
+                placeholder="From date"
                 value={dateFrom}
-                onChange={(e) => {
-                  setDateFrom(e.target.value);
+                onChange={(dateStr) => {
+                  setDateFrom(dateStr);
                   setOffset(0);
                 }}
-                className="bg-background text-foreground border-border h-9 text-xs"
-                title="From date"
+                valueFormat="DD MMM YYYY"
+                clearable
+                maxDate={dateTo || undefined}
+                className="w-full"
+                aria-label="Filter from date"
               />
             </div>
 
-            <div className="flex items-center gap-1.5 sm:col-span-3">
-              <span className="text-muted-foreground hidden text-xs sm:inline">to</span>
-              <Input
-                type="date"
+            <div className="sm:col-span-3">
+              <DatePicker
+                placeholder="To date"
                 value={dateTo}
-                onChange={(e) => {
-                  setDateTo(e.target.value);
+                onChange={(dateStr) => {
+                  setDateTo(dateStr);
                   setOffset(0);
                 }}
-                className="bg-background text-foreground border-border h-9 text-xs"
-                title="To date"
+                valueFormat="DD MMM YYYY"
+                clearable
+                minDate={dateFrom || undefined}
+                className="w-full"
+                aria-label="Filter to date"
               />
             </div>
 
-            <div className="flex items-center gap-1 sm:col-span-1">
+            <div className="flex items-center gap-1 sm:col-span-2">
               <Button
                 type="submit"
                 size="sm"

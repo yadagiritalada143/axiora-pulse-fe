@@ -62,6 +62,7 @@ export default defineConfig({
       '@store': src('store'),
       '@pages': src('pages'),
       '@routes': src('routes'),
+      '@theme': src('theme'),
     },
   },
   server: {
