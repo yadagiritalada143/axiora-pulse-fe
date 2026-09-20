@@ -1,7 +1,11 @@
 import { Check, ChevronLeft, ChevronRight, Star, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
-import type { FeedbackAnswerItem, FeedbackQuestion } from '@/types/feedback.types';
+import type {
+  FeedbackAnswerItem,
+  FeedbackQuestion,
+  UserFeedbackSubmitResult,
+} from '@/types/feedback.types';
 import { STAR_DESCRIPTIONS, countStars, isStarQuestion } from '@/types/feedback.types';
 import { ButtonLoader } from '@components/common/Loader';
 import { Button } from '@components/ui/button';
@@ -14,7 +18,7 @@ interface FeedbackQuestionnaireModalProps {
   workspaceId: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess?: () => void;
+  onSuccess?: (result?: UserFeedbackSubmitResult) => void;
 }
 
 function SpeechBubblesIllustration() {
@@ -261,7 +265,7 @@ export function FeedbackQuestionnaireModal({
   onOpenChange,
   onSuccess,
 }: FeedbackQuestionnaireModalProps) {
-  const { data: questions, isLoading } = useDisplayedFeedbackQuestions(true);
+  const { data: questionsData, isLoading } = useDisplayedFeedbackQuestions(true, workspaceId);
   const submitMutation = useSubmitUserFeedback();
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -272,7 +276,11 @@ export function FeedbackQuestionnaireModal({
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const activeQuestionsList = useMemo(() => questions ?? [], [questions]);
+  const activeQuestionsList: FeedbackQuestion[] = useMemo(() => {
+    if (!questionsData) return [];
+    if (Array.isArray(questionsData)) return questionsData as FeedbackQuestion[];
+    return questionsData.questions ?? [];
+  }, [questionsData]);
   const totalQuestions = activeQuestionsList.length;
   const currentQuestion: FeedbackQuestion | undefined = activeQuestionsList[currentStep];
   const isLastQuestion = currentStep === totalQuestions - 1;
@@ -395,6 +403,9 @@ export function FeedbackQuestionnaireModal({
     });
   }, [currentQuestion]);
 
+  const isAlreadySubmitted =
+    !Array.isArray(questionsData) && questionsData?.alreadySubmitted === true;
+
   const handleNextOrSubmit = () => {
     if (!currentQuestion) return;
 
@@ -435,9 +446,9 @@ export function FeedbackQuestionnaireModal({
         answers: payloadItems,
       },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
           setIsSubmitted(true);
-          onSuccess?.();
+          onSuccess?.(data);
         },
       },
     );
@@ -483,6 +494,33 @@ export function FeedbackQuestionnaireModal({
                 className="h-11 w-full rounded-xl bg-[#FF4500] text-sm font-semibold text-white shadow-md transition-colors hover:bg-[#FF4500]/90"
               >
                 Got it
+              </Button>
+            </div>
+          </div>
+        ) : isAlreadySubmitted ? (
+          <div className="animate-in fade-in zoom-in-95 flex flex-col items-center space-y-4 py-4 text-center duration-200">
+            <SuccessCheckIllustration />
+
+            <div className="space-y-2">
+              <DialogTitle className="text-foreground text-xl font-bold tracking-tight sm:text-2xl">
+                Feedback Already Received
+              </DialogTitle>
+              <p className="text-muted-foreground mx-auto max-w-sm text-xs leading-relaxed sm:text-sm">
+                You have already completed the feedback questionnaire for this venture. You can
+                proceed directly to verify your name and download your certificate.
+              </p>
+            </div>
+
+            <div className="w-full pt-4">
+              <Button
+                type="button"
+                onClick={() => {
+                  onSuccess?.();
+                  handleClose();
+                }}
+                className="h-11 w-full rounded-xl bg-[#FF4500] text-sm font-semibold text-white shadow-md transition-colors hover:bg-[#FF4500]/90"
+              >
+                Continue to Certificate
               </Button>
             </div>
           </div>

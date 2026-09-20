@@ -19,18 +19,52 @@ jest.mock('sonner', () => ({
 }));
 
 jest.mock('@features/feedback/components/user', () => ({
-  FeedbackQuestionnaireModal: ({ open }: { open: boolean }) =>
-    open ? <div data-testid="feedback-modal">Feedback Modal</div> : null,
+  FeedbackQuestionnaireModal: ({
+    open,
+    onSuccess,
+  }: {
+    open: boolean;
+    onSuccess?: (res?: unknown) => void;
+  }) =>
+    open ? (
+      <div data-testid="feedback-modal">
+        Feedback Modal
+        <button
+          type="button"
+          onClick={() => onSuccess?.({ blob: new Blob(), filename: 'cert.pdf' })}
+        >
+          Trigger Feedback Success
+        </button>
+      </div>
+    ) : null,
+}));
+
+jest.mock('@features/ideaValidation/components/CertificateNameConfirmDialog', () => ({
+  CertificateNameConfirmDialog: ({ open }: { open: boolean }) =>
+    open ? <div data-testid="certificate-confirm-dialog">Certificate Confirm Dialog</div> : null,
+}));
+
+jest.mock('../../features/ideaValidation/components/CertificateNameConfirmDialog', () => ({
+  CertificateNameConfirmDialog: ({ open }: { open: boolean }) =>
+    open ? <div data-testid="certificate-confirm-dialog">Certificate Confirm Dialog</div> : null,
+}));
+
+jest.mock('@features/feedback/hooks/useFeedback', () => ({
+  useDisplayedFeedbackQuestions: jest.fn(),
 }));
 
 jest.mock('react-router-dom', () => ({
   Link: ({ to, children }: { to: string; children: React.ReactNode }) => (
     <a href={to}>{children}</a>
   ),
+  useNavigate: () => jest.fn(),
 }));
 
 const mockedUseExportWorkspaceReport = useExportWorkspaceReport as jest.Mock;
 const mockedUseDownloadCertificate = useDownloadCertificate as jest.Mock;
+const mockedUseDisplayedFeedbackQuestions =
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('@features/feedback/hooks/useFeedback').useDisplayedFeedbackQuestions as jest.Mock;
 
 const RESPONSE: OrchestrationRunResponse = {
   run_id: 'run-1',
@@ -128,6 +162,10 @@ describe('IdeaValidationReport', () => {
   beforeEach(() => {
     mockedUseExportWorkspaceReport.mockReturnValue({ mutate: jest.fn(), isPending: false });
     mockedUseDownloadCertificate.mockReturnValue({ mutate: jest.fn(), isPending: false });
+    mockedUseDisplayedFeedbackQuestions.mockReturnValue({
+      data: { alreadySubmitted: false, questions: [] },
+      isLoading: false,
+    });
   });
 
   afterEach(() => {
@@ -457,5 +495,58 @@ describe('IdeaValidationReport', () => {
     await user.click(firstCertButton);
 
     expect(screen.getByTestId('feedback-modal')).toBeInTheDocument();
+  });
+
+  it('opens CertificateNameConfirmDialog directly if feedback was already submitted', async () => {
+    mockedUseDisplayedFeedbackQuestions.mockReturnValue({
+      data: { alreadySubmitted: true, questions: [] },
+      isLoading: false,
+    });
+    const user = userEvent.setup();
+
+    render(
+      <IdeaValidationReport
+        workspaceId={1}
+        ideaTitle="Inventory AI"
+        response={RESPONSE}
+        onRetake={jest.fn()}
+      />,
+    );
+
+    const firstCertButton = screen.getAllByRole('button', { name: /download certificate/i })[0];
+    if (!firstCertButton) {
+      throw new Error('Expected certificate button');
+    }
+    await user.click(firstCertButton);
+
+    expect(screen.queryByTestId('feedback-modal')).not.toBeInTheDocument();
+    expect(screen.getByTestId('certificate-confirm-dialog')).toBeInTheDocument();
+  });
+
+  it('transitions from feedback modal to CertificateNameConfirmDialog on feedback success', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <IdeaValidationReport
+        workspaceId={1}
+        ideaTitle="Inventory AI"
+        response={RESPONSE}
+        onRetake={jest.fn()}
+      />,
+    );
+
+    const firstCertButton = screen.getAllByRole('button', { name: /download certificate/i })[0];
+    if (!firstCertButton) {
+      throw new Error('Expected certificate button');
+    }
+    await user.click(firstCertButton);
+
+    expect(screen.getByTestId('feedback-modal')).toBeInTheDocument();
+
+    const triggerSuccessBtn = screen.getByRole('button', { name: /trigger feedback success/i });
+    await user.click(triggerSuccessBtn);
+
+    expect(screen.queryByTestId('feedback-modal')).not.toBeInTheDocument();
+    expect(screen.getByTestId('certificate-confirm-dialog')).toBeInTheDocument();
   });
 });

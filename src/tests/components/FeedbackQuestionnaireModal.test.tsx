@@ -216,4 +216,37 @@ describe('FeedbackQuestionnaireModal', () => {
       expect.anything(),
     );
   });
+
+  it('renders already-submitted screen when backend alreadySubmitted is true', async () => {
+    const user = userEvent.setup();
+    const mockOnSuccess = jest.fn();
+    mockedUseDisplayedFeedbackQuestions.mockReturnValue({
+      data: {
+        alreadySubmitted: true,
+        questions: mockQuestions,
+      },
+      isLoading: false,
+      isError: false,
+    });
+
+    render(
+      <FeedbackQuestionnaireModal
+        open={true}
+        onOpenChange={mockOnOpenChange}
+        workspaceId={101}
+        onSuccess={mockOnSuccess}
+      />,
+    );
+
+    expect(screen.getByText('Feedback Already Received')).toBeInTheDocument();
+    expect(
+      screen.getByText(/You have already completed the feedback questionnaire for this venture/i),
+    ).toBeInTheDocument();
+
+    const continueBtn = screen.getByRole('button', { name: /continue to certificate/i });
+    await user.click(continueBtn);
+
+    expect(mockOnSuccess).toHaveBeenCalledTimes(1);
+    expect(mockOnOpenChange).toHaveBeenCalledWith(false);
+  });
 });

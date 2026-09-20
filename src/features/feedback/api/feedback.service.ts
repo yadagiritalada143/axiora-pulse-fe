@@ -4,6 +4,7 @@ import type {
   AdminUserFeedbackListResponse,
   CreateFeedbackQuestionPayload,
   FeedbackQuestion,
+  FeedbackQuestionnaireListResponse,
   UpdateFeedbackQuestionPayload,
   UserFeedbackSubmitPayload,
   UserFeedbackSubmitResult,
@@ -37,14 +38,31 @@ export const feedbackService = {
     return data;
   },
 
-  listDisplayedQuestions: async (isDisplay = true): Promise<FeedbackQuestion[]> => {
-    const { data } = await apiClient.get<FeedbackQuestion[]>(
+  listDisplayedQuestions: async (
+    isDisplay = true,
+    workspaceId?: number,
+  ): Promise<FeedbackQuestionnaireListResponse> => {
+    const { data } = await apiClient.get<FeedbackQuestionnaireListResponse | FeedbackQuestion[]>(
       API_ENDPOINTS.FEEDBACK.USER_QUESTIONS,
       {
-        params: { is_display: isDisplay },
+        params: {
+          is_display: isDisplay,
+          ...(workspaceId ? { workspace_id: workspaceId } : {}),
+        },
       },
     );
-    return data;
+
+    if (Array.isArray(data)) {
+      return {
+        alreadySubmitted: null,
+        questions: data,
+      };
+    }
+
+    return {
+      alreadySubmitted: data?.alreadySubmitted ?? null,
+      questions: data?.questions ?? [],
+    };
   },
 
   submitFeedback: async (payload: UserFeedbackSubmitPayload): Promise<UserFeedbackSubmitResult> => {

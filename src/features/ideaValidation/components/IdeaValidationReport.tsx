@@ -3,10 +3,12 @@ import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import type { UserFeedbackSubmitResult } from '@/types/feedback.types';
 import type { OrchestrationRunResponse } from '@/types/orchestration.types';
 import { Badge } from '@components/ui/badge';
 import { Button } from '@components/ui/button';
 import { FeedbackQuestionnaireModal } from '@features/feedback/components/user';
+import { useDisplayedFeedbackQuestions } from '@features/feedback/hooks/useFeedback';
 import {
   useDownloadCertificate,
   useExportWorkspaceReport,
@@ -14,6 +16,7 @@ import {
 import type { WorkspaceReportAgent } from '@features/workspace/types';
 import { cn } from '@lib/utils';
 
+import { CertificateNameConfirmDialog } from './CertificateNameConfirmDialog';
 import { InteractiveSurveyQuestions } from './InteractiveSurveyQuestions';
 // import { ResearchStreamPanel } from './ResearchStreamPanel';
 
@@ -38,7 +41,22 @@ export function IdeaValidationReport({
 }: IdeaValidationReportProps) {
   const { result } = response;
   const downloadCertificate = useDownloadCertificate(workspaceId);
+  const { data: feedbackData } = useDisplayedFeedbackQuestions(true, workspaceId);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [submittedCertificateResult, setSubmittedCertificateResult] =
+    useState<UserFeedbackSubmitResult | null>(null);
+
+  const isAlreadySubmitted =
+    !Array.isArray(feedbackData) && feedbackData?.alreadySubmitted === true;
+
+  const handleCertificateClick = () => {
+    if (isAlreadySubmitted) {
+      setIsConfirmModalOpen(true);
+    } else {
+      setIsFeedbackModalOpen(true);
+    }
+  };
 
   const verdictStyle = result
     ? (VERDICT_STYLES[result.verdict.toLowerCase()] ?? 'bg-primary/10 text-primary')
@@ -103,7 +121,7 @@ export function IdeaValidationReport({
                 workspaceId={workspaceId}
                 agentName="idea_validation_agent"
                 title="Idea Validation"
-                onDownloadCertificate={() => setIsFeedbackModalOpen(true)}
+                onDownloadCertificate={handleCertificateClick}
                 isDownloadingCertificate={downloadCertificate.isPending}
               >
                 <p className="text-foreground text-sm font-semibold">Problem Statement</p>
@@ -160,7 +178,7 @@ export function IdeaValidationReport({
                 </div>
                 <Button
                   size="sm"
-                  onClick={() => setIsFeedbackModalOpen(true)}
+                  onClick={handleCertificateClick}
                   disabled={downloadCertificate.isPending}
                   className="shrink-0 gap-2 self-start bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-xs hover:from-amber-600 hover:to-orange-700 sm:self-center"
                 >
@@ -269,8 +287,25 @@ export function IdeaValidationReport({
           workspaceId={workspaceId}
           open={isFeedbackModalOpen}
           onOpenChange={setIsFeedbackModalOpen}
+          onSuccess={(submitResult) => {
+            setIsFeedbackModalOpen(false);
+            setSubmittedCertificateResult(submitResult ?? null);
+            setIsConfirmModalOpen(true);
+          }}
         />
       )}
+
+      <CertificateNameConfirmDialog
+        open={isConfirmModalOpen}
+        onOpenChange={(open) => {
+          setIsConfirmModalOpen(open);
+          if (!open) {
+            setSubmittedCertificateResult(null);
+          }
+        }}
+        workspaceId={workspaceId}
+        initialBlobResult={submittedCertificateResult}
+      />
     </div>
   );
 }
