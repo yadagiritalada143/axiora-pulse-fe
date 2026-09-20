@@ -74,6 +74,7 @@ export const API_ENDPOINTS = {
     VERIFY: '/billing/verify',
     SUBSCRIPTION: '/billing/subscription',
     CANCEL: '/billing/cancel',
+    STATUS: '/billing/status',
   },
   USER: {
     PROFILE: '/users/me',

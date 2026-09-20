@@ -5,3 +5,7 @@ export { ResearchStreamPanel } from './ResearchStreamPanel';
 export { WebSearchDrawer } from './WebSearchDrawer';
 export { LiveAgentSearchIndicator } from './LiveAgentSearchIndicator';
 export { InteractiveSurveyQuestions } from './InteractiveSurveyQuestions';
+export {
+  CertificateNameConfirmDialog,
+  type CertificateNameConfirmDialogProps,
+} from './CertificateNameConfirmDialog';

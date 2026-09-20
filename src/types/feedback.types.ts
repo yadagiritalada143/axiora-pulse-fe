@@ -59,6 +59,11 @@ export interface FeedbackQuestion {
   updated_at: string;
 }
 
+export interface FeedbackQuestionnaireListResponse {
+  alreadySubmitted: boolean | null;
+  questions: FeedbackQuestion[];
+}
+
 export interface CreateFeedbackQuestionPayload {
   question: string;
   answer_type: FeedbackAnswerType;

@@ -33,6 +33,7 @@ export const queryKeys = {
   billing: {
     plans: () => ['billing', 'plans'] as const,
     subscription: () => ['billing', 'subscription'] as const,
+    status: () => ['billing', 'status'] as const,
   },
 
   user: {
@@ -72,7 +73,10 @@ export const queryKeys = {
   feedback: {
     all: () => ['feedback'] as const,
     adminQuestions: () => ['feedback', 'adminQuestions'] as const,
-    userQuestions: (isDisplay = true) => ['feedback', 'userQuestions', isDisplay] as const,
+    userQuestions: (isDisplay = true, workspaceId?: number) =>
+      workspaceId !== undefined
+        ? (['feedback', 'userQuestions', isDisplay, workspaceId] as const)
+        : (['feedback', 'userQuestions', isDisplay] as const),
     adminSubmissions: (params?: unknown) =>
       params !== undefined
         ? (['feedback', 'adminSubmissions', params] as const)

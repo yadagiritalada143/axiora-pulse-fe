@@ -6,7 +6,6 @@ import type {
   CreateFeedbackQuestionPayload,
   UpdateFeedbackQuestionPayload,
   UserFeedbackSubmitPayload,
-  UserFeedbackSubmitResult,
 } from '@/types/feedback.types';
 import { queryKeys } from '@constants/queryKeys';
 
@@ -59,10 +58,10 @@ export function useUpdateFeedbackQuestion() {
   });
 }
 
-export function useDisplayedFeedbackQuestions(isDisplay = true) {
+export function useDisplayedFeedbackQuestions(isDisplay = true, workspaceId?: number) {
   return useQuery({
-    queryKey: queryKeys.feedback.userQuestions(isDisplay),
-    queryFn: () => feedbackService.listDisplayedQuestions(isDisplay),
+    queryKey: queryKeys.feedback.userQuestions(isDisplay, workspaceId),
+    queryFn: () => feedbackService.listDisplayedQuestions(isDisplay, workspaceId),
     staleTime: 1000 * 60 * 5, // 5 minutes cache
   });
 }
@@ -72,25 +71,12 @@ export function useSubmitUserFeedback() {
 
   return useMutation({
     mutationFn: (payload: UserFeedbackSubmitPayload) => feedbackService.submitFeedback(payload),
-    onSuccess: ({ blob, filename }: UserFeedbackSubmitResult) => {
+    onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.feedback.all() });
-
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', filename);
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-
-      setTimeout(() => {
-        link.remove();
-        URL.revokeObjectURL(url);
-      }, 100);
-
-      toast.success('Feedback submitted! Your certificate download has started.');
+      toast.success('Feedback submitted successfully!');
     },
     onError: (error: unknown) => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.feedback.all() });
       const message =
         error instanceof Error ? error.message : 'Failed to submit feedback. Please try again.';
       toast.error(message);

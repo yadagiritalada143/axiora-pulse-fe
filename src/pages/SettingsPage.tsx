@@ -1,15 +1,21 @@
 import { useSearchParams } from 'react-router-dom';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@components/ui/tabs';
-import { AccountTab, ProfileTab } from '@features/settings/components';
+import { AccountTab, PlanDetailsTab, ProfileTab } from '@features/settings/components';
+import { useAuthStore } from '@store/auth.store';
 
 interface SettingsPageProps {
-  defaultTab?: 'profile' | 'account';
+  defaultTab?: 'profile' | 'account' | 'plan';
 }
 
 export default function SettingsPage({ defaultTab = 'profile' }: SettingsPageProps) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = searchParams.get('tab') ?? defaultTab;
+  const role = useAuthStore((state) => state.role);
+  const user = useAuthStore((state) => state.user);
+  const isAdmin = role === 'admin' || user?.role === 'admin';
+
+  const rawTab = searchParams.get('tab') ?? defaultTab;
+  const activeTab = isAdmin && rawTab === 'plan' ? 'profile' : rawTab;
 
   const handleTabChange = (val: string) => {
     setSearchParams({ tab: val }, { replace: true });
@@ -39,6 +45,14 @@ export default function SettingsPage({ defaultTab = 'profile' }: SettingsPagePro
           >
             Account
           </TabsTrigger>
+          {!isAdmin && (
+            <TabsTrigger
+              value="plan"
+              className="text-muted-foreground cursor-pointer rounded-none border-b-2 border-transparent px-1 pt-1 pb-2.5 text-sm font-semibold transition-colors data-[state=active]:border-b-[#FF4500] data-[state=active]:text-[#FF4500] data-[state=active]:shadow-none"
+            >
+              Plan Details
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="profile" className="space-y-6 pt-1 focus-visible:outline-none">
@@ -48,6 +62,12 @@ export default function SettingsPage({ defaultTab = 'profile' }: SettingsPagePro
         <TabsContent value="account" className="space-y-6 pt-1 focus-visible:outline-none">
           <AccountTab />
         </TabsContent>
+
+        {!isAdmin && (
+          <TabsContent value="plan" className="space-y-6 pt-1 focus-visible:outline-none">
+            <PlanDetailsTab />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
