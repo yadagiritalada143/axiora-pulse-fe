@@ -52,6 +52,7 @@ interface MentorShellProps {
   navItems?: MentorNavItem[];
   navSectionLabel?: string;
   mainClassName?: string;
+  showHeader?: boolean;
 }
 
 export function MentorShell({
@@ -60,6 +61,7 @@ export function MentorShell({
   navItems = WORKSPACE_NAV_ITEMS,
   navSectionLabel = 'Workspace',
   mainClassName,
+  showHeader = true,
 }: MentorShellProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -158,74 +160,126 @@ export function MentorShell({
           </nav>
 
           <div className="border-border space-y-1 border-t px-3 py-3">
+            {!showHeader && (
+              <div className="border-border/60 mb-2 flex items-center justify-between border-b px-1 pb-2.5">
+                <div className="flex min-w-0 items-center gap-2">
+                  <Avatar className="size-7 shrink-0">
+                    <AvatarImage src={avatarSrc} alt="" />
+                    <AvatarFallback>
+                      {displayName && displayName !== 'Account' ? (
+                        displayName.charAt(0).toUpperCase()
+                      ) : user?.email?.trim() ? (
+                        user.email.trim().charAt(0).toUpperCase()
+                      ) : (
+                        <User2Icon className="size-3.5" />
+                      )}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-foreground truncate text-xs font-semibold">{displayName}</p>
+                    {user?.email && (
+                      <p className="text-muted-foreground truncate text-[10px]">{user.email}</p>
+                    )}
+                  </div>
+                </div>
+                <ThemeToggle />
+              </div>
+            )}
             {footerItems.map((item) => (
               <MentorNavButton key={item.label} item={item} onNavigate={closeNav} />
             ))}
           </div>
         </aside>
 
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-          <header className="border-border flex h-11 shrink-0 items-center gap-2 border-b px-3 sm:h-12 sm:gap-4 sm:px-6">
-            <button
-              type="button"
-              aria-label="Open menu"
-              onClick={() => setIsNavOpen(true)}
-              className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors lg:hidden"
-            >
-              <Menu className="size-4" />
-            </button>
-
-            {isSidebarCollapsed ? (
+        <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+          {showHeader ? (
+            <header className="border-border flex h-11 shrink-0 items-center gap-2 border-b px-3 sm:h-12 sm:gap-4 sm:px-6">
               <button
                 type="button"
-                aria-label="Expand sidebar"
-                title="Expand sidebar"
-                onClick={() => setIsSidebarCollapsed(false)}
-                className="text-muted-foreground hover:bg-accent hover:text-foreground hidden size-9 shrink-0 cursor-pointer items-center justify-center rounded-lg transition-colors lg:flex"
+                aria-label="Open menu"
+                onClick={() => setIsNavOpen(true)}
+                className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors lg:hidden"
               >
-                <PanelLeftOpen className="size-4" />
+                <Menu className="size-4" />
               </button>
-            ) : null}
 
-            <div className="flex flex-1 items-center justify-end gap-1.5 sm:gap-3">
-              <ThemeToggle />
+              {isSidebarCollapsed ? (
+                <button
+                  type="button"
+                  aria-label="Expand sidebar"
+                  title="Expand sidebar"
+                  onClick={() => setIsSidebarCollapsed(false)}
+                  className="text-muted-foreground hover:bg-accent hover:text-foreground hidden size-9 shrink-0 cursor-pointer items-center justify-center rounded-lg transition-colors lg:flex"
+                >
+                  <PanelLeftOpen className="size-4" />
+                </button>
+              ) : null}
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    aria-label="Account menu"
-                    className="hover:bg-accent flex cursor-pointer items-center gap-2 rounded-full py-1 pr-2 pl-1 transition-colors"
-                  >
-                    <Avatar className="size-8">
-                      <AvatarImage src={avatarSrc} alt="" />
-                      <AvatarFallback>
-                        {displayName && displayName !== 'Account' ? (
-                          displayName.charAt(0).toUpperCase()
-                        ) : user?.email?.trim() ? (
-                          user.email.trim().charAt(0).toUpperCase()
-                        ) : (
-                          <User2Icon className="size-4" />
-                        )}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-foreground hidden text-sm font-semibold sm:inline">
-                      {displayName}
-                    </span>
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                    <Link to={ROUTES.SETTINGS}>Settings</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem variant="destructive" onSelect={() => void handleLogout()}>
-                    Log out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </header>
+              <div className="flex flex-1 items-center justify-end gap-1.5 sm:gap-3">
+                <ThemeToggle />
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Account menu"
+                      className="hover:bg-accent flex cursor-pointer items-center gap-2 rounded-full py-1 pr-2 pl-1 transition-colors"
+                    >
+                      <Avatar className="size-8">
+                        <AvatarImage src={avatarSrc} alt="" />
+                        <AvatarFallback>
+                          {displayName && displayName !== 'Account' ? (
+                            displayName.charAt(0).toUpperCase()
+                          ) : user?.email?.trim() ? (
+                            user.email.trim().charAt(0).toUpperCase()
+                          ) : (
+                            <User2Icon className="size-4" />
+                          )}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-foreground hidden text-sm font-semibold sm:inline">
+                        {displayName}
+                      </span>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                      <Link to={ROUTES.SETTINGS}>Settings</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem variant="destructive" onSelect={() => void handleLogout()}>
+                      Log out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </header>
+          ) : (
+            <>
+              <div className="border-border/60 flex shrink-0 items-center justify-between border-b px-3 py-1.5 lg:hidden">
+                <button
+                  type="button"
+                  aria-label="Open menu"
+                  onClick={() => setIsNavOpen(true)}
+                  className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg transition-colors"
+                >
+                  <Menu className="size-4" />
+                </button>
+              </div>
+
+              {isSidebarCollapsed ? (
+                <button
+                  type="button"
+                  aria-label="Expand sidebar"
+                  title="Expand sidebar"
+                  onClick={() => setIsSidebarCollapsed(false)}
+                  className="text-muted-foreground hover:bg-accent hover:text-foreground bg-background/90 border-border absolute top-2 left-2 z-30 hidden size-8 cursor-pointer items-center justify-center rounded-lg border shadow-xs backdrop-blur-xs transition-colors lg:flex"
+                >
+                  <PanelLeftOpen className="size-4" />
+                </button>
+              ) : null}
+            </>
+          )}
 
           <main
             className={cn(

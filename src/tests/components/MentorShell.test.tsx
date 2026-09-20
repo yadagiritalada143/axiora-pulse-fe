@@ -200,4 +200,33 @@ describe('MentorShell', () => {
     expect(screen.getByText('John Wick')).toBeInTheDocument();
     expect(screen.getByText('J')).toBeInTheDocument();
   });
+
+  it('hides the top navbar/header and renders profile in sidebar when showHeader is false', () => {
+    act(() => {
+      useAuthStore.getState().updateUser({
+        id: '1',
+        email: 'founder@axiora.com',
+        name: 'Ada Lovelace',
+        avatarUrl: null,
+        role: 'member',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      });
+    });
+
+    const { container } = render(
+      <MemoryRouter>
+        <MentorShell showHeader={false}>
+          <p>Full space chat content</p>
+        </MentorShell>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText('Full space chat content')).toBeInTheDocument();
+    // The top <header> element should not exist
+    expect(container.querySelector('header')).not.toBeInTheDocument();
+    // Profile is displayed in the sidebar
+    expect(screen.getByText('Ada Lovelace')).toBeInTheDocument();
+    expect(screen.getByText('founder@axiora.com')).toBeInTheDocument();
+  });
 });
