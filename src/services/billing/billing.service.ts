@@ -1,5 +1,6 @@
 import type { PricingPlan } from '@/types/api.types';
 import type {
+  AccountStatus,
   BillingPeriod,
   RazorpaySubscriptionHandlerResponse,
   SubscribeResponse,
@@ -53,6 +54,11 @@ export const billingService = {
     const { data } = await apiClient.post<ApiResponse<UserSubscription>>(
       API_ENDPOINTS.BILLING.CANCEL,
     );
+    return data.data;
+  },
+
+  async getStatus(): Promise<AccountStatus> {
+    const { data } = await apiClient.get<ApiResponse<AccountStatus>>(API_ENDPOINTS.BILLING.STATUS);
     return data.data;
   },
 };

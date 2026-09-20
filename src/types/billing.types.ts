@@ -45,3 +45,31 @@ export interface RazorpaySubscriptionHandlerResponse {
   razorpay_subscription_id: string;
   razorpay_signature: string;
 }
+
+export type AccountPlanStatus = 'active' | 'trial' | 'expired' | 'none';
+
+export interface AccountStatus {
+  plan?: string | null;
+  planName?: string | null;
+  status: AccountPlanStatus;
+  trialEndsAt?: string | null;
+  currentEnd?: string | null;
+  billingPeriod?: BillingPeriod | null;
+  cancelAtPeriodEnd?: boolean;
+  priceMonthly?: number | null;
+  priceYearly?: number | null;
+  currency?: string | null;
+  features?: string[] | null;
+  workspaceLimit?: number | null;
+  responseCap?: number | null;
+  storageLimitMB?: number | null;
+  regenerationLimit?: number | null;
+  stageRerun?: number | null;
+  exportEnabled?: boolean | null;
+  surveyAnalytics?: string | null;
+  allowedWorkspaces: number;
+  usedWorkspaces: number;
+  allowedResponses: number;
+  usedResponses: number;
+  storageUsedMB: number;
+}

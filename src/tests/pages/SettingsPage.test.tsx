@@ -30,17 +30,25 @@ jest.mock('@features/auth/hooks', () => ({
   useLogout: () => jest.fn(),
 }));
 
+let mockAuthRole = 'user';
+
 jest.mock('@store/auth.store', () => ({
   useAuthStore: (
-    selector: (state: { user: unknown; isAuthenticated: boolean; logout: () => void }) => unknown,
+    selector: (state: {
+      user: unknown;
+      role: string;
+      isAuthenticated: boolean;
+      logout: () => void;
+    }) => unknown,
   ) =>
     selector({
       user: {
         id: '1',
         name: 'John Doe',
         email: 'john.doe@mail.com',
-        role: 'user',
+        role: mockAuthRole,
       },
+      role: mockAuthRole,
       isAuthenticated: true,
       logout: jest.fn(),
     }),
@@ -96,7 +104,38 @@ jest.mock('@features/settings/hooks/useChangePassword', () => ({
   }),
 }));
 
+jest.mock('@features/pricing/hooks/useAccountStatus', () => ({
+  useAccountStatus: () => ({
+    data: {
+      plan: 'builder',
+      planName: 'Builder',
+      status: 'active',
+      priceMonthly: 499,
+      billingPeriod: 'monthly',
+      allowedWorkspaces: 3,
+      usedWorkspaces: 2,
+      allowedResponses: 500,
+      usedResponses: 120,
+      storageLimitMB: 500,
+      storageUsedMB: 320,
+    },
+    isLoading: false,
+    isError: false,
+  }),
+}));
+
+jest.mock('@features/pricing/hooks/usePricingPlans', () => ({
+  usePricingPlans: () => ({
+    data: [],
+    isLoading: false,
+  }),
+}));
+
 describe('SettingsPage', () => {
+  beforeEach(() => {
+    mockAuthRole = 'user';
+  });
+
   it('renders Settings header and Profile tab fields', () => {
     render(
       <MemoryRouter>
@@ -166,5 +205,35 @@ describe('SettingsPage', () => {
     expect(screen.getByRole('heading', { name: 'Edit Profile Information' })).toBeInTheDocument();
     expect(screen.getByLabelText('First Name')).toBeInTheDocument();
     expect(screen.getByLabelText('Last Name')).toBeInTheDocument();
+  });
+
+  it('switches to Plan Details tab and renders plan and usage information', async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <SettingsPage />
+      </MemoryRouter>,
+    );
+
+    const planTab = screen.getByRole('tab', { name: /plan details/i });
+    await user.click(planTab);
+
+    expect(screen.getByText('Current Plan')).toBeInTheDocument();
+    expect(screen.getByText('Usage Overview')).toBeInTheDocument();
+    expect(screen.getByText('Plan Features')).toBeInTheDocument();
+    expect(screen.getByText('Billing Details')).toBeInTheDocument();
+  });
+
+  it('hides Plan Details tab for admin users and redirects to profile', () => {
+    mockAuthRole = 'admin';
+    render(
+      <MemoryRouter initialEntries={['/settings?tab=plan']}>
+        <SettingsPage defaultTab="plan" />
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByRole('tab', { name: /plan details/i })).not.toBeInTheDocument();
+    expect(screen.queryByText('Current Plan')).not.toBeInTheDocument();
+    expect(screen.getByText('Profile Information')).toBeInTheDocument();
   });
 });
