@@ -61,4 +61,13 @@ export const billingService = {
     const { data } = await apiClient.get<ApiResponse<AccountStatus>>(API_ENDPOINTS.BILLING.STATUS);
     return data.data;
   },
+
+  /**
+   * Select the free (Starter) plan — creates the user's baseline allowance row
+   * and starts the 7-day trial clock. Idempotent server-side: re-selecting never
+   * extends the trial. Paid plans go through `subscribe()` instead.
+   */
+  async selectFreePlan(planId: string): Promise<void> {
+    await apiClient.post<ApiResponse<null>>(API_ENDPOINTS.BILLING.SELECT_PLAN(planId));
+  },
 };

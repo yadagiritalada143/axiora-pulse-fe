@@ -6,6 +6,7 @@ import type { PricingPlan } from '@/types/api.types';
 import { ROUTES } from '@constants/routes';
 import { PricingPlans } from '@features/pricing/components/PricingPlans';
 import { usePricingPlans } from '@features/pricing/hooks/usePricingPlans';
+import { useSelectFreePlan } from '@features/pricing/hooks/useSelectFreePlan';
 import { useSubscribe } from '@features/pricing/hooks/useSubscribe';
 import { useAuthStore } from '@store/auth.store';
 
@@ -25,6 +26,10 @@ jest.mock('@features/pricing/hooks/useSubscribe', () => ({
   useSubscribe: jest.fn(),
 }));
 
+jest.mock('@features/pricing/hooks/useSelectFreePlan', () => ({
+  useSelectFreePlan: jest.fn(),
+}));
+
 // embla-carousel-react relies on layout APIs (ResizeObserver, matchMedia) that
 // jsdom doesn't implement; stub it so the mobile carousel branch doesn't crash.
 jest.mock('embla-carousel-react', () => ({
@@ -36,6 +41,7 @@ const mockedUseNavigate = useNavigate as jest.Mock;
 const mockedUseAuthStore = useAuthStore as unknown as jest.Mock;
 const mockedUsePricingPlans = usePricingPlans as jest.Mock;
 const mockedUseSubscribe = useSubscribe as jest.Mock;
+const mockedUseSelectFreePlan = useSelectFreePlan as jest.Mock;
 
 const PLANS: PricingPlan[] = [
   {
@@ -76,6 +82,9 @@ describe('PricingPlans', () => {
   const subscribeMutate = jest.fn((_vars: unknown, opts?: { onSuccess?: () => void }) =>
     opts?.onSuccess?.(),
   );
+  const selectFreeMutate = jest.fn((_vars: unknown, opts?: { onSuccess?: () => void }) =>
+    opts?.onSuccess?.(),
+  );
 
   beforeEach(() => {
     mockedUseNavigate.mockReturnValue(navigate);
@@ -103,6 +112,12 @@ describe('PricingPlans', () => {
 
     mockedUseSubscribe.mockReturnValue({
       mutate: subscribeMutate,
+      isPending: false,
+      variables: undefined,
+    });
+
+    mockedUseSelectFreePlan.mockReturnValue({
+      mutate: selectFreeMutate,
       isPending: false,
       variables: undefined,
     });
@@ -138,7 +153,7 @@ describe('PricingPlans', () => {
     expect(screen.getAllByText(/\/ month/).length).toBeGreaterThan(0);
   });
 
-  it('navigates straight to dashboard when clicking the active free Starter plan', async () => {
+  it('starts the free trial then enters the dashboard when clicking the free Starter plan', async () => {
     const user = userEvent.setup();
     render(<PricingPlans />);
 
@@ -146,12 +161,13 @@ describe('PricingPlans', () => {
     if (!starterButton) throw new Error('starterButton not found');
     await user.click(starterButton);
 
+    expect(selectFreeMutate).toHaveBeenCalledWith('starter', expect.any(Object));
     expect(subscribeMutate).not.toHaveBeenCalled();
     expect(setHasActivePlan).toHaveBeenCalledWith(true);
     expect(navigate).toHaveBeenCalledWith(ROUTES.DASHBOARD);
   });
 
-  it('shows unavailable alert dialog when clicking Builder plan', async () => {
+  it('opens Razorpay checkout (monthly) when clicking Builder plan', async () => {
     const user = userEvent.setup();
     render(<PricingPlans />);
 
@@ -159,19 +175,18 @@ describe('PricingPlans', () => {
     if (!chooseBuilderButton) throw new Error('chooseBuilderButton not found');
     await user.click(chooseBuilderButton);
 
-    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
-    expect(screen.getByText('Stay Tuned !')).toBeInTheDocument();
-    expect(screen.getByText('This plan will be available after 7 days.')).toBeInTheDocument();
-    expect(subscribeMutate).not.toHaveBeenCalled();
-    expect(navigate).not.toHaveBeenCalled();
-
-    // Dismiss dialog
-    const gotItButton = screen.getByRole('button', { name: 'Got it' });
-    await user.click(gotItButton);
-    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(subscribeMutate).toHaveBeenCalledWith(
+      { planId: 'builder', billingPeriod: 'monthly' },
+      expect.any(Object),
+    );
+    expect(selectFreeMutate).not.toHaveBeenCalled();
+    // No "Stay Tuned" placeholder dialog anymore.
+    expect(screen.queryByText('Stay Tuned !')).not.toBeInTheDocument();
+    // On successful verification we optimistically enter the app.
+    expect(navigate).toHaveBeenCalledWith(ROUTES.DASHBOARD);
   });
 
-  it('shows unavailable alert dialog when clicking Pro plan', async () => {
+  it('opens Razorpay checkout (monthly) when clicking Pro plan', async () => {
     const user = userEvent.setup();
     render(<PricingPlans />);
 
@@ -179,11 +194,12 @@ describe('PricingPlans', () => {
     if (!chooseProButton) throw new Error('chooseProButton not found');
     await user.click(chooseProButton);
 
-    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
-    expect(screen.getByText('Stay Tuned !')).toBeInTheDocument();
-    expect(screen.getByText('This plan will be available after 7 days.')).toBeInTheDocument();
-    expect(subscribeMutate).not.toHaveBeenCalled();
-    expect(navigate).not.toHaveBeenCalled();
+    expect(subscribeMutate).toHaveBeenCalledWith(
+      { planId: 'pro', billingPeriod: 'monthly' },
+      expect.any(Object),
+    );
+    expect(selectFreeMutate).not.toHaveBeenCalled();
+    expect(screen.queryByText('Stay Tuned !')).not.toBeInTheDocument();
   });
 
   it('renders an error message and retries via the Try again button', async () => {

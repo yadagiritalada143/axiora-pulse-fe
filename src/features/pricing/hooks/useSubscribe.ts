@@ -56,6 +56,7 @@ export function useSubscribe() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.billing.subscription() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.billing.status() });
     },
   });
 }

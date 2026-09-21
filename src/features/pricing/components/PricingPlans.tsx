@@ -1,22 +1,15 @@
 import useEmblaCarousel from 'embla-carousel-react';
-import { Check, ChevronLeft, ChevronRight, Clock3, Loader2 } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 import type { PricingPlan } from '@/types/api.types';
 import { ApiErrorMessage } from '@components/common/ApiErrorMessage';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@components/ui/alert-dialog';
 import { Button } from '@components/ui/button';
 import { ROUTES } from '@constants/routes';
 import { usePricingPlans } from '@features/pricing/hooks/usePricingPlans';
+import { useSelectFreePlan } from '@features/pricing/hooks/useSelectFreePlan';
 import { useSubscribe } from '@features/pricing/hooks/useSubscribe';
 import { cn } from '@lib/utils';
 import { useAuthStore } from '@store/auth.store';
@@ -361,13 +354,15 @@ export function PricingPlans() {
   const navigate = useNavigate();
   const setHasActivePlan = useAuthStore((state) => state.setHasActivePlan);
   const setOnboardingPending = useAuthStore((state) => state.setOnboardingPending);
-  const [isUnavailableAlertOpen, setIsUnavailableAlertOpen] = useState(false);
 
   // Default active plan is Starter (Free)
   const activePlanId = 'starter';
 
   const { data: plans, isLoading, isError, error, refetch } = usePricingPlans();
   const subscribe = useSubscribe();
+  const selectFreePlan = useSelectFreePlan();
+
+  const isSubmitting = subscribe.isPending || selectFreePlan.isPending;
 
   const proceedToOnboarding = useCallback(() => {
     setHasActivePlan(true);
@@ -377,20 +372,39 @@ export function PricingPlans() {
 
   const handleSelect = useCallback(
     (planId: string) => {
-      if (subscribe.isPending) return;
+      if (isSubmitting) return;
 
       const planList = plans ?? [];
       const index = planList.findIndex((p) => String(p.id) === planId);
       const staticData = getStaticPlan(index >= 0 ? index : 0);
+      const isFree = staticData.id === 'starter' || planId === 'starter' || planId === 'free';
 
-      if (staticData.id === 'starter' || planId === 'starter' || planId === 'free') {
-        proceedToOnboarding();
+      if (isFree) {
+        // Start the 7-day free trial server-side (idempotent), then enter the app.
+        selectFreePlan.mutate(planId, {
+          onSuccess: () => proceedToOnboarding(),
+          onError: (err) => {
+            toast.error(err.message || 'Could not start your free trial. Please try again.');
+          },
+        });
         return;
       }
 
-      setIsUnavailableAlertOpen(true);
+      // Paid plan → open Razorpay Checkout. On successful verification the webhook
+      // grants the plan; we optimistically enter the app.
+      subscribe.mutate(
+        { planId, billingPeriod: 'monthly' },
+        {
+          onSuccess: () => proceedToOnboarding(),
+          onError: (err) => {
+            // Silently ignore a user-dismissed checkout modal.
+            if (err.message === 'Checkout was dismissed.') return;
+            toast.error(err.message || 'Payment could not be completed. Please try again.');
+          },
+        },
+      );
     },
-    [plans, proceedToOnboarding, subscribe.isPending],
+    [plans, proceedToOnboarding, selectFreePlan, subscribe, isSubmitting],
   );
 
   return (
@@ -427,8 +441,8 @@ export function PricingPlans() {
                   index={idx}
                   isActive={isActive}
                   onSelect={handleSelect}
-                  isSubmitting={subscribe.isPending}
-                  submittingId={subscribe.isPending ? (subscribe.variables?.planId ?? null) : null}
+                  isSubmitting={isSubmitting}
+                  submittingId={submittingPlanId(subscribe, selectFreePlan)}
                 />
               );
             })}
@@ -440,40 +454,22 @@ export function PricingPlans() {
               plans={plans ?? []}
               activePlanId={activePlanId}
               onSelect={handleSelect}
-              isSubmitting={subscribe.isPending}
-              submittingId={subscribe.isPending ? (subscribe.variables?.planId ?? null) : null}
+              isSubmitting={isSubmitting}
+              submittingId={submittingPlanId(subscribe, selectFreePlan)}
             />
           </div>
         </>
       )}
-
-      {/* Unavailable Plan Alert Dialog */}
-      <AlertDialog open={isUnavailableAlertOpen} onOpenChange={setIsUnavailableAlertOpen}>
-        <AlertDialogContent className="max-w-md rounded-2xl p-6 text-center">
-          <AlertDialogHeader className="flex flex-col items-center text-center">
-            <div className="mb-2 flex size-12 items-center justify-center rounded-full bg-[#FF4500]/10 text-[#FF4500]">
-              <Clock3 className="size-6 text-[#FF4500]" />
-            </div>
-            <AlertDialogTitle className="text-xl font-bold text-neutral-900 dark:text-white">
-              Stay Tuned !
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-sm text-neutral-600 sm:text-base dark:text-neutral-400">
-              This plan will be available after 7 days.
-              <span className="sr-only">
-                Stay Tuned ! This plan will be available after 7 days.
-              </span>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="mt-4 sm:justify-center">
-            <AlertDialogAction
-              onClick={() => setIsUnavailableAlertOpen(false)}
-              className="min-w-[120px] rounded-xl bg-[#FF4500] font-semibold text-white hover:bg-[#FF4500]/90"
-            >
-              Got it
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
+}
+
+/** The plan id currently being processed (paid checkout or free-trial start), if any. */
+function submittingPlanId(
+  subscribe: ReturnType<typeof useSubscribe>,
+  selectFreePlan: ReturnType<typeof useSelectFreePlan>,
+): string | null {
+  if (subscribe.isPending) return subscribe.variables?.planId ?? null;
+  if (selectFreePlan.isPending) return selectFreePlan.variables ?? null;
+  return null;
 }
