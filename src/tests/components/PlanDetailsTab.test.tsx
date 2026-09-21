@@ -39,7 +39,11 @@ const mockCatalogPlans = [
     description: 'For students building projects/startups',
     priceMonthly: 299,
     priceYearly: 2990,
-    features: ['3 workspaces', '500 survey responses'],
+    features: [
+      '3 workspaces',
+      '500 survey responses',
+      'Full AI Mentor Agent Suite (Validation, Market Research, Survey Intelligence)',
+    ],
   },
 ];
 

@@ -1,4 +1,4 @@
-import { LayoutGrid, ListChecks, MessageSquareHeart, Users } from 'lucide-react';
+import { CreditCard, LayoutGrid, ListChecks, MessageSquareHeart, Users } from 'lucide-react';
 import { Outlet } from 'react-router-dom';
 
 import { ROUTES } from '@constants/routes';
@@ -15,6 +15,7 @@ const ADMIN_NAV_ITEMS: MentorNavItem[] = [
   { label: 'Interactive Questions', icon: ListChecks, href: ROUTES.ADMIN_INTERACTIVE_QUESTIONS },
   { label: 'Feedback Questions', icon: MessageSquareHeart, href: ROUTES.ADMIN_FEEDBACK_QUESTIONS },
   { label: 'Users', icon: Users, href: ROUTES.ADMIN_USERS },
+  { label: 'Plans', icon: CreditCard, href: ROUTES.ADMIN_PLANS },
 ];
 
 export function AdminDashboardLayout() {

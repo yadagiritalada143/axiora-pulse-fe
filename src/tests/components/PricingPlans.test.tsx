@@ -30,6 +30,10 @@ jest.mock('@features/pricing/hooks/useSelectFreePlan', () => ({
   useSelectFreePlan: jest.fn(),
 }));
 
+jest.mock('@features/pricing/hooks/useAccountStatus', () => ({
+  useAccountStatus: jest.fn(() => ({ data: { plan: 'starter' } })),
+}));
+
 // embla-carousel-react relies on layout APIs (ResizeObserver, matchMedia) that
 // jsdom doesn't implement; stub it so the mobile carousel branch doesn't crash.
 jest.mock('embla-carousel-react', () => ({

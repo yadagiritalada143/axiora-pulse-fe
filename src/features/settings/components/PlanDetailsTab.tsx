@@ -336,6 +336,10 @@ export function PlanDetailsTab() {
     const analyticsTier = accountStatus?.surveyAnalytics ?? meta.surveyAnalytics;
     const isExportAllowed = accountStatus?.exportEnabled ?? meta.exportReport;
 
+    if (matchingPlan?.features && matchingPlan.features.length > 0) {
+      return matchingPlan.features;
+    }
+
     return [
       `Ideal for: ${meta.idealFor}`,
       wsText,
@@ -351,6 +355,7 @@ export function PlanDetailsTab() {
       `${meta.support} support included`,
     ];
   }, [
+    matchingPlan?.features,
     activePlanKey,
     allowedWorkspaces,
     allowedResponses,

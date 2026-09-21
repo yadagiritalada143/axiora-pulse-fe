@@ -36,6 +36,7 @@ export const ROUTES = {
   ADMIN_FEEDBACK_QUESTIONS: '/admin/feedback-questionnaire',
   ADMIN_USERS: '/admin/users',
   ADMIN_USER_DETAIL: '/admin/users/:userId',
+  ADMIN_PLANS: '/admin/plans',
 
   NOT_FOUND: '/404',
 } as const;
@@ -72,6 +73,7 @@ export const PROTECTED_ROUTES: AppRoute[] = [
   ROUTES.ADMIN_FEEDBACK_QUESTIONS,
   ROUTES.ADMIN_USERS,
   ROUTES.ADMIN_USER_DETAIL,
+  ROUTES.ADMIN_PLANS,
 ];
 
 export function buildConversationRoute(conversationId: string): string {

@@ -6,6 +6,8 @@ import { apiClient } from '@services/api';
 jest.mock('@services/api', () => ({
   apiClient: {
     get: jest.fn(),
+    post: jest.fn(),
+    put: jest.fn(),
     patch: jest.fn(),
     delete: jest.fn(),
   },
@@ -256,5 +258,99 @@ describe('adminService', () => {
 
     expect(mockedApiClient.delete).toHaveBeenCalledWith(API_ENDPOINTS.ADMIN.DELETE_USER(1));
     expect(result).toEqual(mockResponse);
+  });
+
+  it('listPlans calls GET API_ENDPOINTS.ADMIN.PLANS and returns data', async () => {
+    const mockPlans = {
+      plans: [
+        {
+          id: 1,
+          code: 'starter',
+          name: 'Starter',
+          description: 'Free tier',
+          razorpay_plan_id_monthly: null,
+          razorpay_plan_id_yearly: null,
+          price_monthly: 0,
+          price_yearly: 0,
+          currency: 'INR',
+          features: ['Feature 1'],
+          tier: 0,
+          workspace_limit: 1,
+          survey_response_cap: 100,
+          regeneration_limit: 2,
+          export_enabled: true,
+          stage_rerun: 1,
+          survey_analytics: 'Basic',
+          storage_limit: 200,
+          popular: false,
+          is_active: true,
+          created_at: '2026-01-01T00:00:00Z',
+          updated_at: '2026-01-01T00:00:00Z',
+        },
+      ],
+    };
+
+    mockedApiClient.get.mockResolvedValue({ data: mockPlans });
+
+    const result = await adminService.listPlans();
+
+    expect(mockedApiClient.get).toHaveBeenCalledWith(API_ENDPOINTS.ADMIN.PLANS);
+    expect(result).toEqual(mockPlans);
+  });
+
+  it('getPlan calls GET API_ENDPOINTS.ADMIN.PLAN_DETAIL with planId', async () => {
+    const mockPlan = {
+      id: 2,
+      code: 'builder',
+      name: 'Builder',
+      description: 'Paid tier',
+      price_monthly: 299,
+      price_yearly: 2999,
+      currency: 'INR',
+      features: ['Feature A'],
+      tier: 1,
+      popular: true,
+      is_active: true,
+    };
+
+    mockedApiClient.get.mockResolvedValue({ data: mockPlan });
+
+    const result = await adminService.getPlan(2);
+
+    expect(mockedApiClient.get).toHaveBeenCalledWith(API_ENDPOINTS.ADMIN.PLAN_DETAIL(2));
+    expect(result).toEqual(mockPlan);
+  });
+
+  it('createPlanWithRazorpay calls POST API_ENDPOINTS.ADMIN.PLAN_CREATE_WITH_RAZORPAY with payload', async () => {
+    const payload = {
+      code: 'pro',
+      name: 'Pro',
+      price_monthly: 799,
+      price_yearly: 7999,
+      features: ['Unlimited'],
+    };
+    const mockCreated = { id: 3, ...payload, tier: 2, is_active: true };
+
+    mockedApiClient.post.mockResolvedValue({ data: mockCreated });
+
+    const result = await adminService.createPlanWithRazorpay(payload);
+
+    expect(mockedApiClient.post).toHaveBeenCalledWith(
+      API_ENDPOINTS.ADMIN.PLAN_CREATE_WITH_RAZORPAY,
+      payload,
+    );
+    expect(result).toEqual(mockCreated);
+  });
+
+  it('updatePlan calls PUT API_ENDPOINTS.ADMIN.PLAN_UPDATE with planId and payload', async () => {
+    const payload = { is_active: false };
+    const mockUpdated = { id: 2, is_active: false };
+
+    mockedApiClient.put.mockResolvedValue({ data: mockUpdated });
+
+    const result = await adminService.updatePlan(2, payload);
+
+    expect(mockedApiClient.put).toHaveBeenCalledWith(API_ENDPOINTS.ADMIN.PLAN_UPDATE(2), payload);
+    expect(result).toEqual(mockUpdated);
   });
 });
