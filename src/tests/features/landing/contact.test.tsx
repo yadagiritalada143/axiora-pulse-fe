@@ -63,7 +63,7 @@ describe('ContactSection Component', () => {
     await user.type(screen.getByLabelText(/Your Name/i), 'Jane Doe');
     await user.type(screen.getByLabelText(/Email Address/i), 'jane@example.com');
     await user.selectOptions(screen.getByLabelText(/Subject \/ Topic/i), 'Technical Support');
-    await user.type(screen.getByLabelText(/Message/i), 'Need assistance with workspace agents.');
+    await user.type(screen.getByLabelText(/Message/i), 'Need assistance with workspaces.');
 
     await user.click(screen.getByRole('button', { name: /Send Message/i }));
 
@@ -72,7 +72,7 @@ describe('ContactSection Component', () => {
         name: 'Jane Doe',
         email: 'jane@example.com',
         topic: 'Support',
-        message: 'Need assistance with workspace agents.',
+        message: 'Need assistance with workspaces.',
       });
     });
 

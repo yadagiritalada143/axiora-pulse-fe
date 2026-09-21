@@ -8,6 +8,12 @@ import { useAdminAnalyticsUserGrowth } from '@features/admin/hooks/useAdminAnaly
 import { useAdminAnalyticsUsersByPlan } from '@features/admin/hooks/useAdminAnalyticsUsersByPlan';
 import { useAdminDashboardStats } from '@features/admin/hooks/useAdminDashboardStats';
 import { useAdminDeleteUser } from '@features/admin/hooks/useAdminDeleteUser';
+import {
+  useAdminCreatePlan,
+  useAdminPlans,
+  useAdminTogglePlanStatus,
+  useAdminUpdatePlan,
+} from '@features/admin/hooks/useAdminPlans';
 import { useAdminSetUserStatus } from '@features/admin/hooks/useAdminSetUserStatus';
 import { useAdminSurveyResponseDetail } from '@features/admin/hooks/useAdminSurveyResponseDetail';
 import { useAdminSurveyResponses } from '@features/admin/hooks/useAdminSurveyResponses';
@@ -32,6 +38,10 @@ jest.mock('@services/admin/admin.service', () => ({
     getUserGrowth: jest.fn(),
     getInteractiveQuestions: jest.fn(),
     listAdminSurveyResponses: jest.fn(),
+    listPlans: jest.fn(),
+    getPlan: jest.fn(),
+    createPlanWithRazorpay: jest.fn(),
+    updatePlan: jest.fn(),
   },
 }));
 
@@ -366,5 +376,166 @@ describe('useAdminDeleteUser', () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(toast.error).toHaveBeenCalledWith('Failed to delete');
+  });
+});
+
+describe('useAdminPlans', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('fetches plans successfully', async () => {
+    const mockPlans = {
+      plans: [
+        {
+          id: 1,
+          code: 'starter',
+          name: 'Starter',
+          description: 'Free',
+          price_monthly: 0,
+          price_yearly: 0,
+          currency: 'INR',
+          features: [],
+          tier: 0,
+          workspace_limit: 1,
+          survey_response_cap: 100,
+          regeneration_limit: 2,
+          export_enabled: true,
+          stage_rerun: 1,
+          survey_analytics: 'Basic' as const,
+          storage_limit: 200,
+          popular: false,
+          is_active: true,
+          created_at: '2026-01-01T00:00:00Z',
+          updated_at: '2026-01-01T00:00:00Z',
+          razorpay_plan_id_monthly: null,
+          razorpay_plan_id_yearly: null,
+        },
+      ],
+    };
+    mockedAdminService.listPlans.mockResolvedValue(mockPlans);
+
+    const { result } = renderHook(() => useAdminPlans(), { wrapper: createWrapper() });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toEqual(mockPlans);
+  });
+});
+
+describe('useAdminCreatePlan', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('calls createPlanWithRazorpay and shows success toast', async () => {
+    const mockCreated = {
+      id: 2,
+      code: 'pro',
+      name: 'Pro',
+      description: 'Pro plan',
+      price_monthly: 799,
+      price_yearly: 7999,
+      currency: 'INR',
+      features: ['Full Suite'],
+      tier: 2,
+      workspace_limit: 10,
+      survey_response_cap: 2000,
+      regeneration_limit: 10,
+      export_enabled: true,
+      stage_rerun: 5,
+      survey_analytics: 'Advanced' as const,
+      storage_limit: 2048,
+      popular: true,
+      is_active: true,
+      created_at: '2026-01-01T00:00:00Z',
+      updated_at: '2026-01-01T00:00:00Z',
+      razorpay_plan_id_monthly: 'plan_123',
+      razorpay_plan_id_yearly: 'plan_456',
+    };
+    mockedAdminService.createPlanWithRazorpay.mockResolvedValue(mockCreated);
+
+    const { result } = renderHook(() => useAdminCreatePlan(), { wrapper: createWrapper() });
+
+    result.current.mutate({ code: 'pro', name: 'Pro', price_monthly: 799 });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(mockedAdminService.createPlanWithRazorpay).toHaveBeenCalled();
+    expect(toast.success).toHaveBeenCalledWith('Plan "Pro" created successfully.');
+  });
+});
+
+describe('useAdminUpdatePlan', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('calls updatePlan and shows success toast', async () => {
+    const mockUpdated = {
+      id: 2,
+      code: 'pro',
+      name: 'Pro Plus',
+      description: 'Updated',
+      price_monthly: 899,
+      price_yearly: 8999,
+      currency: 'INR',
+      features: [],
+      tier: 2,
+      workspace_limit: null,
+      survey_response_cap: null,
+      regeneration_limit: null,
+      export_enabled: true,
+      stage_rerun: null,
+      survey_analytics: 'Advanced' as const,
+      storage_limit: null,
+      popular: true,
+      is_active: true,
+      created_at: '2026-01-01T00:00:00Z',
+      updated_at: '2026-01-01T00:00:00Z',
+      razorpay_plan_id_monthly: null,
+      razorpay_plan_id_yearly: null,
+    };
+    mockedAdminService.updatePlan.mockResolvedValue(mockUpdated);
+
+    const { result } = renderHook(() => useAdminUpdatePlan(), { wrapper: createWrapper() });
+
+    result.current.mutate({ planId: 2, payload: { name: 'Pro Plus' } });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(mockedAdminService.updatePlan).toHaveBeenCalledWith(2, { name: 'Pro Plus' });
+    expect(toast.success).toHaveBeenCalledWith('Plan "Pro Plus" updated successfully.');
+  });
+});
+
+describe('useAdminTogglePlanStatus', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('calls updatePlan with is_active toggled and shows success toast', async () => {
+    const mockToggled = {
+      id: 2,
+      code: 'pro',
+      name: 'Pro',
+      description: null,
+      price_monthly: 799,
+      price_yearly: 7999,
+      currency: 'INR',
+      features: [],
+      tier: 2,
+      workspace_limit: null,
+      survey_response_cap: null,
+      regeneration_limit: null,
+      export_enabled: true,
+      stage_rerun: null,
+      survey_analytics: 'Advanced' as const,
+      storage_limit: null,
+      popular: true,
+      is_active: false,
+      created_at: '2026-01-01T00:00:00Z',
+      updated_at: '2026-01-01T00:00:00Z',
+      razorpay_plan_id_monthly: null,
+      razorpay_plan_id_yearly: null,
+    };
+    mockedAdminService.updatePlan.mockResolvedValue(mockToggled);
+
+    const { result } = renderHook(() => useAdminTogglePlanStatus(), { wrapper: createWrapper() });
+
+    result.current.mutate({ planId: 2, isActive: false });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(mockedAdminService.updatePlan).toHaveBeenCalledWith(2, { is_active: false });
+    expect(toast.success).toHaveBeenCalledWith('Plan "Pro" deactivated successfully.');
   });
 });

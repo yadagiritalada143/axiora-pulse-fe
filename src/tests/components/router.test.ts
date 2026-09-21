@@ -124,6 +124,7 @@ describe('router', () => {
       ROUTES.ADMIN_FEEDBACK_QUESTIONS,
       ROUTES.ADMIN_USERS,
       ROUTES.ADMIN_USER_DETAIL,
+      ROUTES.ADMIN_PLANS,
     ]);
   });
 

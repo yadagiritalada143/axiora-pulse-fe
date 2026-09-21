@@ -114,6 +114,10 @@ export const API_ENDPOINTS = {
       `/v1/admin/surveys/${surveyId}/responses/${responseId}`,
     SET_USER_STATUS: (userId: number) => `/v1/admin/user-details/${userId}/status`,
     DELETE_USER: (userId: number) => `/v1/admin/users/${userId}`,
+    PLANS: '/v1/plans',
+    PLAN_DETAIL: (planId: number) => `/v1/plan/${planId}`,
+    PLAN_CREATE_WITH_RAZORPAY: '/v1/plan/with-razorpay',
+    PLAN_UPDATE: (planId: number) => `/v1/plan/${planId}`,
   },
 
   CONTACT: {

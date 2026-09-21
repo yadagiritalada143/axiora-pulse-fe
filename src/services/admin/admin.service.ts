@@ -4,11 +4,14 @@ import { apiClient } from '@services/api';
 import type {
   AdminDashboardStatsResponse,
   AdminDeleteUserResponse,
+  AdminPlan,
+  AdminPlanListResponse,
   AdminSurveyListResponse,
   AdminSurveyResponseDetailResponse,
   AdminSurveyResponsesListResponse,
   AdminUsersResponse,
   AdminUserSurveySummaryResponse,
+  CreatePlanWithRazorpayPayload,
   GrowthGranularity,
   ListAdminSurveyResponsesParams,
   ListAdminSurveysParams,
@@ -16,6 +19,7 @@ import type {
   RevenueAnalyticsPeriod,
   RevenueResponse,
   SetProfileStatusPayload,
+  UpdatePlanPayload,
   UserGrowthAnalyticsPeriod,
   UserGrowthAnalyticsResponse,
   UserGrowthResponse,
@@ -121,6 +125,32 @@ export const adminService = {
     const response = await apiClient.get<RevenueResponse>(API_ENDPOINTS.ADMIN.ANALYTICS_REVENUE, {
       params: { period },
     });
+    return response.data;
+  },
+
+  listPlans: async (): Promise<AdminPlanListResponse> => {
+    const response = await apiClient.get<AdminPlanListResponse>(API_ENDPOINTS.ADMIN.PLANS);
+    return response.data;
+  },
+
+  getPlan: async (planId: number): Promise<AdminPlan> => {
+    const response = await apiClient.get<AdminPlan>(API_ENDPOINTS.ADMIN.PLAN_DETAIL(planId));
+    return response.data;
+  },
+
+  createPlanWithRazorpay: async (payload: CreatePlanWithRazorpayPayload): Promise<AdminPlan> => {
+    const response = await apiClient.post<AdminPlan>(
+      API_ENDPOINTS.ADMIN.PLAN_CREATE_WITH_RAZORPAY,
+      payload,
+    );
+    return response.data;
+  },
+
+  updatePlan: async (planId: number, payload: UpdatePlanPayload): Promise<AdminPlan> => {
+    const response = await apiClient.put<AdminPlan>(
+      API_ENDPOINTS.ADMIN.PLAN_UPDATE(planId),
+      payload,
+    );
     return response.data;
   },
 };

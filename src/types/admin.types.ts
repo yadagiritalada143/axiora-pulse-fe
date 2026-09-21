@@ -190,3 +190,78 @@ export interface RevenueResponse {
   total_amount: number;
   series: RevenueDataPoint[];
 }
+
+export interface AdminPlan {
+  id: number;
+  code: string;
+  name: string;
+  description: string | null;
+  razorpay_plan_id_monthly: string | null;
+  razorpay_plan_id_yearly: string | null;
+  price_monthly: number;
+  price_yearly: number;
+  currency: string;
+  features: string[];
+  tier: number;
+  workspace_limit: number | null;
+  survey_response_cap: number | null;
+  regeneration_limit: number | null;
+  export_enabled: boolean;
+  stage_rerun: number | null;
+  survey_analytics: 'Basic' | 'Advanced';
+  storage_limit: number | null;
+  popular: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdminPlanListResponse {
+  plans: AdminPlan[];
+}
+
+export interface CreatePlanWithRazorpayPayload {
+  code: string;
+  name: string;
+  description?: string | null;
+  razorpay_plan_id_monthly?: string | null;
+  razorpay_plan_id_yearly?: string | null;
+  price_monthly?: number;
+  price_yearly?: number;
+  currency?: string;
+  features?: string[];
+  tier?: number;
+  workspace_limit?: number | null;
+  survey_response_cap?: number | null;
+  regeneration_limit?: number | null;
+  export_enabled?: boolean;
+  stage_rerun?: number | null;
+  survey_analytics?: 'Basic' | 'Advanced';
+  storage_limit?: number | null;
+  popular?: boolean;
+  is_active?: boolean;
+  razorpay_key_id?: string | null;
+  razorpay_key_secret?: string | null;
+}
+
+export interface UpdatePlanPayload {
+  code?: string;
+  name?: string;
+  description?: string | null;
+  razorpay_plan_id_monthly?: string | null;
+  razorpay_plan_id_yearly?: string | null;
+  price_monthly?: number;
+  price_yearly?: number;
+  currency?: string;
+  features?: string[];
+  tier?: number;
+  workspace_limit?: number | null;
+  survey_response_cap?: number | null;
+  regeneration_limit?: number | null;
+  export_enabled?: boolean;
+  stage_rerun?: number | null;
+  survey_analytics?: 'Basic' | 'Advanced';
+  storage_limit?: number | null;
+  popular?: boolean;
+  is_active?: boolean;
+}

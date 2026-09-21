@@ -5,6 +5,7 @@ import { queryKeys } from '@/constants/queryKeys';
 
 import { workspaceService } from '../api';
 import type {
+  CertificateRequest,
   ExportWorkspaceReportRequest,
   WorkspaceChatRequest,
   WorkspaceStateResponse,
@@ -115,7 +116,8 @@ export function useExportWorkspaceReport(workspaceId: number) {
 
 export function useDownloadCertificate(workspaceId: number) {
   return useMutation({
-    mutationFn: () => workspaceService.downloadCertificate(workspaceId),
+    mutationFn: (payload?: CertificateRequest | void) =>
+      workspaceService.downloadCertificate(workspaceId, payload ?? undefined),
 
     onSuccess: ({ blob, filename }) => {
       const url = URL.createObjectURL(blob);

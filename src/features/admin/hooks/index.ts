@@ -15,3 +15,10 @@ export { useAdminSurveyResponses } from './useAdminSurveyResponses';
 export { useAdminSurveyResponseDetail } from './useAdminSurveyResponseDetail';
 export { useAdminSetUserStatus } from './useAdminSetUserStatus';
 export { useAdminDeleteUser } from './useAdminDeleteUser';
+export {
+  useAdminPlans,
+  useAdminPlanDetail,
+  useAdminCreatePlan,
+  useAdminUpdatePlan,
+  useAdminTogglePlanStatus,
+} from './useAdminPlans';

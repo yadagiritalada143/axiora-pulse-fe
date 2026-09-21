@@ -10,9 +10,9 @@ describe('AIChatPage', () => {
   it('renders the page header and composes the ChatWindow feature component', () => {
     render(<AIChatPage />);
 
-    expect(screen.getByRole('heading', { name: 'AI Co-Founder' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'AI Mentor' })).toBeInTheDocument();
     expect(
-      screen.getByText('Chat with your AI co-founder to validate and shape your idea.'),
+      screen.getByText('Chat with your AI Mentor to validate and shape your idea.'),
     ).toBeInTheDocument();
     expect(screen.getByText('Chat window content')).toBeInTheDocument();
   });

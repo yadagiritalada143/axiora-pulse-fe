@@ -26,7 +26,7 @@ describe('LandingFooter', () => {
     );
     expect(screen.getByText('Instagram')).toHaveAttribute(
       'href',
-      'https://www.instagram.com/axiora.pulse',
+      'https://www.instagram.com/axiora_pulse',
     );
     expect(screen.getByText('Facebook')).toHaveAttribute(
       'href',

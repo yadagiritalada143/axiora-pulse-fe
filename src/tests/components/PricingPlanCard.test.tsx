@@ -9,7 +9,7 @@ const plan: PricingPlan = {
   name: 'Professional',
   priceMonthly: 999,
   priceYearly: 9990,
-  features: ['AI Co-Founder', '10 conversations / month'],
+  features: ['AI Mentor', '10 conversations / month'],
 };
 
 describe('PricingPlanCard', () => {
@@ -19,7 +19,7 @@ describe('PricingPlanCard', () => {
     expect(screen.getByText('Professional')).toBeInTheDocument();
     expect(screen.getByText('$999')).toBeInTheDocument();
     expect(screen.getByText('/month')).toBeInTheDocument();
-    expect(screen.getByText('AI Co-Founder')).toBeInTheDocument();
+    expect(screen.getByText('AI Mentor')).toBeInTheDocument();
     expect(screen.getByText('10 conversations / month')).toBeInTheDocument();
   });
 

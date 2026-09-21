@@ -31,7 +31,7 @@ export function WorkspaceMentorIntake({ onSubmit, isPending, error }: WorkspaceM
         </h1>
         <p className="text-muted-foreground mt-2 text-sm">
           Share your startup idea in your own words. The more context you provide, the better your
-          AI Co-Founder can understand your vision and guide you with personalized insights.
+          AI Mentor can understand your vision and guide you with personalized insights.
         </p>
       </div>
 

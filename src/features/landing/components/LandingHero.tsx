@@ -19,11 +19,13 @@ export function LandingHero() {
   return (
     <main className="hero-section">
       <div className="hero-content">
-        <h1 className="hero-title">Great Ideas Don&apos;t Need Luck. They Need Validation.</h1>
+        <h1 className="hero-title">
+          Great Ideas Don&apos;t Need Luck. They Need Clarity & Guidance.
+        </h1>
         <p className="hero-subtitle">
           Know the Market. Get the Guidance. Build with Confidence.
           <br />
-          Validate every decision with AI-Mentor insights before you invest your time, money, and
+          Discuss every decision with AI-Mentor insights before you invest your time, money, and
           effort.
         </p>
 

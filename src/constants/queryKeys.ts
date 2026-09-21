@@ -68,6 +68,8 @@ export const queryKeys = {
         : (['admin', 'surveyResponses', surveyId] as const),
     surveyResponseDetail: (surveyId: number, responseId: number) =>
       ['admin', 'surveyResponseDetail', surveyId, responseId] as const,
+    plans: () => ['admin', 'plans'] as const,
+    planDetail: (planId: number) => ['admin', 'plan', planId] as const,
   },
 
   feedback: {

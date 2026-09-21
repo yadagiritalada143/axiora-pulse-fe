@@ -498,34 +498,46 @@ describe('workspaceService', () => {
   });
 
   describe('downloadCertificate', () => {
-    it('downloads the certificate PDF blob and extracts the filename', async () => {
+    it('downloads the certificate PDF blob via POST and extracts the filename', async () => {
       const pdfBlob = new Blob(['%PDF-1.4 certificate content'], { type: 'application/pdf' });
-      mockedApiClient.get.mockResolvedValueOnce({
+      mockedApiClient.post.mockResolvedValueOnce({
         data: pdfBlob,
         headers: {
           'content-disposition': 'attachment; filename="idea_validation_certificate_alpha.pdf"',
         },
       });
 
-      const result = await workspaceService.downloadCertificate(42);
+      const result = await workspaceService.downloadCertificate(42, { name: 'Alice Smith' });
 
-      expect(mockedApiClient.get).toHaveBeenCalledWith(API_ENDPOINTS.WORKSPACE.CERTIFICATE(42), {
-        responseType: 'blob',
-        timeout: 60_000,
-      });
+      expect(mockedApiClient.post).toHaveBeenCalledWith(
+        API_ENDPOINTS.WORKSPACE.CERTIFICATE(42),
+        { name: 'Alice Smith' },
+        {
+          responseType: 'blob',
+          timeout: 60_000,
+        },
+      );
       expect(result.filename).toBe('idea_validation_certificate_alpha.pdf');
       expect(result.blob).toBeInstanceOf(Blob);
     });
 
-    it('falls back to default certificate filename when header is missing', async () => {
+    it('falls back to default certificate filename when header is missing and handles empty payload', async () => {
       const pdfBlob = new Blob(['%PDF-1.4 certificate content'], { type: 'application/pdf' });
-      mockedApiClient.get.mockResolvedValueOnce({
+      mockedApiClient.post.mockResolvedValueOnce({
         data: pdfBlob,
         headers: {},
       });
 
       const result = await workspaceService.downloadCertificate(99);
 
+      expect(mockedApiClient.post).toHaveBeenCalledWith(
+        API_ENDPOINTS.WORKSPACE.CERTIFICATE(99),
+        {},
+        {
+          responseType: 'blob',
+          timeout: 60_000,
+        },
+      );
       expect(result.filename).toBe('idea_validation_certificate_99.pdf');
     });
   });
