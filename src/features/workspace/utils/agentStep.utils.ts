@@ -1,10 +1,18 @@
 import type { WorkspaceMentorStateValue } from '../types';
 
+export interface SubAgentStep {
+  id: string;
+  name: string;
+  description: string;
+  details: string[];
+}
+
 export interface AgentStep {
   id: number;
   name: string;
   description: string;
   details: string[];
+  subAgents?: SubAgentStep[];
 }
 
 export const AGENT_STEPS: AgentStep[] = [
@@ -45,22 +53,24 @@ export const AGENT_STEPS: AgentStep[] = [
       'Unit economics',
       'Revenue potential',
     ],
-  },
-  {
-    id: 3,
-    name: 'Survey Intelligence',
-    description: 'Creates market surveys & analyzes customer sentiment',
-    details: [
-      'Creates customer market validation surveys.',
-      'Collects and analyzes customer responses.',
-      'Interprets overall market sentiment.',
-      'Identifies recurring customer pain points.',
-      "Measures customers' willingness to pay.",
-      "Determines whether customer feedback validates the founder's original business assumptions.",
+    subAgents: [
+      {
+        id: 'survey_intelligence',
+        name: 'Survey Intelligence',
+        description: 'Creates market surveys & analyzes customer sentiment',
+        details: [
+          'Creates customer market validation surveys.',
+          'Collects and analyzes customer responses.',
+          'Interprets overall market sentiment.',
+          'Identifies recurring customer pain points.',
+          "Measures customers' willingness to pay.",
+          "Determines whether customer feedback validates the founder's original business assumptions.",
+        ],
+      },
     ],
   },
   {
-    id: 4,
+    id: 3,
     name: 'Financial & Capital Planning',
     description: 'Capital Plan + Financial Plan + Runway + Break-even Target',
     details: [
@@ -81,7 +91,7 @@ export const AGENT_STEPS: AgentStep[] = [
     ],
   },
   {
-    id: 5,
+    id: 4,
     name: 'MVP & Execution Planning',
     description: 'POC/MVP Scope + Execution Roadmap',
     details: [
@@ -102,7 +112,7 @@ export const AGENT_STEPS: AgentStep[] = [
     ],
   },
   {
-    id: 6,
+    id: 5,
     name: 'Business Setup & Build Execution',
     description: 'Team + Resources + Operations + Build Execution Plan',
     details: [
@@ -124,7 +134,7 @@ export const AGENT_STEPS: AgentStep[] = [
     ],
   },
   {
-    id: 7,
+    id: 6,
     name: 'Pre-Traction & GTM',
     description: 'Pre-Customer Base + Waitlist + Community + GTM Plan',
     details: [
@@ -147,7 +157,7 @@ export const AGENT_STEPS: AgentStep[] = [
     ],
   },
   {
-    id: 8,
+    id: 7,
     name: 'Testing, Pilot & Improvement',
     description: 'Tested & Improved Product + Launch Readiness Score',
     details: [
@@ -168,7 +178,7 @@ export const AGENT_STEPS: AgentStep[] = [
     ],
   },
   {
-    id: 9,
+    id: 8,
     name: 'Launch, Traction & Customer Validation',
     description: 'Customers + Revenue + Traction + Market Evidence',
     details: [
@@ -193,7 +203,7 @@ export const AGENT_STEPS: AgentStep[] = [
     ],
   },
   {
-    id: 10,
+    id: 9,
     name: 'Break-Even & Growth',
     description: 'Break-Even Plan + Profitable Growth Roadmap',
     details: [
@@ -215,7 +225,7 @@ export const AGENT_STEPS: AgentStep[] = [
     ],
   },
   {
-    id: 11,
+    id: 10,
     name: 'Scale, Expansion & Strategic Future',
     description: 'Scale / Expansion / Funding / Exit Strategy',
     details: [
@@ -246,12 +256,11 @@ export const AGENT_STEPS: AgentStep[] = [
 export function getStepFromWorkspaceState(state?: WorkspaceMentorStateValue): number {
   switch (state) {
     case 'GATHERING_INFO':
-      return 1;
     case 'READY_TO_VALIDATE':
     case 'VALIDATING':
-      return 2;
+      return 1;
     case 'VALIDATED':
-      return 3;
+      return 2;
     default:
       return 1;
   }

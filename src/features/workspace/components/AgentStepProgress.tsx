@@ -5,13 +5,20 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@components/ui/card';
 
-import { AGENT_STEPS } from '../utils/agentStep.utils';
+import { AGENT_STEPS, type AgentStep, type SubAgentStep } from '../utils/agentStep.utils';
 
 interface AgentStepProgressProps {
   currentStep?: number;
   isRunning?: boolean;
   className?: string;
 }
+
+const FALLBACK_STEP: AgentStep = {
+  id: 1,
+  name: 'Idea Validation',
+  description: 'Validated Idea + Problem Statement + Validation Score',
+  details: [],
+};
 
 export function AgentStepProgress({
   currentStep = 1,
@@ -20,12 +27,10 @@ export function AgentStepProgress({
 }: AgentStepProgressProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
+  const [selectedSubAgent, setSelectedSubAgent] = useState<string | null>(null);
 
-  const activeStepObj = AGENT_STEPS.find((s) => s.id === currentStep) ??
-    AGENT_STEPS[0] ?? {
-      id: 1,
-      name: 'Idea Validation',
-    };
+  const activeStepObj: AgentStep =
+    AGENT_STEPS.find((s: AgentStep) => s.id === currentStep) ?? AGENT_STEPS[0] ?? FALLBACK_STEP;
 
   const toggleStepDetails = (id: number) => {
     setSelectedStep((prev) => (prev === id ? null : id));
@@ -38,7 +43,7 @@ export function AgentStepProgress({
           <button
             type="button"
             onClick={() => setIsMobileOpen((prev) => !prev)}
-            className="hover:bg-muted/30 flex w-full items-center justify-between rounded-xl p-3.5 text-left transition-colors"
+            className="hover:bg-muted/30 flex w-full cursor-pointer items-center justify-between rounded-xl p-3.5 text-left transition-colors"
           >
             <div className="flex min-w-0 items-center gap-3">
               <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#FF4500]/10 text-[#FF4500]">
@@ -66,7 +71,7 @@ export function AgentStepProgress({
           {isMobileOpen ? (
             <CardContent className="border-border mt-1 max-h-[60vh] overflow-y-auto border-t px-4 pt-0 pb-4">
               <div className="space-y-3 pt-3">
-                {AGENT_STEPS.map((step) => {
+                {AGENT_STEPS.map((step: AgentStep) => {
                   const isCompleted = step.id < currentStep;
                   const isActive = step.id === currentStep;
                   const isExpanded = selectedStep === step.id;
@@ -82,7 +87,7 @@ export function AgentStepProgress({
                       <button
                         type="button"
                         onClick={() => toggleStepDetails(step.id)}
-                        className="flex w-full items-center gap-3 text-left focus:outline-none"
+                        className="flex w-full cursor-pointer items-center gap-3 text-left focus:outline-none"
                       >
                         <div
                           className={cn(
@@ -113,6 +118,11 @@ export function AgentStepProgress({
                             >
                               {step.name}
                             </p>
+                            {step.subAgents && step.subAgents.length > 0 && (
+                              <span className="py-0.2 inline-flex items-center rounded-md bg-[#FF4500]/10 px-1.5 text-[9px] font-semibold text-[#FF4500]">
+                                1 sub-agent
+                              </span>
+                            )}
                           </div>
                         </div>
                         {isCompleted ? (
@@ -138,8 +148,59 @@ export function AgentStepProgress({
                           <p className="text-muted-foreground/80 mb-1.5 text-[10px] font-medium">
                             {step.description}
                           </p>
+
+                          {step.subAgents && step.subAgents.length > 0 && (
+                            <div className="my-2 space-y-2 border-l-2 border-[#FF4500]/30 pl-3">
+                              {step.subAgents.map((subAgent: SubAgentStep) => {
+                                const isSubExpanded = selectedSubAgent === subAgent.id;
+                                return (
+                                  <div
+                                    key={subAgent.id}
+                                    className="border-border/80 bg-muted/30 rounded-lg border p-2 text-left"
+                                  >
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedSubAgent((prev) =>
+                                          prev === subAgent.id ? null : subAgent.id,
+                                        );
+                                      }}
+                                      className="w-full cursor-pointer text-left focus:outline-none"
+                                    >
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-1.5">
+                                          <span className="text-foreground text-xs font-semibold">
+                                            {subAgent.name}
+                                          </span>
+                                          <span className="py-0.2 rounded bg-[#FF4500]/10 px-1 text-[9px] font-medium text-[#FF4500]">
+                                            Sub-agent
+                                          </span>
+                                        </div>
+                                        <span className="text-muted-foreground text-[10px]">
+                                          {isCompleted ? 'Completed' : 'Pending'}
+                                        </span>
+                                      </div>
+                                      <p className="text-muted-foreground mt-0.5 text-[10px]">
+                                        {subAgent.description}
+                                      </p>
+                                    </button>
+
+                                    {isSubExpanded && (
+                                      <ul className="text-muted-foreground mt-2 space-y-1 text-[10px]">
+                                        {subAgent.details.map((detail: string, idx: number) => (
+                                          <li key={idx}>• {detail}</li>
+                                        ))}
+                                      </ul>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+
                           <ul className="text-muted-foreground space-y-1 border-l-2 border-[#FF4500]/30 pl-2.5">
-                            {step.details.map((detail, idx) => (
+                            {step.details.map((detail: string, idx: number) => (
                               <li key={idx} className="leading-tight">
                                 • {detail}
                               </li>
@@ -179,7 +240,7 @@ export function AgentStepProgress({
 
           <CardContent className="min-h-0 flex-1 scrollbar-thin overflow-y-auto p-3 pr-2">
             <div className="relative space-y-2.5">
-              {AGENT_STEPS.map((step, index) => {
+              {AGENT_STEPS.map((step: AgentStep, index: number) => {
                 const isCompleted = step.id < currentStep;
                 const isActive = step.id === currentStep;
                 const isLast = index === AGENT_STEPS.length - 1;
@@ -227,7 +288,7 @@ export function AgentStepProgress({
                       <button
                         type="button"
                         onClick={() => toggleStepDetails(step.id)}
-                        className="w-full text-left focus:outline-none"
+                        className="w-full cursor-pointer text-left focus:outline-none"
                       >
                         <div className="flex items-start justify-between gap-1.5">
                           <div className="min-w-0 flex-1">
@@ -244,23 +305,36 @@ export function AgentStepProgress({
                               >
                                 {step.name}
                               </p>
+                              {step.subAgents && step.subAgents.length > 0 && (
+                                <span className="py-0.2 inline-flex items-center rounded-md bg-[#FF4500]/10 px-1.5 text-[9px] font-semibold text-[#FF4500]">
+                                  1 sub-agent
+                                </span>
+                              )}
                             </div>
                           </div>
 
-                          {isCompleted ? (
-                            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-                              Done
-                            </span>
-                          ) : isActive ? (
-                            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#FF4500]/10 px-1.5 py-0.5 text-[10px] font-semibold text-[#FF4500]">
-                              {isRunning && <Loader2 className="size-2.5 animate-spin" />}
-                              {isRunning ? 'Running' : 'Active'}
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground/60 shrink-0 text-[10px]">
-                              Pending
-                            </span>
-                          )}
+                          <div className="flex shrink-0 items-center gap-1.5">
+                            {isCompleted ? (
+                              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                                Done
+                              </span>
+                            ) : isActive ? (
+                              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#FF4500]/10 px-1.5 py-0.5 text-[10px] font-semibold text-[#FF4500]">
+                                {isRunning && <Loader2 className="size-2.5 animate-spin" />}
+                                {isRunning ? 'Running' : 'Active'}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground/60 shrink-0 text-[10px]">
+                                Pending
+                              </span>
+                            )}
+                            <ChevronDown
+                              className={cn(
+                                'text-muted-foreground/60 size-3.5 shrink-0 self-center transition-transform duration-200',
+                                isExpanded && 'rotate-180 text-[#FF4500]',
+                              )}
+                            />
+                          </div>
                         </div>
 
                         <p className="text-muted-foreground mt-1 text-[11px] leading-snug">
@@ -268,13 +342,90 @@ export function AgentStepProgress({
                         </p>
                       </button>
 
+                      {isExpanded && step.subAgents && step.subAgents.length > 0 && (
+                        <div className="relative mt-3 space-y-2">
+                          {step.subAgents.map((subAgent: SubAgentStep) => {
+                            const isSubExpanded = selectedSubAgent === subAgent.id;
+                            const subStatus = isCompleted ? 'completed' : 'pending';
+
+                            return (
+                              <div key={subAgent.id} className="relative pl-7">
+                                {/* L-shaped elbow branch connector from vertical timeline (left: 22px) */}
+                                <div
+                                  className="border-border dark:border-muted/50 pointer-events-none absolute -top-3.5 -left-[26px] h-6.5 w-6.5 rounded-bl-xl border-b-2 border-l-2"
+                                  aria-hidden
+                                />
+
+                                <div
+                                  className={cn(
+                                    'border-border/80 bg-card/90 dark:bg-card/70 hover:bg-muted/30 hover:border-border rounded-xl border p-2.5 shadow-2xs transition-all',
+                                    isSubExpanded && 'bg-muted/40 ring-1 ring-[#FF4500]/25',
+                                  )}
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedSubAgent((prev) =>
+                                        prev === subAgent.id ? null : subAgent.id,
+                                      );
+                                    }}
+                                    className="w-full cursor-pointer text-left focus:outline-none"
+                                  >
+                                    <div className="flex items-start justify-between gap-1.5">
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="text-foreground text-xs leading-tight font-bold">
+                                          {subAgent.name}
+                                        </span>
+                                        <span className="py-0.2 rounded-full bg-[#FF4500]/10 px-1.5 text-[9px] font-semibold text-[#FF4500]">
+                                          Sub-agent
+                                        </span>
+                                      </div>
+
+                                      {subStatus === 'completed' ? (
+                                        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                                          Done
+                                        </span>
+                                      ) : (
+                                        <span className="text-muted-foreground/60 shrink-0 text-[10px] font-medium">
+                                          Pending
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    <p className="text-muted-foreground mt-1 text-[11px] leading-snug">
+                                      {subAgent.description}
+                                    </p>
+                                  </button>
+
+                                  {isSubExpanded && (
+                                    <div className="animate-in fade-in mt-2 border-l-2 border-[#FF4500]/30 pl-2.5 duration-200">
+                                      <p className="text-muted-foreground/90 mb-1 text-[10px] font-medium tracking-wide uppercase">
+                                        Sub-Agent Scope & Activities
+                                      </p>
+                                      <ul className="text-muted-foreground space-y-1 text-[11px]">
+                                        {subAgent.details.map((detail: string, idx: number) => (
+                                          <li key={idx} className="leading-tight">
+                                            • {detail}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
                       {isExpanded ? (
-                        <div className="animate-in fade-in mt-2 border-l-2 border-[#FF4500]/30 pl-2.5 duration-200">
+                        <div className="animate-in fade-in mt-2.5 border-l-2 border-[#FF4500]/30 pl-2.5 duration-200">
                           <p className="text-muted-foreground/90 mb-1 text-[10px] font-medium tracking-wide uppercase">
                             Key Activities & Scope
                           </p>
                           <ul className="text-muted-foreground space-y-1 text-[11px]">
-                            {step.details.map((detail, idx) => (
+                            {step.details.map((detail: string, idx: number) => (
                               <li key={idx} className="leading-tight">
                                 • {detail}
                               </li>

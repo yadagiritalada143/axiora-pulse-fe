@@ -8,10 +8,10 @@ describe('AgentStepProgress', () => {
   it('defaults to step 1 when currentStep is not provided', () => {
     render(<AgentStepProgress />);
 
-    expect(screen.getByText('1/11 Steps')).toBeInTheDocument();
+    expect(screen.getByText('1/10 Steps')).toBeInTheDocument();
   });
 
-  it('renders all 11 step names from the lifecycle design', () => {
+  it('renders all 10 step names from the lifecycle design', () => {
     render(<AgentStepProgress currentStep={2} />);
 
     AGENT_STEPS.forEach((step) => {
@@ -34,9 +34,9 @@ describe('AgentStepProgress', () => {
 
   it('maps workspace mentor state values to step numbers correctly', () => {
     expect(getStepFromWorkspaceState('GATHERING_INFO')).toBe(1);
-    expect(getStepFromWorkspaceState('READY_TO_VALIDATE')).toBe(2);
-    expect(getStepFromWorkspaceState('VALIDATING')).toBe(2);
-    expect(getStepFromWorkspaceState('VALIDATED')).toBe(3);
+    expect(getStepFromWorkspaceState('READY_TO_VALIDATE')).toBe(1);
+    expect(getStepFromWorkspaceState('VALIDATING')).toBe(1);
+    expect(getStepFromWorkspaceState('VALIDATED')).toBe(2);
     expect(getStepFromWorkspaceState(undefined)).toBe(1);
   });
 
@@ -104,5 +104,35 @@ describe('AgentStepProgress', () => {
 
     rerender(<AgentStepProgress currentStep={1} isRunning={true} />);
     expect(screen.getAllByText('Running').length).toBeGreaterThan(0);
+  });
+
+  it('reveals sub-agent Survey Intelligence with branching connector when Market Research step is clicked', async () => {
+    const user = userEvent.setup();
+    render(<AgentStepProgress currentStep={2} />);
+
+    expect(
+      screen.queryByText('Creates market surveys & analyzes customer sentiment'),
+    ).not.toBeInTheDocument();
+
+    const marketResearchBtns = screen.getAllByRole('button', {
+      name: /Market Research & Business Model/i,
+    });
+    const targetBtn = marketResearchBtns[marketResearchBtns.length - 1];
+    if (!targetBtn) throw new Error('Market Research button not found');
+    await user.click(targetBtn);
+
+    expect(screen.getAllByText('Survey Intelligence').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Sub-agent').length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText('Creates market surveys & analyzes customer sentiment').length,
+    ).toBeGreaterThan(0);
+
+    const subAgentBtns = screen.getAllByRole('button', { name: /Survey Intelligence/i });
+    const subAgentBtn = subAgentBtns[0];
+    if (!subAgentBtn) throw new Error('Survey Intelligence button not found');
+    await user.click(subAgentBtn);
+    expect(
+      screen.getAllByText(/Creates customer market validation surveys/).length,
+    ).toBeGreaterThan(0);
   });
 });
