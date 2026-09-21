@@ -75,6 +75,10 @@ export interface ExportWorkspaceReportResult {
   filename: string;
 }
 
+export interface CertificateRequest {
+  name?: string;
+}
+
 export interface GetWorkspacesResponse {
   total: number;
   workspaces: Workspace[];

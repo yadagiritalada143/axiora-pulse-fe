@@ -3,6 +3,7 @@ import { apiClient } from '@/services/api';
 import type { MessageAttachment } from '@/types/chat.types';
 
 import type {
+  CertificateRequest,
   CreateWorkspaceRequest,
   DeleteWorkspaceResponse,
   ExportWorkspaceReportRequest,
@@ -250,11 +251,18 @@ export const workspaceService = {
     return { blob: processedBlob, filename };
   },
 
-  downloadCertificate: async (workspaceId: number): Promise<ExportWorkspaceReportResult> => {
-    const response = await apiClient.get<Blob>(API_ENDPOINTS.WORKSPACE.CERTIFICATE(workspaceId), {
-      responseType: 'blob',
-      timeout: 60_000,
-    });
+  downloadCertificate: async (
+    workspaceId: number,
+    payload?: CertificateRequest,
+  ): Promise<ExportWorkspaceReportResult> => {
+    const response = await apiClient.post<Blob>(
+      API_ENDPOINTS.WORKSPACE.CERTIFICATE(workspaceId),
+      payload ?? {},
+      {
+        responseType: 'blob',
+        timeout: 60_000,
+      },
+    );
 
     const rawBlob = response.data;
 

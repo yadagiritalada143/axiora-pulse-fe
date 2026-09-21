@@ -404,7 +404,7 @@ describe('useDownloadCertificate', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(mockedWorkspaceService.downloadCertificate).toHaveBeenCalledWith(1);
+    expect(mockedWorkspaceService.downloadCertificate).toHaveBeenCalledWith(1, undefined);
     expect(createObjectURL).toHaveBeenCalledWith(blob);
     expect(clickSpy).toHaveBeenCalled();
 

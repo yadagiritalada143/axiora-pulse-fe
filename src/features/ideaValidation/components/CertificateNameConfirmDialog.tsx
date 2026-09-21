@@ -100,7 +100,10 @@ export function CertificateNameConfirmDialog({
       return;
     }
 
-    downloadCertificateMutation.mutate(undefined, {
+    const certificatePayload = formattedCertificateName
+      ? { name: formattedCertificateName }
+      : undefined;
+    downloadCertificateMutation.mutate(certificatePayload, {
       onSuccess: () => {
         onDownloadSuccess?.();
         onOpenChange(false);

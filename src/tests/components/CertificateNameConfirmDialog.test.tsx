@@ -207,6 +207,10 @@ describe('CertificateNameConfirmDialog', () => {
     await user.click(yesButton);
 
     expect(mockDownloadMutate).toHaveBeenCalledTimes(1);
+    expect(mockDownloadMutate).toHaveBeenCalledWith(
+      { name: 'Alex Morgan' },
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
+    );
     expect(mockOnDownloadSuccess).toHaveBeenCalledTimes(1);
     expect(mockOnOpenChange).toHaveBeenCalledWith(false);
   });
