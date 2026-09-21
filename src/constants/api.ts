@@ -75,6 +75,7 @@ export const API_ENDPOINTS = {
     SUBSCRIPTION: '/billing/subscription',
     CANCEL: '/billing/cancel',
     STATUS: '/billing/status',
+    SELECT_PLAN: (planId: string) => `/billing/subscription/${planId}`,
   },
   USER: {
     PROFILE: '/users/me',
