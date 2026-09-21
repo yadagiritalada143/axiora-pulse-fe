@@ -109,7 +109,7 @@ export function ChatWindow() {
 
           {!activeConversationId && !conversationsLoading ? (
             <p className="text-muted-foreground mt-10 text-center text-sm">
-              Select or start a conversation to begin chatting with your AI co-founder.
+              Select or start a conversation to begin chatting with your AI Mentor.
             </p>
           ) : null}
 

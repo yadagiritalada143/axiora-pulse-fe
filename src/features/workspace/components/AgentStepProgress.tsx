@@ -307,7 +307,7 @@ export function AgentStepProgress({
                               </p>
                               {step.subAgents && step.subAgents.length > 0 && (
                                 <span className="py-0.2 inline-flex items-center rounded-md bg-[#FF4500]/10 px-1.5 text-[9px] font-semibold text-[#FF4500]">
-                                  1 sub-agent
+                                  1 sub-mentor
                                 </span>
                               )}
                             </div>

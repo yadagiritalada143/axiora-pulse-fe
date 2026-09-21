@@ -12,7 +12,7 @@ interface CartoonBotLoaderProps {
 }
 
 const DEFAULT_MESSAGES = [
-  'Waking up AI Validation Agents...',
+  'Waking up AI Validation...',
   'Scanning Market Intelligence...',
   'Crunching Competitor Signals...',
   'Synthesizing Customer Sentiments...',

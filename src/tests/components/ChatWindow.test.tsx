@@ -183,7 +183,7 @@ describe('ChatWindow', () => {
     expect(screen.getByText('Conversations')).toBeInTheDocument();
     expect(screen.getByText('Inventory AI')).toBeInTheDocument();
     expect(
-      screen.getByText('Select or start a conversation to begin chatting with your AI co-founder.'),
+      screen.getByText('Select or start a conversation to begin chatting with your AI Mentor.'),
     ).toBeInTheDocument();
   });
 

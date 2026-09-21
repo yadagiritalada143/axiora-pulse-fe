@@ -4,7 +4,7 @@ Permanent project memory for Claude Code (or any engineer) working in this repo.
 
 ## 1. Project overview
 
-Axiora Pulse is an **AI Workspace** frontend: users describe a startup idea and interact with an AI co-founder through chat, structured forms, and workflow screens (onboarding, pricing, dashboard, workspace). This repo is **frontend only** — it talks to a REST backend that already exists over HTTP; there is no server code here.
+Axiora Pulse is an **AI Workspace** frontend: users describe a startup idea and interact with an AI Mentor through chat, structured forms, and workflow screens (onboarding, pricing, dashboard, workspace). This repo is **frontend only** — it talks to a REST backend that already exists over HTTP; there is no server code here.
 
 The codebase is built to scale from a handful of screens to a large SaaS product with hundreds of screens, without needing an architecture rewrite along the way.
 

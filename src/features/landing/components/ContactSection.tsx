@@ -58,8 +58,8 @@ export function ContactSection() {
             your <span className="highlight-orange">next idea</span>.
           </h2>
           <p className="contact-subtext">
-            Have questions about Axiora Pulse, our AI validation agents, or customized startup
-            enterprise solutions? Our team is here to help you every step of the way.
+            Have questions about Axiora Pulse, our AI validation, or customized startup enterprise
+            solutions? Our team is here to help you every step of the way.
           </p>
 
           <div className="contact-details-list">

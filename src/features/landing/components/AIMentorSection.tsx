@@ -5,7 +5,7 @@ const MENTOR_CARDS = [
     id: 'mentor-card-1',
     side: 'left',
     img: '/assets/landing/Rectangle 3.png',
-    title: 'Idea Validation ',
+    title: 'Idea Validation',
     subtitle: 'Know if your idea is worth pursuing.',
     desc: 'Turn your idea into a clear, evidence-based opportunity with AI-powered validation. Analyze the problem, target customers, market potential, competition, feasibility, and key risks to understand your idea’s strengths and weaknesses before investing significant time or resources.',
   },
@@ -13,85 +13,78 @@ const MENTOR_CARDS = [
     id: 'mentor-card-2',
     side: 'right',
     img: '/assets/landing/Rectangle 5.png',
-    title: 'Market Research & Business Model ',
-    subtitle: 'Understand your market and monetize effectively.',
-    desc: 'Get a deep view of your industry with AI-powered market intelligence. Analyze market trends, competitor benchmarks, customer personas, pricing strategies, and revenue models to differentiate your business and capture market share.',
+    title: 'Market Research & Business Model',
+    subtitle: 'Understand your market, customer sentiment, and monetize effectively.',
+    subAgent: 'Survey Intelligence',
+    desc: 'Get a deep view of your industry with AI-powered market intelligence. Create personalized audience surveys, analyze consumer sentiment and willingness to pay, benchmark competitors, and construct sustainable revenue models to capture market share.',
   },
   {
     id: 'mentor-card-3',
     side: 'left',
-    img: '/assets/landing/Rectangle 4-1.png',
-    title: 'Survey Intelligence ',
-    subtitle: 'Discover what your customers really think.',
-    desc: 'Create personalized surveys with AI based on your business idea and target audience, then turn responses into meaningful insights. Identify customer pain points, willingness to pay, and demand patterns based on real consumer data.',
+    img: '/assets/landing/Rectangle 6.png',
+    title: 'Financial & Capital Planning',
+    subtitle: 'Know the numbers before you make the move.',
+    desc: 'Analyze costs, pricing models, revenue projections, runway, burn rate, and break-even milestones. AI helps you evaluate the financial sustainability of your venture and construct investor-ready capital plans.',
   },
   {
     id: 'mentor-card-4',
     side: 'right',
-    img: '/assets/landing/Rectangle 6.png',
-    title: 'Financial & Capital Planning ',
-    subtitle: 'Know the numbers before you make the move.',
-    desc: 'Analyze costs, pricing models, revenue projections, runway, burn rate, and break-even milestones. AI helps you evaluate the financial sustainability of your venture and construct investor-ready capital plans.',
+    img: '/assets/landing/Rectangle 4-1.png',
+    title: 'MVP & Execution Planning',
+    subtitle: 'Build what matters, omit what doesn’t.',
+    desc: 'Define your minimum viable product scope, prioritize must-have features, map development timelines, and structure engineering sprints to build faster while keeping development costs optimized.',
   },
   {
     id: 'mentor-card-5',
     side: 'left',
     img: '/assets/landing/Rectangle 5.png',
-    title: 'MVP & Execution Planning ',
-    subtitle: 'Build what matters, omit what doesn’t.',
-    desc: 'Define your minimum viable product scope, prioritize must-have features, map development timelines, and structure engineering sprints to build faster while keeping development costs optimized.',
+    title: 'Business Setup & Build Execution',
+    subtitle: 'Assemble the team, tools, and operations.',
+    desc: 'Identify technical and non-technical talent needs, structure job descriptions, select tech stacks and vendors, and establish legal and compliance frameworks for smooth startup operations.',
   },
   {
     id: 'mentor-card-6',
     side: 'right',
     img: '/assets/landing/Rectangle 3.png',
-    title: 'Business Setup & Build Execution ',
-    subtitle: 'Assemble the team, tools, and operations.',
-    desc: 'Identify technical and non-technical talent needs, structure job descriptions, select tech stacks and vendors, and establish legal and compliance frameworks for smooth startup operations.',
+    title: 'Pre-Traction & Go-To-Market',
+    subtitle: 'Build momentum before you launch.',
+    desc: 'Formulate a go-to-market strategy that connects with early adopters. Build waitlists, community engagement, brand positioning, educational content, and pre-sales channels to ensure day-one traction.',
   },
   {
     id: 'mentor-card-7',
     side: 'left',
     img: '/assets/landing/Rectangle 6.png',
-    title: 'Pre-Traction & Go-To-Market ',
-    subtitle: 'Build momentum before you launch.',
-    desc: 'Formulate a go-to-market strategy that connects with early adopters. Build waitlists, community engagement, brand positioning, educational content, and pre-sales channels to ensure day-one traction.',
+    title: 'Testing, Pilot & Improvement',
+    subtitle: 'Refine quality with early beta users.',
+    desc: 'Run user acceptance testing, gather structured beta feedback, identify bugs, optimize usability, and calculate your Launch Readiness Score to ensure a rock-solid release.',
   },
   {
     id: 'mentor-card-8',
     side: 'right',
     img: '/assets/landing/Rectangle 4-1.png',
-    title: 'Testing, Pilot & Improvement ',
-    subtitle: 'Refine quality with early beta users.',
-    desc: 'Run user acceptance testing, gather structured beta feedback, identify bugs, optimize usability, and calculate your Launch Readiness Score to ensure a rock-solid release.',
+    title: 'Launch, Traction & Customer Validation',
+    subtitle: 'Turn early users into revenue and retention.',
+    desc: 'Execute commercial launch campaigns, track customer acquisition costs (CAC), lifetime value (LTV), conversion rates, and retention to generate evidence of true product-market fit.',
   },
   {
     id: 'mentor-card-9',
     side: 'left',
     img: '/assets/landing/Rectangle 5.png',
-    title: 'Launch, Traction & Customer Validation ',
-    subtitle: 'Turn early users into revenue and retention.',
-    desc: 'Execute commercial launch campaigns, track customer acquisition costs (CAC), lifetime value (LTV), conversion rates, and retention to generate evidence of true product-market fit.',
-  },
-  {
-    id: 'mentor-card-10',
-    side: 'right',
-    img: '/assets/landing/Rectangle 6.png',
-    title: 'Break-Even & Growth ',
+    title: 'Break-Even & Growth',
     subtitle: 'Scale profitably and optimize unit economics.',
     desc: 'Monitor break-even targets, implement upselling and referral loops, increase team productivity with AI automation, and run high-velocity growth experiments.',
   },
   {
-    id: 'mentor-card-11',
-    side: 'left',
+    id: 'mentor-card-10',
+    side: 'right',
     img: '/assets/landing/Rectangle 3.png',
-    title: 'Scale, Expansion & Strategic Future ',
+    title: 'Scale, Expansion & Strategic Future',
     subtitle: 'Expand into new markets and strategic horizons.',
     desc: 'Scale teams, expand to new geographic markets, diversify product offerings, prepare for institutional fundraising, M&A opportunities, or founder exit strategies.',
   },
 ];
 
-const TARGET_RATIOS = [0.08, 0.16, 0.24, 0.32, 0.4, 0.48, 0.56, 0.64, 0.72, 0.8, 0.88];
+const TARGET_RATIOS = [0.08, 0.17, 0.26, 0.35, 0.44, 0.53, 0.62, 0.71, 0.8, 0.89];
 
 export function AIMentorSection() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -203,7 +196,7 @@ export function AIMentorSection() {
             Meet Your AI Mentor
           </h2>
           <p ref={subtitleRef} className="ai-mentor-subtitle progressive-reveal-text delay-reveal">
-            Your intelligent startup companion with 11 specialized AI validation and growth agents,
+            Your intelligent startup companion with 10 specialized AI validation and growth,
             designed to help you analyze opportunities, validate ideas, build smarter, launch
             confidently, and scale your startup with AI-powered guidance.
           </p>
@@ -225,8 +218,15 @@ export function AIMentorSection() {
               <img src={card.img} alt={card.title} className="mentor-card-img" />
               <div className="mentor-card-overlay" />
               <div className="mentor-card-content">
-                <div className="mentor-card-step-badge">{`0${idx + 1}`.slice(-2)} / 11</div>
+                <div className="mentor-card-step-badge">{`0${idx + 1}`.slice(-2)} / 10</div>
                 <h4 className="mentor-card-title">{card.title}</h4>
+                {card.subAgent ? (
+                  <div className="-mt-2 mb-3">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-[#FF4500]/30 bg-[#FF4500]/15 px-2.5 py-0.5 text-xs font-semibold text-[#FF4500]">
+                      Sub Mentor: {card.subAgent}
+                    </span>
+                  </div>
+                ) : null}
                 <p className="mentor-card-subtitle">{card.subtitle}</p>
                 <p className="mentor-card-desc">{card.desc}</p>
               </div>

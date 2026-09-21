@@ -1,6 +1,6 @@
 # Axiora Pulse Frontend
 
-Axiora Pulse is an AI workspace for turning startup ideas into validated opportunities. Founders and teams can describe their ideas, analyze market demand through structured questions and customer surveys, collaborate with specialized AI mentor agents, and manage end-to-end venture validation workspaces.
+Axiora Pulse is an AI workspace for turning startup ideas into validated opportunities. Founders and teams can describe their ideas, analyze market demand through structured questions and customer surveys, collaborate with specialized AI mentor, and manage end-to-end venture validation workspaces.
 
 This repository contains the frontend application built with React 19, Vite, TypeScript, and Tailwind CSS.
 
@@ -28,7 +28,7 @@ This repository contains the frontend application built with React 19, Vite, Typ
   - Interactive questionnaires and automated market validation.
   - Public and authenticated customer surveys with real-time response capture.
 
-- **AI Co-Founder & Chat**:
+- **AI Mentor & Chat**:
   - Multi-turn AI mentor chat with model selection, Markdown rendering, and optional streaming responses.
 
 - **Administration**:
