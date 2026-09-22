@@ -152,6 +152,7 @@ describe('AdminPlansList', () => {
     expect(screen.getByRole('table')).toBeInTheDocument();
     expect(screen.getByText('Tier / Code')).toBeInTheDocument();
     expect(screen.getByText('Monthly Price')).toBeInTheDocument();
+    expect(screen.queryByText('Yearly Price')).not.toBeInTheDocument();
   });
 
   it('opens Create Plan modal when clicking "+ Create Plan"', () => {

@@ -18,199 +18,19 @@ import {
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import type { PricingPlan } from '@/types/api.types';
+import {
+  DYNAMIC_PLAN_COMPARISON_ROWS,
+  formatStorageSize,
+  generatePlanFeatures,
+  isFreePlan,
+} from '@/utils/planFeatures';
 import { Button } from '@components/ui/button';
 import { Card, CardContent } from '@components/ui/card';
 import { ROUTES } from '@constants/routes';
 import { useAccountStatus } from '@features/pricing/hooks/useAccountStatus';
 import { usePricingPlans } from '@features/pricing/hooks/usePricingPlans';
 import { cn } from '@lib/utils';
-
-interface PlanTierMeta {
-  id: 'starter' | 'builder' | 'pro';
-  name: string;
-  idealFor: string;
-  strikePrice: number;
-  monthlyPrice: number;
-  workspaces: string;
-  surveyRegeneration: string;
-  stageRerun: string;
-  surveyAnalytics: 'Basic' | 'Advanced';
-  surveyResponses: string;
-  exportReport: boolean;
-  support: string;
-  storage: string;
-}
-
-const PLAN_TIERS: Record<'starter' | 'builder' | 'pro', PlanTierMeta> = {
-  starter: {
-    id: 'starter',
-    name: 'Starter',
-    idealFor: 'Students exploring 1 ideas',
-    strikePrice: 299,
-    monthlyPrice: 0,
-    workspaces: '1 for 7 days',
-    surveyRegeneration: '2 times per workspace',
-    stageRerun: '1 per workspace',
-    surveyAnalytics: 'Basic',
-    surveyResponses: '100 / workspace',
-    exportReport: false,
-    support: 'Priority',
-    storage: '200 MB',
-  },
-  builder: {
-    id: 'builder',
-    name: 'Builder',
-    idealFor: 'Students building projects/startups',
-    strikePrice: 999,
-    monthlyPrice: 299,
-    workspaces: '3',
-    surveyRegeneration: '5 times per workspace',
-    stageRerun: '3 per workspace',
-    surveyAnalytics: 'Advanced',
-    surveyResponses: '500 / workspace',
-    exportReport: true,
-    support: 'Priority',
-    storage: '500 MB',
-  },
-  pro: {
-    id: 'pro',
-    name: 'Pro',
-    idealFor: 'Student founders & power users',
-    strikePrice: 1999,
-    monthlyPrice: 799,
-    workspaces: '10',
-    surveyRegeneration: '10 times per workspace',
-    stageRerun: '5 per workspace',
-    surveyAnalytics: 'Advanced',
-    surveyResponses: '2,000 / workspace',
-    exportReport: true,
-    support: 'Priority',
-    storage: '2 GB',
-  },
-};
-
-interface ComparisonRow {
-  feature: string;
-  category?: 'overview' | 'agents' | 'quotas' | 'analytics';
-  starter: string | boolean;
-  builder: string | boolean;
-  pro: string | boolean;
-}
-
-const COMPARISON_ROWS: ComparisonRow[] = [
-  {
-    feature: 'Ideal for',
-    category: 'overview',
-    starter: 'Students exploring 1 ideas',
-    builder: 'Students building projects/startups',
-    pro: 'Student founders & power users',
-  },
-  {
-    feature: 'Price / Month',
-    category: 'overview',
-    starter: '₹0 (was ₹499)',
-    builder: '₹299 (was ₹999)',
-    pro: '₹799 (was ₹1,999)',
-  },
-  {
-    feature: 'Workspaces / Ideas',
-    category: 'overview',
-    starter: '1 for 7 days',
-    builder: '3',
-    pro: '10',
-  },
-  {
-    feature: 'Idea Validation Agent',
-    category: 'agents',
-    starter: true,
-    builder: true,
-    pro: true,
-  },
-  {
-    feature: 'Market Research Agent',
-    category: 'agents',
-    starter: true,
-    builder: true,
-    pro: true,
-  },
-  {
-    feature: 'Survey Intelligence Agent',
-    category: 'agents',
-    starter: true,
-    builder: true,
-    pro: true,
-  },
-  {
-    feature: 'AI-generated Survey',
-    category: 'agents',
-    starter: true,
-    builder: true,
-    pro: true,
-  },
-  {
-    feature: 'Survey Editing',
-    category: 'agents',
-    starter: true,
-    builder: true,
-    pro: true,
-  },
-  {
-    feature: 'Survey Regeneration',
-    category: 'quotas',
-    starter: '2 times per workspace',
-    builder: '5 times per workspace',
-    pro: '10 times per workspace',
-  },
-  {
-    feature: 'Rerun the stage',
-    category: 'quotas',
-    starter: '1 per workspace',
-    builder: '3 per workspace',
-    pro: '5 per workspace',
-  },
-  {
-    feature: 'Survey Distribution',
-    category: 'quotas',
-    starter: true,
-    builder: true,
-    pro: true,
-  },
-  {
-    feature: 'Survey Analytics',
-    category: 'analytics',
-    starter: 'Basic',
-    builder: 'Advanced',
-    pro: 'Advanced',
-  },
-  {
-    feature: 'Survey Responses',
-    category: 'quotas',
-    starter: '100 / workspace',
-    builder: '500 / workspace',
-    pro: '2,000 / workspace',
-  },
-  {
-    feature: 'Export the report',
-    category: 'analytics',
-    starter: false,
-    builder: true,
-    pro: true,
-  },
-  {
-    feature: 'Support',
-    category: 'overview',
-    starter: 'Priority',
-    builder: 'Priority',
-    pro: 'Priority',
-  },
-  {
-    feature: 'Storage',
-    category: 'quotas',
-    starter: '200 MB',
-    builder: '500 MB',
-    pro: '2 GB',
-  },
-];
 
 export function PlanDetailsTab() {
   const navigate = useNavigate();
@@ -219,34 +39,37 @@ export function PlanDetailsTab() {
 
   const isLoading = isStatusLoading || isPlansLoading;
 
-  const activePlanKey: 'starter' | 'builder' | 'pro' = useMemo(() => {
-    const code = (accountStatus?.plan ?? '').toLowerCase();
-    if (code.includes('pro') || code.includes('enterprise')) return 'pro';
-    if (code.includes('builder') || code.includes('professional')) return 'builder';
-    return 'starter';
-  }, [accountStatus?.plan]);
+  const displayPlans: PricingPlan[] = useMemo(() => {
+    return catalogPlans ?? [];
+  }, [catalogPlans]);
 
-  const activeMeta = PLAN_TIERS[activePlanKey];
+  const userPlanCode = (accountStatus?.plan ?? 'starter').toLowerCase();
 
-  // Match active plan against backend catalog for description or catalog metadata
-  const matchingPlan = useMemo(() => {
-    if (!catalogPlans || !accountStatus?.plan) return null;
+  const matchingPlan: PricingPlan | undefined = useMemo(() => {
     return (
-      catalogPlans.find((p) => p.id.toLowerCase() === accountStatus.plan?.toLowerCase()) ?? null
+      displayPlans.find(
+        (p) =>
+          p.id.toLowerCase() === userPlanCode ||
+          p.code?.toLowerCase() === userPlanCode ||
+          p.name.toLowerCase() === userPlanCode,
+      ) ?? displayPlans[0]
     );
-  }, [catalogPlans, accountStatus]);
+  }, [displayPlans, userPlanCode]);
 
-  const planName = accountStatus?.planName ?? matchingPlan?.name ?? activeMeta.name;
-
+  const planName = accountStatus?.planName ?? matchingPlan?.name ?? 'Starter';
   const planStatus = accountStatus?.status ?? 'none';
   const billingPeriod = accountStatus?.billingPeriod ?? 'monthly';
-  const currency = accountStatus?.currency ?? 'INR';
+  const currency = accountStatus?.currency ?? matchingPlan?.currency ?? 'INR';
   const currencySymbol = currency === 'INR' ? '₹' : `${currency} `;
+  const planOldPrice = matchingPlan?.old_price ?? matchingPlan?.oldPrice;
 
   const price =
     billingPeriod === 'yearly'
-      ? (accountStatus?.priceYearly ?? matchingPlan?.priceYearly ?? activeMeta.monthlyPrice * 10)
-      : (accountStatus?.priceMonthly ?? matchingPlan?.priceMonthly ?? activeMeta.monthlyPrice);
+      ? (accountStatus?.priceYearly ?? matchingPlan?.price_yearly ?? matchingPlan?.priceYearly ?? 0)
+      : (accountStatus?.priceMonthly ??
+        matchingPlan?.price_monthly ??
+        matchingPlan?.priceMonthly ??
+        0);
 
   const formattedRenewalDate = useMemo(() => {
     const rawDate = accountStatus?.currentEnd;
@@ -298,73 +121,10 @@ export function PlanDetailsTab() {
       ? Math.min(100, Math.round((storageUsedMB / storageLimitMB) * 100))
       : null;
 
-  // Active benefits for current plan - reactively updates whenever plan changes
   const activePlanBenefits = useMemo(() => {
-    const meta = PLAN_TIERS[activePlanKey];
-    const wsCount =
-      allowedWorkspaces > 0
-        ? allowedWorkspaces
-        : activePlanKey === 'pro'
-          ? 10
-          : activePlanKey === 'builder'
-            ? 3
-            : 1;
-    const wsText = `${wsCount} workspace${wsCount > 1 ? 's' : ' for 7 days'}`;
-
-    const respCount =
-      allowedResponses > 0
-        ? allowedResponses
-        : activePlanKey === 'pro'
-          ? 2000
-          : activePlanKey === 'builder'
-            ? 500
-            : 100;
-    const respText = `${respCount.toLocaleString('en-IN')} survey responses per workspace`;
-
-    const storageText =
-      storageLimitMB != null
-        ? `${storageLimitMB} MB storage capacity`
-        : `${meta.storage} storage capacity`;
-
-    const regenCount =
-      accountStatus?.regenerationLimit ??
-      (activePlanKey === 'pro' ? 10 : activePlanKey === 'builder' ? 5 : 2);
-    const rerunCount =
-      accountStatus?.stageRerun ??
-      (activePlanKey === 'pro' ? 5 : activePlanKey === 'builder' ? 3 : 1);
-
-    const analyticsTier = accountStatus?.surveyAnalytics ?? meta.surveyAnalytics;
-    const isExportAllowed = accountStatus?.exportEnabled ?? meta.exportReport;
-
-    if (matchingPlan?.features && matchingPlan.features.length > 0) {
-      return matchingPlan.features;
-    }
-
-    return [
-      `Ideal for: ${meta.idealFor}`,
-      wsText,
-      'Full AI Mentor Agent Suite (Validation, Market Research, Survey Intelligence)',
-      'AI-generated Surveys & Custom Survey Editing',
-      'Survey Distribution',
-      `${regenCount} times per workspace survey regenerations`,
-      `${rerunCount} per workspace stage reruns`,
-      `${analyticsTier} survey analytics`,
-      respText,
-      isExportAllowed ? 'Export validation reports (PDF)' : 'Export validation reports disabled',
-      storageText,
-      `${meta.support} support included`,
-    ];
-  }, [
-    matchingPlan?.features,
-    activePlanKey,
-    allowedWorkspaces,
-    allowedResponses,
-    storageLimitMB,
-    accountStatus?.regenerationLimit,
-    accountStatus?.stageRerun,
-    accountStatus?.surveyAnalytics,
-    accountStatus?.exportEnabled,
-  ]);
+    if (!matchingPlan) return [];
+    return generatePlanFeatures(matchingPlan);
+  }, [matchingPlan]);
 
   if (isLoading) {
     return (
@@ -436,7 +196,7 @@ export function PlanDetailsTab() {
                     )}
                   </div>
                   <p className="text-muted-foreground text-xs leading-relaxed">
-                    {matchingPlan?.description ?? activeMeta.idealFor}
+                    {matchingPlan?.description ?? ''}
                   </p>
                 </div>
               </div>
@@ -444,9 +204,11 @@ export function PlanDetailsTab() {
               <div className="mt-4 flex flex-col gap-3 pt-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-muted-foreground text-sm line-through">
-                      ₹{activeMeta.strikePrice}
-                    </span>
+                    {planOldPrice != null && planOldPrice > (price ?? 0) && (
+                      <span className="text-muted-foreground text-sm line-through">
+                        ₹{planOldPrice.toLocaleString('en-IN')}
+                      </span>
+                    )}
                     <span className="text-foreground text-2xl font-extrabold sm:text-3xl">
                       {price != null && price > 0
                         ? `${currencySymbol}${price.toLocaleString('en-IN')}`
@@ -638,7 +400,7 @@ export function PlanDetailsTab() {
                   <p className="text-foreground text-sm font-bold sm:text-base">
                     {storageLimitMB != null
                       ? `${storageUsedMB} MB / ${storageLimitMB} MB`
-                      : `${storageUsedMB} MB (Limit: ${activeMeta.storage})`}
+                      : `${storageUsedMB} MB (Limit: ${formatStorageSize(matchingPlan?.storage_limit)})`}
                   </p>
                 </div>
               </div>
@@ -663,7 +425,7 @@ export function PlanDetailsTab() {
                   <p className="text-foreground text-sm font-bold sm:text-base">
                     {accountStatus?.regenerationLimit != null
                       ? `${accountStatus.regenerationLimit} / workspace`
-                      : activeMeta.surveyRegeneration}
+                      : `${matchingPlan?.regeneration_limit ?? 2} / workspace`}
                   </p>
                 </div>
               </div>
@@ -681,7 +443,7 @@ export function PlanDetailsTab() {
                   <p className="text-foreground text-sm font-bold sm:text-base">
                     {accountStatus?.stageRerun != null
                       ? `${accountStatus.stageRerun} / workspace`
-                      : activeMeta.stageRerun}
+                      : `${matchingPlan?.stage_rerun ?? 1} / workspace`}
                   </p>
                 </div>
               </div>
@@ -701,13 +463,15 @@ export function PlanDetailsTab() {
                     Analytics & Export
                   </p>
                   <p className="text-foreground text-sm font-bold sm:text-base">
-                    {accountStatus?.surveyAnalytics ?? activeMeta.surveyAnalytics} Analytics
+                    {accountStatus?.surveyAnalytics ?? matchingPlan?.survey_analytics ?? 'Basic'}{' '}
+                    Analytics
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-[11px]">
                 <span className="text-muted-foreground">Report Export:</span>
-                {(accountStatus?.exportEnabled ?? activeMeta.exportReport) ? (
+                {!isFreePlan(matchingPlan) &&
+                (accountStatus?.exportEnabled ?? matchingPlan?.export_enabled) ? (
                   <span className="font-semibold text-emerald-600 dark:text-emerald-400">
                     Enabled
                   </span>
@@ -776,22 +540,24 @@ export function PlanDetailsTab() {
             <table className="w-full min-w-[620px] text-left text-xs sm:text-sm">
               <thead>
                 <tr className="bg-muted/50 border-border/80 border-b">
-                  <th className="text-foreground w-1/4 px-4 py-3.5 text-[11px] font-bold tracking-wider uppercase">
+                  <th className="text-foreground px-4 py-3.5 text-[11px] font-bold tracking-wider uppercase">
                     Feature
                   </th>
-                  {(['starter', 'builder', 'pro'] as const).map((tierKey) => {
-                    const tier = PLAN_TIERS[tierKey];
-                    const isActive = activePlanKey === tierKey;
+                  {displayPlans.map((plan) => {
+                    const isActive =
+                      plan.id.toLowerCase() === userPlanCode ||
+                      plan.code?.toLowerCase() === userPlanCode ||
+                      plan.name.toLowerCase() === userPlanCode;
                     return (
                       <th
-                        key={tierKey}
+                        key={plan.id}
                         className={cn(
-                          'w-1/4 px-4 py-3.5 text-center font-bold transition-colors',
+                          'px-4 py-3.5 text-center font-bold transition-colors',
                           isActive ? 'bg-[#FF4500]/10 text-[#FF4500]' : 'text-foreground',
                         )}
                       >
                         <div className="flex flex-col items-center gap-1">
-                          <span className="text-sm font-extrabold sm:text-base">{tier.name}</span>
+                          <span className="text-sm font-extrabold sm:text-base">{plan.name}</span>
                           {isActive && (
                             <span className="inline-flex items-center rounded-full bg-[#FF4500] px-2 py-0.5 text-[10px] font-bold text-white shadow-2xs">
                               Your Plan
@@ -804,7 +570,7 @@ export function PlanDetailsTab() {
                 </tr>
               </thead>
               <tbody className="divide-border/60 divide-y">
-                {COMPARISON_ROWS.map((row, idx) => (
+                {DYNAMIC_PLAN_COMPARISON_ROWS.map((row, idx) => (
                   <tr
                     key={idx}
                     className={cn(
@@ -814,13 +580,16 @@ export function PlanDetailsTab() {
                   >
                     <td className="text-foreground px-4 py-3 font-medium">{row.feature}</td>
 
-                    {(['starter', 'builder', 'pro'] as const).map((tierKey) => {
-                      const val = row[tierKey];
-                      const isActive = activePlanKey === tierKey;
+                    {displayPlans.map((plan) => {
+                      const val = row.getValue(plan);
+                      const isActive =
+                        plan.id.toLowerCase() === userPlanCode ||
+                        plan.code?.toLowerCase() === userPlanCode ||
+                        plan.name.toLowerCase() === userPlanCode;
 
                       return (
                         <td
-                          key={tierKey}
+                          key={plan.id}
                           className={cn(
                             'px-4 py-3 text-center text-xs sm:text-sm',
                             isActive

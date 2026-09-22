@@ -200,6 +200,8 @@ export interface AdminPlan {
   razorpay_plan_id_yearly: string | null;
   price_monthly: number;
   price_yearly: number;
+  old_price?: number | null;
+  oldPrice?: number | null;
   currency: string;
   features: string[];
   tier: number;
@@ -228,6 +230,7 @@ export interface CreatePlanWithRazorpayPayload {
   razorpay_plan_id_yearly?: string | null;
   price_monthly?: number;
   price_yearly?: number;
+  old_price?: number | null;
   currency?: string;
   features?: string[];
   tier?: number;
@@ -252,6 +255,7 @@ export interface UpdatePlanPayload {
   razorpay_plan_id_yearly?: string | null;
   price_monthly?: number;
   price_yearly?: number;
+  old_price?: number | null;
   currency?: string;
   features?: string[];
   tier?: number;

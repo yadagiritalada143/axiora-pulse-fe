@@ -1,15 +1,4 @@
-import {
-  Check,
-  CreditCard,
-  Database,
-  FileText,
-  Info,
-  Layers,
-  Loader2,
-  Plus,
-  ShieldCheck,
-  Trash2,
-} from 'lucide-react';
+import { CreditCard, Database, Info, Layers, Loader2, Plus, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 
 import type {
@@ -17,7 +6,6 @@ import type {
   CreatePlanWithRazorpayPayload,
   UpdatePlanPayload,
 } from '@/types/admin.types';
-import { Badge } from '@components/ui/badge';
 import { Button } from '@components/ui/button';
 import { Checkbox } from '@components/ui/checkbox';
 import {
@@ -66,6 +54,8 @@ function PlanFormContent({
   onCreate,
   onUpdate,
 }: PlanFormContentProps) {
+  const isEditing = mode === 'edit';
+
   const [code, setCode] = useState(() => (mode === 'edit' && plan ? plan.code : ''));
   const [name, setName] = useState(() => (mode === 'edit' && plan ? plan.name : ''));
   const [description, setDescription] = useState(() =>
@@ -82,9 +72,14 @@ function PlanFormContent({
   const [priceMonthly, setPriceMonthly] = useState<number>(() =>
     mode === 'edit' && plan ? plan.price_monthly : 0,
   );
-  const [priceYearly, setPriceYearly] = useState<number>(() =>
-    mode === 'edit' && plan ? plan.price_yearly : 0,
+  const [oldPrice, setOldPrice] = useState<string>(() =>
+    mode === 'edit' && plan
+      ? (plan.old_price ?? plan.oldPrice) != null
+        ? String(plan.old_price ?? plan.oldPrice)
+        : ''
+      : '',
   );
+  const [priceYearly] = useState<number>(() => (mode === 'edit' && plan ? plan.price_yearly : 0));
   const [currency, setCurrency] = useState(() =>
     mode === 'edit' && plan ? plan.currency || 'INR' : 'INR',
   );
@@ -127,21 +122,6 @@ function PlanFormContent({
     mode === 'edit' && plan ? Boolean(plan.export_enabled) : true,
   );
 
-  const [features, setFeatures] = useState<string[]>(() => {
-    if (mode === 'edit' && plan) {
-      return Array.isArray(plan.features) ? [...plan.features] : [];
-    }
-    return [
-      '1 workspace/idea for 7 days',
-      '2 survey regenerations per workspace',
-      '1 stage rerun per workspace',
-      'Basic survey analytics',
-      '100 survey responses per workspace',
-      '200 MB storage allowance',
-    ];
-  });
-  const [newFeatureText, setNewFeatureText] = useState('');
-
   const [razorpayPlanIdMonthly, setRazorpayPlanIdMonthly] = useState(() =>
     mode === 'edit' && plan ? (plan.razorpay_plan_id_monthly ?? '') : '',
   );
@@ -150,22 +130,6 @@ function PlanFormContent({
   );
 
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  const handleAddFeature = () => {
-    const trimmed = newFeatureText.trim();
-    if (!trimmed) return;
-    if (features.includes(trimmed)) {
-      setErrorMsg('This feature is already added.');
-      return;
-    }
-    setFeatures((prev) => [...prev, trimmed]);
-    setNewFeatureText('');
-    setErrorMsg(null);
-  };
-
-  const handleRemoveFeature = (index: number) => {
-    setFeatures((prev) => prev.filter((_, i) => i !== index));
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -202,8 +166,9 @@ function PlanFormContent({
         tier: Number(tier) || 0,
         price_monthly: Number(priceMonthly) || 0,
         price_yearly: Number(priceYearly) || 0,
+        old_price: parseOptionalInt(oldPrice),
         currency: currency.trim() || 'INR',
-        features,
+        features: [],
         popular: isPopular,
         is_active: isActive,
         workspace_limit: parseOptionalInt(workspaceLimit),
@@ -225,8 +190,9 @@ function PlanFormContent({
         tier: Number(tier) || 0,
         price_monthly: Number(priceMonthly) || 0,
         price_yearly: Number(priceYearly) || 0,
+        old_price: parseOptionalInt(oldPrice),
         currency: currency.trim() || 'INR',
-        features,
+        features: plan.features ?? [],
         popular: isPopular,
         is_active: isActive,
         workspace_limit: parseOptionalInt(workspaceLimit),
@@ -270,12 +236,14 @@ function PlanFormContent({
                 placeholder="e.g. starter, builder, pro"
                 value={code}
                 onChange={(e) => setCode(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
-                disabled={isPending}
+                disabled={isPending || isEditing}
                 className="font-mono text-xs"
                 required
               />
               <p className="text-muted-foreground text-[11px]">
-                Unique identifier code for this plan (e.g. starter, builder, enterprise).
+                {isEditing
+                  ? 'Plan code cannot be modified once created.'
+                  : 'Unique identifier code for this plan (e.g. starter, builder, enterprise).'}
               </p>
             </div>
 
@@ -389,13 +357,40 @@ function PlanFormContent({
                   min={0}
                   value={priceMonthly}
                   onChange={(e) => setPriceMonthly(Math.max(0, parseInt(e.target.value, 10) || 0))}
-                  disabled={isPending}
+                  disabled={isPending || isEditing}
                   className="pl-7 text-xs font-semibold"
                 />
               </div>
-              <p className="text-muted-foreground text-[11px]">0 = Free tier</p>
+              <p className="text-muted-foreground text-[11px]">
+                {isEditing ? 'Monthly price cannot be modified once created.' : '0 = Free tier'}
+              </p>
             </div>
 
+            <div className="space-y-1.5">
+              <Label htmlFor="old-price" className="text-xs font-semibold">
+                Old Price (₹)
+              </Label>
+              <div className="relative">
+                <span className="text-muted-foreground absolute top-2.5 left-3 text-xs">₹</span>
+                <Input
+                  id="old-price"
+                  type="number"
+                  min={0}
+                  placeholder="e.g. 999"
+                  value={oldPrice}
+                  onChange={(e) => setOldPrice(e.target.value)}
+                  disabled={isPending || isEditing}
+                  className="pl-7 text-xs font-semibold"
+                />
+              </div>
+              <p className="text-muted-foreground text-[11px]">
+                {isEditing
+                  ? 'Old price cannot be modified once created.'
+                  : 'Pre-discount strike through price'}
+              </p>
+            </div>
+
+            {/* Yearly Price (₹) 
             <div className="space-y-1.5">
               <Label htmlFor="price-yearly" className="text-xs font-semibold">
                 Yearly Price (₹)
@@ -408,12 +403,15 @@ function PlanFormContent({
                   min={0}
                   value={priceYearly}
                   onChange={(e) => setPriceYearly(Math.max(0, parseInt(e.target.value, 10) || 0))}
-                  disabled={isPending}
+                  disabled={isPending || isEditing}
                   className="pl-7 text-xs font-semibold"
                 />
               </div>
-              <p className="text-muted-foreground text-[11px]">Discounted annual rate</p>
+              <p className="text-muted-foreground text-[11px]">
+                {isEditing ? 'Yearly price cannot be modified once created.' : 'Discounted annual rate'}
+              </p>
             </div>
+            */}
 
             <div className="space-y-1.5">
               <Label htmlFor="currency" className="text-xs font-semibold">
@@ -573,79 +571,6 @@ function PlanFormContent({
           </div>
         </div>
 
-        <div className="border-border bg-card/60 space-y-4 rounded-xl border p-4">
-          <div className="border-border/60 flex items-center justify-between border-b pb-2">
-            <div className="flex items-center gap-2">
-              <FileText className="size-4 text-[#FF4500]" />
-              <h4 className="text-foreground text-xs font-bold tracking-wider uppercase">
-                4. Plan Features & Benefits ({features.length})
-              </h4>
-            </div>
-            <Badge variant="outline" className="text-[10px]">
-              Shown directly on pricing page
-            </Badge>
-          </div>
-
-          <div className="flex w-full items-center gap-2">
-            <Input
-              placeholder="Type a new benefit bullet point and press Enter or Add..."
-              value={newFeatureText}
-              onChange={(e) => setNewFeatureText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleAddFeature();
-                }
-              }}
-              disabled={isPending}
-              className="h-9 flex-1 text-xs"
-            />
-
-            <Button
-              type="button"
-              size="sm"
-              onClick={handleAddFeature}
-              disabled={isPending || !newFeatureText.trim()}
-              className="h-9 shrink-0 gap-1 bg-[#FF4500] px-3 text-xs font-semibold text-white hover:bg-[#FF4500]/90"
-            >
-              <Plus className="size-3" />
-              Add
-            </Button>
-          </div>
-
-          {features.length === 0 ? (
-            <p className="text-muted-foreground py-4 text-center text-xs italic">
-              No features added yet. Add feature bullet points to present to users.
-            </p>
-          ) : (
-            <ul className="max-h-48 space-y-2 overflow-y-auto pr-1">
-              {features.map((feature, idx) => (
-                <li
-                  key={idx}
-                  className="border-border bg-background hover:border-border/80 flex items-center justify-between gap-3 rounded-lg border p-2.5 text-xs transition-colors"
-                >
-                  <div className="flex min-w-0 items-center gap-2.5">
-                    <div className="flex size-4.5 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                      <Check className="size-3" strokeWidth={3} />
-                    </div>
-                    <span className="text-foreground/90 truncate font-medium">{feature}</span>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleRemoveFeature(idx)}
-                    disabled={isPending}
-                    className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive size-7 shrink-0"
-                  >
-                    <Trash2 className="size-3.5" />
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
         <div className="space-y-3 rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 text-xs">
           <div className="flex items-start gap-2.5 text-blue-700 dark:text-blue-300">
             <ShieldCheck className="mt-0.5 size-4 shrink-0" />
@@ -751,8 +676,8 @@ export function PlanFormModal(props: PlanFormModalProps) {
               </DialogTitle>
               <DialogDescription className="text-xs">
                 {mode === 'create'
-                  ? 'Define pricing, usage quotas, feature benefits, and billing schedules.'
-                  : 'Update plan parameters, benefits, pricing, and availability.'}
+                  ? 'Define pricing, usage quotas, and billing schedules.'
+                  : 'Update plan parameters, quotas, and availability.'}
               </DialogDescription>
             </div>
           </div>

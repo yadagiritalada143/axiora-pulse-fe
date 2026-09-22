@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import type { PricingPlan } from '@/types/api.types';
+import { generatePlanFeatures, isFreePlan } from '@/utils/planFeatures';
 import { ApiErrorMessage } from '@components/common/ApiErrorMessage';
 import { Button } from '@components/ui/button';
 import { ROUTES } from '@constants/routes';
@@ -15,77 +16,9 @@ import { useSubscribe } from '@features/pricing/hooks/useSubscribe';
 import { cn } from '@lib/utils';
 import { useAuthStore } from '@store/auth.store';
 
-const DEFAULT_FALLBACK_PLANS: PricingPlan[] = [
-  {
-    id: 'starter',
-    name: 'Starter',
-    description:
-      'For students exploring and validating their first startup idea, turning an initial concept into a real-world opportunity.',
-    priceMonthly: 0,
-    priceYearly: 0,
-    features: [
-      '1 workspace/idea for 7 days',
-      '2 survey regenerations per workspace',
-      '1 stage rerun per workspace',
-      'Basic survey analytics',
-      '100 survey responses per workspace',
-      '200 MB storage',
-    ],
-    popular: false,
-  },
-  {
-    id: 'builder',
-    name: 'Builder',
-    description:
-      'For students building projects and early-stage startups who need deeper validation and research.',
-    priceMonthly: 299,
-    priceYearly: 2990,
-    features: [
-      '3 workspaces/ideas',
-      '5 survey regenerations per workspace',
-      '3 stage reruns per workspace',
-      'Advanced survey analytics',
-      '500 survey responses per workspace',
-      'Export validation reports',
-      '500 MB storage',
-    ],
-    popular: true,
-  },
-  {
-    id: 'pro',
-    name: 'Pro',
-    description:
-      'For student founders and power users who need advanced validation, insights, and greater workspace capacity.',
-    priceMonthly: 799,
-    priceYearly: 7990,
-    features: [
-      '10 workspaces/ideas',
-      '10 survey regenerations per workspace',
-      '5 stage reruns per workspace',
-      'Advanced survey analytics',
-      '2,000 survey responses per workspace',
-      'Export validation reports',
-      '2 GB storage',
-    ],
-    popular: false,
-  },
-];
-
-function getPlanButtonText(
-  plan: PricingPlan,
-  planName: string,
-  isFree: boolean,
-  isActive: boolean,
-): string {
-  const planId = String(plan.id).toLowerCase();
+function getPlanButtonText(planName: string, isActive: boolean): string {
   if (isActive) {
-    if (planId === 'starter' || isFree) {
-      return 'Current Starter (Free)';
-    }
-    return `Current ${planName}`;
-  }
-  if (isFree) {
-    return `Choose ${planName} (Free)`;
+    return 'Current Plan';
   }
   return `Choose ${planName}`;
 }
@@ -107,15 +40,13 @@ function PlanCard({
   const isThisSubmitting = submittingId === planId;
 
   const planName = plan.name;
-  const planDesc = plan.description ?? 'Access AI-guided validation workflows and workspace tools.';
-  const priceMonthly = plan.priceMonthly ?? 0;
-  const isFree =
-    priceMonthly === 0 || planId.toLowerCase() === 'starter' || planId.toLowerCase() === 'free';
+  const planDesc = plan.description ?? '';
+  const priceMonthly = plan.price_monthly ?? plan.priceMonthly ?? 0;
+  const oldPrice = plan.old_price ?? plan.oldPrice;
   const isPopular = Boolean(plan.popular);
-  const features = Array.isArray(plan.features) ? plan.features : [];
+  const features = generatePlanFeatures(plan);
 
-  const buttonLabel = getPlanButtonText(plan, planName, isFree, isActive);
-  const strikePrice = priceMonthly > 0 ? Math.round(priceMonthly * 1.4) : 299;
+  const buttonLabel = getPlanButtonText(planName, isActive);
 
   return (
     <div
@@ -181,11 +112,11 @@ function PlanCard({
             </span>
           </div>
 
-          <div className="mt-1">
-            <span className="text-xs font-normal text-neutral-400 line-through dark:text-neutral-500">
-              ₹{strikePrice.toLocaleString('en-IN')} / month
-            </span>
-          </div>
+          {oldPrice != null && oldPrice > priceMonthly ? (
+            <div className="mt-0.5 text-xs text-neutral-400 line-through dark:text-neutral-500">
+              ₹{oldPrice.toLocaleString('en-IN')} / month
+            </div>
+          ) : null}
 
           <button
             type="button"
@@ -280,9 +211,8 @@ function MobileCarousel({
       <div ref={emblaRef} className="overflow-hidden px-[8vw]">
         <div className="-ml-4 flex items-stretch">
           {plans.map((plan, idx) => {
-            const planCode = String(plan.id).toLowerCase();
-            const isFree =
-              (plan.priceMonthly ?? 0) === 0 || planCode === 'starter' || planCode === 'free';
+            const planCode = (plan.code ?? String(plan.id)).toLowerCase();
+            const isFree = isFreePlan(plan);
             const isActive =
               planCode === activePlanCode ||
               plan.name.toLowerCase() === activePlanCode ||
@@ -367,7 +297,7 @@ export function PricingPlans() {
   const isSubmitting = subscribe.isPending || selectFreePlan.isPending;
 
   const currentPlanCode = (accountStatus?.plan ?? 'starter').toLowerCase();
-  const displayPlans = plans && plans.length > 0 ? plans : DEFAULT_FALLBACK_PLANS;
+  const displayPlans = plans ?? [];
 
   const proceedToOnboarding = useCallback(() => {
     setHasActivePlan(true);
@@ -379,9 +309,9 @@ export function PricingPlans() {
     (planId: string) => {
       if (isSubmitting) return;
 
-      const targetPlan = displayPlans.find((p) => String(p.id) === planId);
+      const targetPlan = displayPlans.find((p) => String(p.id) === planId || p.code === planId);
       const isFree = targetPlan
-        ? (targetPlan.priceMonthly ?? 0) === 0
+        ? isFreePlan(targetPlan)
         : planId === 'starter' || planId === 'free';
 
       if (isFree) {
@@ -429,6 +359,10 @@ export function PricingPlans() {
             Try again
           </Button>
         </div>
+      ) : displayPlans.length === 0 ? (
+        <div className="mt-12 text-center text-neutral-600 dark:text-neutral-400">
+          <p className="text-sm">No plans are currently available.</p>
+        </div>
       ) : (
         <>
           <div
@@ -443,9 +377,8 @@ export function PricingPlans() {
             )}
           >
             {displayPlans.map((plan) => {
-              const planCode = String(plan.id).toLowerCase();
-              const isFree =
-                (plan.priceMonthly ?? 0) === 0 || planCode === 'starter' || planCode === 'free';
+              const planCode = (plan.code ?? String(plan.id)).toLowerCase();
+              const isFree = isFreePlan(plan);
               const isActive =
                 planCode === currentPlanCode ||
                 plan.name.toLowerCase() === currentPlanCode ||

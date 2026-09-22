@@ -50,32 +50,66 @@ const mockedUseSelectFreePlan = useSelectFreePlan as jest.Mock;
 const PLANS: PricingPlan[] = [
   {
     id: 'starter',
-    name: 'Starter Plan',
+    code: 'starter',
+    name: 'Starter',
     priceMonthly: 0,
     priceYearly: 0,
-    features: ['1 workspace/idea for 7 days'],
-    description: 'For students exploring and validating their first startup idea.',
+    price_monthly: 0,
+    price_yearly: 0,
+    old_price: 299,
+    currency: 'INR',
+    features: [],
+    workspace_limit: 1,
+    survey_response_cap: 100,
+    regeneration_limit: 2,
+    export_enabled: false,
+    stage_rerun: 1,
+    survey_analytics: 'Basic',
+    storage_limit: 200,
     popular: false,
+    tier: 0,
   },
   {
     id: 'builder',
+    code: 'builder',
     name: 'Builder',
-    priceMonthly: 299,
-    priceYearly: 2990,
-    features: ['3 workspaces/ideas'],
-    description:
-      'For students building projects and early-stage startups who need deeper validation and research.',
+    priceMonthly: 499,
+    priceYearly: 4990,
+    price_monthly: 499,
+    price_yearly: 4990,
+    old_price: 999,
+    currency: 'INR',
+    features: [],
+    workspace_limit: 3,
+    survey_response_cap: 500,
+    regeneration_limit: 5,
+    export_enabled: true,
+    stage_rerun: 3,
+    survey_analytics: 'Advanced',
+    storage_limit: 500,
     popular: true,
+    tier: 1,
   },
   {
     id: 'pro',
+    code: 'pro',
     name: 'Pro',
-    priceMonthly: 799,
-    priceYearly: 7990,
-    features: ['10 workspaces/ideas'],
-    description:
-      'For student founders and power users who need advanced validation, insights, and greater workspace capacity.',
+    priceMonthly: 999,
+    priceYearly: 9990,
+    price_monthly: 999,
+    price_yearly: 9990,
+    old_price: 1999,
+    currency: 'INR',
+    features: [],
+    workspace_limit: 10,
+    survey_response_cap: 2000,
+    regeneration_limit: 10,
+    export_enabled: true,
+    stage_rerun: 5,
+    survey_analytics: 'Advanced',
+    storage_limit: 2048,
     popular: false,
+    tier: 2,
   },
 ];
 
@@ -140,13 +174,17 @@ describe('PricingPlans', () => {
     expect(screen.getAllByText('Builder').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Pro').length).toBeGreaterThan(0);
 
-    // Starter should be marked as Active Plan
     expect(screen.getAllByText('Active Plan').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Current Starter (Free)').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Current Plan').length).toBeGreaterThan(0);
 
-    // Pricing checks: 299 for Builder, 799 for Pro
-    expect(screen.getAllByText('₹299').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('₹799').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('₹499').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('₹999').length).toBeGreaterThan(0);
+
+    const strikethroughElements = document.querySelectorAll('.line-through');
+    expect(strikethroughElements.length).toBeGreaterThan(0);
+    expect(screen.getAllByText('₹299 / month').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('₹999 / month').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('₹1,999 / month').length).toBeGreaterThan(0);
   });
 
   it('renders only monthly pricing and does not render yearly billing toggle', () => {
@@ -161,7 +199,7 @@ describe('PricingPlans', () => {
     const user = userEvent.setup();
     render(<PricingPlans />);
 
-    const [starterButton] = screen.getAllByText('Current Starter (Free)');
+    const [starterButton] = screen.getAllByText('Current Plan');
     if (!starterButton) throw new Error('starterButton not found');
     await user.click(starterButton);
 
@@ -238,6 +276,6 @@ describe('PricingPlans', () => {
 
     const heading = screen.getByText('Choose your plan');
     expect(heading).toBeInTheDocument();
-    expect(screen.queryByText('Current Starter (Free)')).not.toBeInTheDocument();
+    expect(screen.queryByText('Current Plan')).not.toBeInTheDocument();
   });
 });

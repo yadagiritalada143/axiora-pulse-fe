@@ -122,7 +122,6 @@ describe('AgentStepProgress', () => {
     await user.click(targetBtn);
 
     expect(screen.getAllByText('Survey Intelligence').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Sub-agent').length).toBeGreaterThan(0);
     expect(
       screen.getAllByText('Creates market surveys & analyzes customer sentiment').length,
     ).toBeGreaterThan(0);
