@@ -18,6 +18,7 @@ import type {
   WorkspaceChatRequest,
   WorkspaceChatResponse,
   WorkspaceStateResponse,
+  WorkspaceLiveStateResponse,
 } from '../types';
 
 async function processReportBlob(rawBlob: Blob, format: string): Promise<Blob> {
@@ -291,5 +292,12 @@ export const workspaceService = {
     const processedBlob = await processReportBlob(rawBlob, 'pdf');
 
     return { blob: processedBlob, filename };
+  },
+
+  getLiveState: async (workspaceId: number | string): Promise<WorkspaceLiveStateResponse> => {
+    const { data } = await apiClient.get<WorkspaceLiveStateResponse>(
+      API_ENDPOINTS.WORKSPACE.LIVE_STATE(workspaceId),
+    );
+    return data;
   },
 };

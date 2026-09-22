@@ -1,18 +1,10 @@
 import type { WorkspaceMentorStateValue } from '../types';
 
-export interface SubAgentStep {
-  id: string;
-  name: string;
-  description: string;
-  details: string[];
-}
-
 export interface AgentStep {
   id: number;
   name: string;
   description: string;
   details: string[];
-  subAgents?: SubAgentStep[];
 }
 
 export const AGENT_STEPS: AgentStep[] = [
@@ -38,7 +30,7 @@ export const AGENT_STEPS: AgentStep[] = [
     name: 'Market Research & Business Model',
     description: 'Market Intelligence + Business Model + Revenue Model',
     details: [
-      'Detailed market research (Survey Intelligence)',
+      'Detailed market research',
       'Target audience',
       'Customer personas',
       'Customer pain points',
@@ -53,24 +45,23 @@ export const AGENT_STEPS: AgentStep[] = [
       'Unit economics',
       'Revenue potential',
     ],
-    subAgents: [
-      {
-        id: 'survey_intelligence',
-        name: 'Survey Intelligence',
-        description: 'Creates market surveys & analyzes customer sentiment',
-        details: [
-          'Creates customer market validation surveys.',
-          'Collects and analyzes customer responses.',
-          'Interprets overall market sentiment.',
-          'Identifies recurring customer pain points.',
-          "Measures customers' willingness to pay.",
-          "Determines whether customer feedback validates the founder's original business assumptions.",
-        ],
-      },
-    ],
   },
   {
     id: 3,
+    name: 'Survey Intelligence',
+    description: 'Creates market surveys & analyzes customer sentiment',
+    details: [
+      'Survey question generation',
+      'Target audience alignment',
+      'Audience targeting & deployment',
+      'Real-time sentiment extraction',
+      'Quantitative validation signals',
+      'Customer pain point identification',
+      'Willingness to pay measurement',
+    ],
+  },
+  {
+    id: 4,
     name: 'Financial & Capital Planning',
     description: 'Capital Plan + Financial Plan + Runway + Break-even Target',
     details: [
@@ -91,7 +82,7 @@ export const AGENT_STEPS: AgentStep[] = [
     ],
   },
   {
-    id: 4,
+    id: 5,
     name: 'MVP & Execution Planning',
     description: 'POC/MVP Scope + Execution Roadmap',
     details: [
@@ -112,7 +103,7 @@ export const AGENT_STEPS: AgentStep[] = [
     ],
   },
   {
-    id: 5,
+    id: 6,
     name: 'Business Setup & Build Execution',
     description: 'Team + Resources + Operations + Build Execution Plan',
     details: [
@@ -134,7 +125,7 @@ export const AGENT_STEPS: AgentStep[] = [
     ],
   },
   {
-    id: 6,
+    id: 7,
     name: 'Pre-Traction & GTM',
     description: 'Pre-Customer Base + Waitlist + Community + GTM Plan',
     details: [
@@ -157,7 +148,7 @@ export const AGENT_STEPS: AgentStep[] = [
     ],
   },
   {
-    id: 7,
+    id: 8,
     name: 'Testing, Pilot & Improvement',
     description: 'Tested & Improved Product + Launch Readiness Score',
     details: [
@@ -178,7 +169,7 @@ export const AGENT_STEPS: AgentStep[] = [
     ],
   },
   {
-    id: 8,
+    id: 9,
     name: 'Launch, Traction & Customer Validation',
     description: 'Customers + Revenue + Traction + Market Evidence',
     details: [
@@ -203,7 +194,7 @@ export const AGENT_STEPS: AgentStep[] = [
     ],
   },
   {
-    id: 9,
+    id: 10,
     name: 'Break-Even & Growth',
     description: 'Break-Even Plan + Profitable Growth Roadmap',
     details: [
@@ -225,7 +216,7 @@ export const AGENT_STEPS: AgentStep[] = [
     ],
   },
   {
-    id: 10,
+    id: 11,
     name: 'Scale, Expansion & Strategic Future',
     description: 'Scale / Expansion / Funding / Exit Strategy',
     details: [

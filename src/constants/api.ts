@@ -49,6 +49,8 @@ export const API_ENDPOINTS = {
       `/v1/workspaces/${workspaceId}/reports/${agentName}`,
     REPORT_EXPORT: (workspaceId: number) => `/v1/workspaces/${workspaceId}/reports/export`,
     CERTIFICATE: (workspaceId: number) => `/v1/workspaces/${workspaceId}/certificate`,
+    LIVE_STREAM: (workspaceId: number | string) => `/v1/workspaces/${workspaceId}/live-stream`,
+    LIVE_STATE: (workspaceId: number | string) => `/v1/workspaces/${workspaceId}/live-state`,
   },
 
   SURVEY: {

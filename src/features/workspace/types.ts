@@ -132,3 +132,37 @@ export interface DeleteAttachmentResponse {
   attachment_id: number;
   workspace_id: number;
 }
+
+export type StepStatus = 'completed' | 'active' | 'pending' | 'roadmap';
+
+export interface JourneyStepDetail {
+  id: number;
+  name: string;
+  description: string;
+  status: StepStatus;
+  score?: number | null;
+  completed_at?: string | null;
+  key_activities: string[];
+}
+
+export interface LiveExecutionInfo {
+  is_running: boolean;
+  run_id?: string | null;
+  active_agent?: string | null;
+  active_agent_label?: string | null;
+  current_action?: string | null;
+  progress_pct: number;
+  elapsed_seconds: number;
+  started_at?: string | null;
+}
+
+export interface WorkspaceLiveStateResponse {
+  workspace_id: string;
+  mentor_state: string;
+  current_step_id: number;
+  current_step_name: string;
+  steps: JourneyStepDetail[];
+  execution: LiveExecutionInfo;
+  recent_activities: string[];
+  updated_at: string;
+}

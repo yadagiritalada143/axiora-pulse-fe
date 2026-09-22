@@ -2,16 +2,22 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { AgentStepProgress } from '@features/workspace/components/AgentStepProgress';
+import * as liveStateHook from '@features/workspace/hooks/useWorkspaceLiveState';
+import type { WorkspaceLiveStateResponse } from '@features/workspace/types';
 import { AGENT_STEPS, getStepFromWorkspaceState } from '@features/workspace/utils/agentStep.utils';
 
 describe('AgentStepProgress', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('defaults to step 1 when currentStep is not provided', () => {
     render(<AgentStepProgress />);
 
-    expect(screen.getByText('1/10 Steps')).toBeInTheDocument();
+    expect(screen.getByText('1/11 Steps')).toBeInTheDocument();
   });
 
-  it('renders all 10 step names from the lifecycle design', () => {
+  it('renders all 11 step names from the lifecycle design', () => {
     render(<AgentStepProgress currentStep={2} />);
 
     AGENT_STEPS.forEach((step) => {
@@ -44,7 +50,7 @@ describe('AgentStepProgress', () => {
     const user = userEvent.setup();
     render(<AgentStepProgress currentStep={2} />);
 
-    const toggle = screen.getByText('Agent Workflow').closest('button');
+    const toggle = screen.getAllByText('Entrepreneur Journey')[0]?.closest('button');
     expect(toggle).toBeInTheDocument();
     if (!toggle) throw new Error('toggle button not found');
 
@@ -59,7 +65,7 @@ describe('AgentStepProgress', () => {
     await user.click(toggle);
 
     expect(chevron()).toHaveClass('lucide-chevron-up');
-    expect(screen.getAllByText('Completed').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Done').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Active').length).toBeGreaterThan(0);
 
     await user.click(toggle);
@@ -78,7 +84,9 @@ describe('AgentStepProgress', () => {
     const firstDetail = firstStep.details[0];
     if (!firstDetail) throw new Error('firstStep.details is empty');
 
-    const stepButton = screen.getByRole('button', { name: new RegExp(firstStep.name, 'i') });
+    const stepButtons = screen.getAllByRole('button', { name: new RegExp(firstStep.name, 'i') });
+    const stepButton = stepButtons[stepButtons.length - 1];
+    if (!stepButton) throw new Error('step button not found');
 
     expect(screen.queryByText(`• ${firstDetail}`)).not.toBeInTheDocument();
 
@@ -106,33 +114,106 @@ describe('AgentStepProgress', () => {
     expect(screen.getAllByText('Running').length).toBeGreaterThan(0);
   });
 
-  it('reveals sub-agent Survey Intelligence with branching connector when Market Research step is clicked', async () => {
+  it('renders Survey Intelligence as canonical Step 3 without sub-agent or sub-mentor wordings', async () => {
     const user = userEvent.setup();
-    render(<AgentStepProgress currentStep={2} />);
+    render(<AgentStepProgress currentStep={3} />);
 
-    expect(
-      screen.queryByText('Creates market surveys & analyzes customer sentiment'),
-    ).not.toBeInTheDocument();
+    // Must NOT contain sub-agent or sub-mentor wordings
+    expect(screen.queryByText(/sub-agent/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/sub-mentor/i)).not.toBeInTheDocument();
 
-    const marketResearchBtns = screen.getAllByRole('button', {
-      name: /Market Research & Business Model/i,
-    });
-    const targetBtn = marketResearchBtns[marketResearchBtns.length - 1];
-    if (!targetBtn) throw new Error('Market Research button not found');
+    // Survey Intelligence is a top-level step
+    expect(screen.getAllByText('Survey Intelligence').length).toBeGreaterThan(0);
+
+    const surveyStepBtns = screen.getAllByRole('button', { name: /Survey Intelligence/i });
+    const targetBtn = surveyStepBtns[surveyStepBtns.length - 1];
+    if (!targetBtn) throw new Error('Survey Intelligence button not found');
+
     await user.click(targetBtn);
 
-    expect(screen.getAllByText('Survey Intelligence').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Sub-agent').length).toBeGreaterThan(0);
-    expect(
-      screen.getAllByText('Creates market surveys & analyzes customer sentiment').length,
-    ).toBeGreaterThan(0);
+    expect(screen.getByText(/Survey question generation/i)).toBeInTheDocument();
+    expect(screen.getByText(/Real-time sentiment extraction/i)).toBeInTheDocument();
+  });
 
-    const subAgentBtns = screen.getAllByRole('button', { name: /Survey Intelligence/i });
-    const subAgentBtn = subAgentBtns[0];
-    if (!subAgentBtn) throw new Error('Survey Intelligence button not found');
-    await user.click(subAgentBtn);
-    expect(
-      screen.getAllByText(/Creates customer market validation surveys/).length,
-    ).toBeGreaterThan(0);
+  it('renders dynamic steps and execution progress from backend live state', () => {
+    const mockLiveState: WorkspaceLiveStateResponse = {
+      workspace_id: '42',
+      mentor_state: 'VALIDATING',
+      current_step_id: 2,
+      current_step_name: 'Market Research & Business Model',
+      steps: [
+        {
+          id: 1,
+          name: 'Idea Validation',
+          description: 'Validation complete',
+          status: 'completed',
+          score: 8.7,
+          completed_at: '2026-09-22T00:00:00Z',
+          key_activities: ['Problem identification', 'Score generation'],
+        },
+        {
+          id: 2,
+          name: 'Market Research & Business Model',
+          description: 'Analyzing target market',
+          status: 'active',
+          score: null,
+          completed_at: null,
+          key_activities: ['Market sizing', 'Competitor benchmarking'],
+        },
+        {
+          id: 3,
+          name: 'Survey Intelligence',
+          description: 'Survey readiness',
+          status: 'pending',
+          score: null,
+          completed_at: null,
+          key_activities: ['Survey question generation'],
+        },
+        {
+          id: 4,
+          name: 'Financial & Capital Planning',
+          description: 'Future stage',
+          status: 'roadmap',
+          score: null,
+          completed_at: null,
+          key_activities: ['Runway calculation'],
+        },
+      ],
+      execution: {
+        is_running: true,
+        run_id: 'run-xyz-123',
+        active_agent: 'market_research_agent',
+        active_agent_label: 'Market Research Specialist',
+        current_action: 'Crawling competitor pricing databases...',
+        progress_pct: 65,
+        elapsed_seconds: 14,
+        started_at: '2026-09-22T00:00:00Z',
+      },
+      recent_activities: ['Started validation', 'Crawling competitor pricing databases...'],
+      updated_at: '2026-09-22T00:00:14Z',
+    };
+
+    jest.spyOn(liveStateHook, 'useWorkspaceLiveState').mockReturnValue({
+      liveState: mockLiveState,
+      isStreaming: true,
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<AgentStepProgress workspaceId={42} />);
+
+    // Checks live execution card
+    expect(screen.getAllByText('Market Research Specialist').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Crawling competitor pricing databases...').length).toBeGreaterThan(
+      0,
+    );
+    expect(screen.getAllByText('65%').length).toBeGreaterThan(0);
+
+    // Checks score badge from backend
+    expect(screen.getAllByText('Score: 8.7').length).toBeGreaterThan(0);
+
+    // Checks roadmap badge
+    expect(screen.getAllByText('Roadmap').length).toBeGreaterThan(0);
   });
 });

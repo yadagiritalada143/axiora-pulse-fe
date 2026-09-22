@@ -19,6 +19,8 @@ export const queryKeys = {
     list: () => [...queryKeys.workspace.all(), 'list'] as const,
     detail: (id: number) => [...queryKeys.workspace.all(), 'detail', id] as const,
     state: (id: number) => [...queryKeys.workspace.all(), 'state', id] as const,
+    liveState: (id?: number | string | null) =>
+      [...queryKeys.workspace.all(), 'liveState', id] as const,
   },
 
   survey: {
