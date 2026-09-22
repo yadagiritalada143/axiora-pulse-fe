@@ -118,11 +118,6 @@ export function AgentStepProgress({
                             >
                               {step.name}
                             </p>
-                            {step.subAgents && step.subAgents.length > 0 && (
-                              <span className="py-0.2 inline-flex items-center rounded-md bg-[#FF4500]/10 px-1.5 text-[9px] font-semibold text-[#FF4500]">
-                                1 sub-agent
-                              </span>
-                            )}
                           </div>
                         </div>
                         {isCompleted ? (
@@ -172,9 +167,6 @@ export function AgentStepProgress({
                                         <div className="flex items-center gap-1.5">
                                           <span className="text-foreground text-xs font-semibold">
                                             {subAgent.name}
-                                          </span>
-                                          <span className="py-0.2 rounded bg-[#FF4500]/10 px-1 text-[9px] font-medium text-[#FF4500]">
-                                            Sub-agent
                                           </span>
                                         </div>
                                         <span className="text-muted-foreground text-[10px]">
@@ -305,11 +297,6 @@ export function AgentStepProgress({
                               >
                                 {step.name}
                               </p>
-                              {step.subAgents && step.subAgents.length > 0 && (
-                                <span className="py-0.2 inline-flex items-center rounded-md bg-[#FF4500]/10 px-1.5 text-[9px] font-semibold text-[#FF4500]">
-                                  1 sub-mentor
-                                </span>
-                              )}
                             </div>
                           </div>
 
@@ -376,9 +363,6 @@ export function AgentStepProgress({
                                       <div className="flex items-center gap-1.5">
                                         <span className="text-foreground text-xs leading-tight font-bold">
                                           {subAgent.name}
-                                        </span>
-                                        <span className="py-0.2 rounded-full bg-[#FF4500]/10 px-1.5 text-[9px] font-semibold text-[#FF4500]">
-                                          Sub-agent
                                         </span>
                                       </div>
 
