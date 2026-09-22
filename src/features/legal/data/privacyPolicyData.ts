@@ -32,7 +32,7 @@ export const PRIVACY_POLICY_DATA: LegalDocument = {
       blocks: [
         {
           type: 'paragraph',
-          text: 'Axiora Global Solutions Pvt. Ltd. (“Axiora”, “Axiora Global”, “we”, “our”, or “us”) owns and operates Axiora Pulse, an AI-powered mentorship, market-feedback, validation, analytics and business decision-support platform.',
+          text: 'Axiora Global Solutions Pvt. Ltd. (“Axiora”, “Axiora Global”, “we”, “our”, or “us”) owns and operates Axiora Pulse, an AI-Mentor mentorship, market-feedback, validation, analytics and business decision-support platform.',
         },
         {
           type: 'paragraph',
@@ -48,7 +48,7 @@ export const PRIVACY_POLICY_DATA: LegalDocument = {
         },
         {
           type: 'list-item',
-          text: 'interact with Axiora Pulse AI Mentor or other AI-powered features',
+          text: 'interact with Axiora Pulse AI Mentor or other AI-Mentor features',
         },
         {
           type: 'list-item',
@@ -273,7 +273,7 @@ export const PRIVACY_POLICY_DATA: LegalDocument = {
       blocks: [
         {
           type: 'paragraph',
-          text: 'When you interact with Axiora Pulse’s AI-powered features, we may process:',
+          text: 'When you interact with Axiora Pulse’s AI-Mentor features, we may process:',
         },
         {
           type: 'list-item',

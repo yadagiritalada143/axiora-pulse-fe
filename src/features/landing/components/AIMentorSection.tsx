@@ -7,7 +7,7 @@ const MENTOR_CARDS = [
     img: '/assets/landing/Rectangle 3.png',
     title: 'Idea Validation',
     subtitle: 'Know if your idea is worth pursuing.',
-    desc: 'Turn your idea into a clear, evidence-based opportunity with AI-powered validation. Analyze the problem, target customers, market potential, competition, feasibility, and key risks to understand your idea’s strengths and weaknesses before investing significant time or resources.',
+    desc: 'Turn your idea into a clear, evidence-based opportunity with AI-Mentor validation. Analyze the problem, target customers, market potential, competition, feasibility, and key risks to understand your idea’s strengths and weaknesses before investing significant time or resources.',
   },
   {
     id: 'mentor-card-2',
@@ -16,7 +16,7 @@ const MENTOR_CARDS = [
     title: 'Market Research & Business Model',
     subtitle: 'Understand your market, customer sentiment, and monetize effectively.',
     subAgent: 'Survey Intelligence',
-    desc: 'Get a deep view of your industry with AI-powered market intelligence. Create personalized audience surveys, analyze consumer sentiment and willingness to pay, benchmark competitors, and construct sustainable revenue models to capture market share.',
+    desc: 'Get a deep view of your industry with AI-Mentor market intelligence. Create personalized audience surveys, analyze consumer sentiment and willingness to pay, benchmark competitors, and construct sustainable revenue models to capture market share.',
   },
   {
     id: 'mentor-card-3',
@@ -31,7 +31,7 @@ const MENTOR_CARDS = [
     side: 'right',
     img: '/assets/landing/Rectangle 4-1.png',
     title: 'MVP & Execution Planning',
-    subtitle: 'Build what matters, omit what doesn’t.',
+    subtitle: 'Build what matters, Eliminate what doesn’t.',
     desc: 'Define your minimum viable product scope, prioritize must-have features, map development timelines, and structure engineering sprints to build faster while keeping development costs optimized.',
   },
   {
@@ -196,9 +196,9 @@ export function AIMentorSection() {
             Meet Your AI Mentor
           </h2>
           <p ref={subtitleRef} className="ai-mentor-subtitle progressive-reveal-text delay-reveal">
-            Your intelligent startup companion with 10 specialized AI validation and growth,
-            designed to help you analyze opportunities, validate ideas, build smarter, launch
-            confidently, and scale your startup with AI-powered guidance.
+            A 24/7 AI Mentor that challenges your ideas, validates your market, protects your
+            capital, guides your next move, and helps you build with confidence — from idea to
+            scale.
           </p>
         </div>
 
@@ -223,7 +223,7 @@ export function AIMentorSection() {
                 {card.subAgent ? (
                   <div className="-mt-2 mb-3">
                     <span className="inline-flex items-center gap-1 rounded-full border border-[#FF4500]/30 bg-[#FF4500]/15 px-2.5 py-0.5 text-xs font-semibold text-[#FF4500]">
-                      Sub Mentor: {card.subAgent}
+                      {card.subAgent}
                     </span>
                   </div>
                 ) : null}

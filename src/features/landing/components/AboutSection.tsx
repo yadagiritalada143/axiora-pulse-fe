@@ -35,7 +35,7 @@ export function AboutSection() {
           <div className="about-header-right">
             <p className="about-description">
               Axiora Pulse helps founders validate ideas, understand their market, gather customer
-              insights, and make confident business decisions with AI-powered guidance.
+              insights, and make confident business decisions with AI-Mentor guidance.
             </p>
           </div>
         </div>

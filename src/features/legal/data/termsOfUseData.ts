@@ -32,7 +32,7 @@ export const TERMS_OF_USE_DATA: LegalDocument = {
       blocks: [
         {
           type: 'paragraph',
-          text: 'These Terms of Use (“Terms”) govern access to and use of Axiora Pulse, including its website, applications, AI-powered features, surveys, feedback tools, reports, dashboards, subscriptions, communities and related services.',
+          text: 'These Terms of Use (“Terms”) govern access to and use of Axiora Pulse, including its website, applications, AI-Mentor features, surveys, feedback tools, reports, dashboards, subscriptions, communities and related services.',
         },
         {
           type: 'paragraph',
@@ -75,7 +75,7 @@ export const TERMS_OF_USE_DATA: LegalDocument = {
       blocks: [
         {
           type: 'paragraph',
-          text: 'Axiora Pulse is an AI-powered mentorship, market-feedback, validation, analytics and business decision-support platform.',
+          text: 'Axiora Pulse is an AI-Mentor mentorship, market-feedback, validation, analytics and business decision-support platform.',
         },
         {
           type: 'paragraph',

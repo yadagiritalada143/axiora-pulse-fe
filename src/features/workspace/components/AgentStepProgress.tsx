@@ -385,7 +385,7 @@ export function AgentStepProgress({
                                   {isSubExpanded && (
                                     <div className="animate-in fade-in mt-2 border-l-2 border-[#FF4500]/30 pl-2.5 duration-200">
                                       <p className="text-muted-foreground/90 mb-1 text-[10px] font-medium tracking-wide uppercase">
-                                        Sub-Agent Scope & Activities
+                                        Scope & Activities
                                       </p>
                                       <ul className="text-muted-foreground space-y-1 text-[11px]">
                                         {subAgent.details.map((detail: string, idx: number) => (

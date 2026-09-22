@@ -31,7 +31,7 @@ const EXAMPLE_IDEAS = [
   {
     title: 'Lifestyle Health Tracker',
     description:
-      'An AI-powered wellness dashboard that monitors habits, provides proactive symptoms screening, and recommends preventative health actions.',
+      'An AI-Mentor wellness dashboard that monitors habits, provides proactive symptoms screening, and recommends preventative health actions.',
   },
 ];
 
