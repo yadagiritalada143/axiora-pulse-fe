@@ -69,7 +69,7 @@ export const API_ENDPOINTS = {
   },
 
   BILLING: {
-    PLANS: '/billing/plans',
+    PLANS: '/v1/plans',
     SUBSCRIBE: '/billing/subscribe',
     VERIFY: '/billing/verify',
     SUBSCRIPTION: '/billing/subscription',

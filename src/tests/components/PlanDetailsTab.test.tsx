@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+import type { PricingPlan } from '@/types/api.types';
 import type { AccountStatus } from '@/types/billing.types';
 import { useAccountStatus } from '@features/pricing/hooks/useAccountStatus';
 import { usePricingPlans } from '@features/pricing/hooks/usePricingPlans';
@@ -24,26 +25,70 @@ jest.mock('@features/pricing/hooks/usePricingPlans', () => ({
 const mockedUseAccountStatus = useAccountStatus as jest.Mock;
 const mockedUsePricingPlans = usePricingPlans as jest.Mock;
 
-const mockCatalogPlans = [
+const mockCatalogPlans: PricingPlan[] = [
   {
     id: 'starter',
+    code: 'starter',
     name: 'Starter',
-    description: 'For students exploring 1 ideas',
     priceMonthly: 0,
     priceYearly: 0,
-    features: ['1 workspace for 7 days', '100 survey responses'],
+    price_monthly: 0,
+    price_yearly: 0,
+    old_price: 299,
+    currency: 'INR',
+    features: [],
+    workspace_limit: 1,
+    survey_response_cap: 100,
+    regeneration_limit: 2,
+    export_enabled: false,
+    stage_rerun: 1,
+    survey_analytics: 'Basic',
+    storage_limit: 200,
+    popular: false,
+    tier: 0,
   },
   {
     id: 'builder',
+    code: 'builder',
     name: 'Builder',
-    description: 'For students building projects/startups',
-    priceMonthly: 299,
-    priceYearly: 2990,
-    features: [
-      '3 workspaces',
-      '500 survey responses',
-      'Full AI Mentor Agent Suite (Validation, Market Research, Survey Intelligence)',
-    ],
+    priceMonthly: 499,
+    priceYearly: 4990,
+    price_monthly: 499,
+    price_yearly: 4990,
+    old_price: 999,
+    currency: 'INR',
+    description: 'For students building projects',
+    features: [],
+    workspace_limit: 3,
+    survey_response_cap: 500,
+    regeneration_limit: 5,
+    export_enabled: true,
+    stage_rerun: 3,
+    survey_analytics: 'Advanced',
+    storage_limit: 500,
+    popular: true,
+    tier: 1,
+  },
+  {
+    id: 'pro',
+    code: 'pro',
+    name: 'Pro',
+    priceMonthly: 999,
+    priceYearly: 9990,
+    price_monthly: 999,
+    price_yearly: 9990,
+    old_price: 1999,
+    currency: 'INR',
+    features: [],
+    workspace_limit: 10,
+    survey_response_cap: 2000,
+    regeneration_limit: 10,
+    export_enabled: true,
+    stage_rerun: 5,
+    survey_analytics: 'Advanced',
+    storage_limit: 2048,
+    popular: false,
+    tier: 2,
   },
 ];
 
@@ -52,8 +97,8 @@ const mockActiveStatus: AccountStatus = {
   planName: 'Builder',
   status: 'active',
   billingPeriod: 'monthly',
-  priceMonthly: 299,
-  priceYearly: 2990,
+  priceMonthly: 499,
+  priceYearly: 4990,
   currency: 'INR',
   currentEnd: '2026-08-15T00:00:00Z',
   cancelAtPeriodEnd: false,
@@ -67,15 +112,6 @@ const mockActiveStatus: AccountStatus = {
   stageRerun: 3,
   exportEnabled: true,
   surveyAnalytics: 'Advanced',
-  features: [
-    '3 workspaces',
-    '500 survey responses per workspace',
-    '5 survey regenerations per workspace',
-    'Export validation reports',
-    '3 stage reruns per workspace',
-    '500 MB storage',
-    'Advanced survey analytics',
-  ],
 };
 
 describe('PlanDetailsTab', () => {
@@ -132,9 +168,9 @@ describe('PlanDetailsTab', () => {
     expect(screen.getByText(/you are currently on the builder plan/i)).toBeInTheDocument();
     expect(screen.getAllByText('Builder').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText(/active/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText(/₹299/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/₹499/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/next billing date:/i)).toBeInTheDocument();
-    expect(screen.getByText('For students building projects/startups')).toBeInTheDocument();
+    expect(screen.getByText(/for students building projects/i)).toBeInTheDocument();
 
     // Usage Overview
     expect(screen.getAllByText('Workspaces / Ideas').length).toBeGreaterThanOrEqual(1);
@@ -155,11 +191,15 @@ describe('PlanDetailsTab', () => {
     expect(screen.getByText('Analytics & Export')).toBeInTheDocument();
     expect(screen.getAllByText(/advanced analytics/i).length).toBeGreaterThanOrEqual(1);
 
-    // Plan Benefits
     expect(screen.getByText('Plan Features')).toBeInTheDocument();
-    expect(screen.getByText(/full ai mentor agent suite/i)).toBeInTheDocument();
+    expect(screen.getByText('3 workspaces/ideas')).toBeInTheDocument();
+    expect(screen.getByText('Export validation reports')).toBeInTheDocument();
+    expect(screen.getByText('500 MB storage')).toBeInTheDocument();
 
-    // Comparison Matrix Table
+    const strikethroughEl = document.querySelector('.line-through');
+    expect(strikethroughEl).toBeInTheDocument();
+    expect(strikethroughEl).toHaveTextContent('₹999');
+
     expect(screen.getByText(/ai mentor plan comparison/i)).toBeInTheDocument();
     expect(screen.getByText('Your Plan')).toBeInTheDocument();
   });
@@ -213,8 +253,28 @@ describe('PlanDetailsTab', () => {
     render(<PlanDetailsTab />);
 
     expect(screen.getAllByText('Rerun the stage').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('Survey Distribution').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('AI-generated Survey').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('Export the report').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Survey Regenerations').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Survey Analytics').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Export Validation Reports').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('omits "Export validation reports" and shows Report Export disabled for starter plan', () => {
+    mockedUseAccountStatus.mockReturnValue({
+      data: {
+        ...mockActiveStatus,
+        plan: 'starter',
+        planName: 'Starter',
+        status: 'active',
+        priceMonthly: 0,
+        exportEnabled: true,
+      },
+      isLoading: false,
+      isError: false,
+    });
+
+    render(<PlanDetailsTab />);
+
+    expect(screen.queryByText('Export validation reports')).not.toBeInTheDocument();
+    expect(screen.getByText('Disabled')).toBeInTheDocument();
   });
 });

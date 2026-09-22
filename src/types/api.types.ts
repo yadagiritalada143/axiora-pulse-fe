@@ -73,12 +73,25 @@ export interface Workspace extends Timestamps {
 
 export interface PricingPlan {
   id: ID;
+  code?: string;
   name: string;
   priceMonthly: number;
   priceYearly: number;
+  price_monthly?: number;
+  price_yearly?: number;
+  old_price?: number | null;
+  oldPrice?: number | null;
+  currency?: string;
   features: string[];
-  /** Short tagline shown under the price (backend `Plan.description`). */
   description?: string | null;
-  /** Whether this plan is visually highlighted as the recommended tier. */
   popular?: boolean;
+  tier?: number;
+  workspace_limit?: number | null;
+  survey_response_cap?: number | null;
+  regeneration_limit?: number | null;
+  export_enabled?: boolean;
+  stage_rerun?: number | null;
+  survey_analytics?: string;
+  storage_limit?: number | null;
+  is_active?: boolean;
 }

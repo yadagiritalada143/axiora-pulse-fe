@@ -23,6 +23,7 @@ import type {
   CreatePlanWithRazorpayPayload,
   UpdatePlanPayload,
 } from '@/types/admin.types';
+import { formatStorageSize, generatePlanFeatures, isFreePlan } from '@/utils/planFeatures';
 import { Badge } from '@components/ui/badge';
 import { Button } from '@components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@components/ui/card';
@@ -336,9 +337,8 @@ export function AdminPlansList() {
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           {filteredPlans.map((plan: AdminPlan) => {
             const isFeaturesOpen = Boolean(expandedFeatures[plan.id]);
-            const previewFeatures = isFeaturesOpen
-              ? plan.features
-              : (plan.features ?? []).slice(0, 4);
+            const planFeatures = generatePlanFeatures(plan);
+            const previewFeatures = isFeaturesOpen ? planFeatures : planFeatures.slice(0, 4);
 
             return (
               <Card
@@ -398,14 +398,21 @@ export function AdminPlansList() {
                     <div className="border-border/80 bg-muted/20 rounded-xl border p-3">
                       <div className="flex items-baseline justify-between">
                         <div>
+                          {plan.old_price != null && plan.old_price > plan.price_monthly && (
+                            <span className="text-muted-foreground mr-1.5 text-xs line-through">
+                              ₹{plan.old_price.toLocaleString('en-IN')}
+                            </span>
+                          )}
                           <span className="text-foreground text-2xl font-black">
                             ₹{plan.price_monthly.toLocaleString('en-IN')}
                           </span>
                           <span className="text-muted-foreground ml-1 text-xs">/ month</span>
                         </div>
+                        {/*
                         <span className="text-muted-foreground text-xs">
                           ₹{plan.price_yearly.toLocaleString('en-IN')} / yr
                         </span>
+                        */}
                       </div>
                     </div>
                   </CardHeader>
@@ -417,7 +424,9 @@ export function AdminPlansList() {
                         <div className="min-w-0">
                           <p className="text-muted-foreground text-[10px]">Workspaces</p>
                           <p className="text-foreground truncate font-semibold">
-                            {plan.workspace_limit ?? 'Unlimited'}
+                            {isFreePlan(plan) || plan.workspace_limit === 1
+                              ? `${plan.workspace_limit ?? 1} for 7 days`
+                              : (plan.workspace_limit ?? 'Unlimited')}
                           </p>
                         </div>
                       </div>
@@ -439,7 +448,7 @@ export function AdminPlansList() {
                         <div className="min-w-0">
                           <p className="text-muted-foreground text-[10px]">Storage</p>
                           <p className="text-foreground truncate font-semibold">
-                            {plan.storage_limit != null ? `${plan.storage_limit} MB` : 'Unlimited'}
+                            {formatStorageSize(plan.storage_limit)}
                           </p>
                         </div>
                       </div>
@@ -449,7 +458,7 @@ export function AdminPlansList() {
                         <div className="min-w-0">
                           <p className="text-muted-foreground text-[10px]">Analytics</p>
                           <p className="text-foreground truncate font-semibold">
-                            {plan.survey_analytics}
+                            {plan.survey_analytics ?? 'Basic'}
                           </p>
                         </div>
                       </div>
@@ -458,15 +467,15 @@ export function AdminPlansList() {
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-muted-foreground font-semibold">
-                          Features ({plan.features?.length ?? 0})
+                          Features ({planFeatures.length})
                         </span>
-                        {plan.features && plan.features.length > 4 ? (
+                        {planFeatures.length > 4 ? (
                           <button
                             type="button"
                             onClick={() => toggleFeatureExpand(plan.id)}
                             className="cursor-pointer text-[11px] font-medium text-[#FF4500] hover:underline"
                           >
-                            {isFeaturesOpen ? 'Show less' : `+${plan.features.length - 4} more`}
+                            {isFeaturesOpen ? 'Show less' : `+${planFeatures.length - 4} more`}
                           </button>
                         ) : null}
                       </div>
@@ -481,23 +490,6 @@ export function AdminPlansList() {
                           </li>
                         ))}
                       </ul>
-                    </div>
-
-                    <div className="border-border/60 bg-muted/20 space-y-1.5 rounded-lg border p-2.5 text-[11px]">
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Monthly Billing:</span>
-                        <span className="text-foreground max-w-[160px] truncate font-mono font-medium">
-                          {plan.razorpay_plan_id_monthly ??
-                            (plan.price_monthly === 0 ? 'Free Plan' : 'Auto-synced')}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Annual Billing:</span>
-                        <span className="text-foreground max-w-[160px] truncate font-mono font-medium">
-                          {plan.razorpay_plan_id_yearly ??
-                            (plan.price_yearly === 0 ? 'Free Plan' : 'Auto-synced')}
-                        </span>
-                      </div>
                     </div>
                   </CardContent>
                 </div>
@@ -543,7 +535,7 @@ export function AdminPlansList() {
                   <th className="px-4 py-3 font-semibold">Tier / Code</th>
                   <th className="px-4 py-3 font-semibold">Plan Name</th>
                   <th className="px-4 py-3 font-semibold">Monthly Price</th>
-                  <th className="px-4 py-3 font-semibold">Yearly Price</th>
+                  {/* <th className="px-4 py-3 font-semibold">Yearly Price</th> */}
                   <th className="px-4 py-3 font-semibold">Quotas</th>
                   <th className="px-4 py-3 font-semibold">Features</th>
                   <th className="px-4 py-3 font-semibold">Status</th>
@@ -572,17 +564,33 @@ export function AdminPlansList() {
                       ) : null}
                     </td>
                     <td className="text-foreground px-4 py-3 font-semibold">
-                      ₹{plan.price_monthly.toLocaleString('en-IN')}
+                      {plan.old_price != null && plan.old_price > plan.price_monthly && (
+                        <span className="text-muted-foreground mr-1.5 font-normal line-through">
+                          ₹{plan.old_price.toLocaleString('en-IN')}
+                        </span>
+                      )}
+                      <span>₹{plan.price_monthly.toLocaleString('en-IN')}</span>
                     </td>
-                    <td className="text-muted-foreground px-4 py-3">
+                    {/* <td className="text-muted-foreground px-4 py-3">
                       ₹{plan.price_yearly.toLocaleString('en-IN')}
+                    </td> */}
+                    <td className="text-muted-foreground px-4 py-3">
+                      <div>
+                        WS:{' '}
+                        {isFreePlan(plan) || plan.workspace_limit === 1
+                          ? `${plan.workspace_limit ?? 1} (7d)`
+                          : (plan.workspace_limit ?? '∞')}
+                      </div>
+                      <div>
+                        Resp:{' '}
+                        {plan.survey_response_cap != null
+                          ? plan.survey_response_cap.toLocaleString('en-IN')
+                          : '∞'}
+                      </div>
+                      <div>Storage: {formatStorageSize(plan.storage_limit)}</div>
                     </td>
                     <td className="text-muted-foreground px-4 py-3">
-                      <div>WS: {plan.workspace_limit ?? '∞'}</div>
-                      <div>Resp: {plan.survey_response_cap ?? '∞'}</div>
-                    </td>
-                    <td className="text-muted-foreground px-4 py-3">
-                      {plan.features?.length ?? 0} features
+                      {generatePlanFeatures(plan).length} features
                     </td>
                     <td className="px-4 py-3">
                       {plan.is_active ? (

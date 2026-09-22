@@ -44,7 +44,7 @@ describe('PlanFormModal', () => {
     expect(screen.queryByText('Create Subscription Plan')).not.toBeInTheDocument();
   });
 
-  it('renders create mode with default fields and allows adding features', () => {
+  it('renders create mode with enabled fields, without features section, and calls onCreate', () => {
     const handleCreate = jest.fn();
     render(
       <PlanFormModal
@@ -61,15 +61,20 @@ describe('PlanFormModal', () => {
 
     const codeInput = screen.getByLabelText(/plan code/i);
     const nameInput = screen.getByLabelText(/display name/i);
-    const featureInput = screen.getByPlaceholderText(/type a new benefit/i);
-    const addFeatureBtn = screen.getByRole('button', { name: /^add$/i });
+    const monthlyPriceInput = screen.getByLabelText(/monthly price/i);
+    const oldPriceInput = screen.getByLabelText(/old price/i);
+    const yearlyPriceInput = screen.queryByLabelText(/yearly price/i);
+
+    expect(codeInput).not.toBeDisabled();
+    expect(monthlyPriceInput).not.toBeDisabled();
+    expect(oldPriceInput).not.toBeDisabled();
+    expect(yearlyPriceInput).not.toBeInTheDocument();
+
+    expect(screen.queryByText(/Plan Features & Benefits/i)).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/type a new benefit/i)).not.toBeInTheDocument();
 
     fireEvent.change(codeInput, { target: { value: 'enterprise' } });
     fireEvent.change(nameInput, { target: { value: 'Enterprise' } });
-    fireEvent.change(featureInput, { target: { value: '24/7 dedicated support' } });
-    fireEvent.click(addFeatureBtn);
-
-    expect(screen.getByText('24/7 dedicated support')).toBeInTheDocument();
 
     const submitBtn = screen.getByRole('button', { name: /create plan/i });
     fireEvent.click(submitBtn);
@@ -78,12 +83,12 @@ describe('PlanFormModal', () => {
       expect.objectContaining({
         code: 'enterprise',
         name: 'Enterprise',
-        features: expect.arrayContaining(['24/7 dedicated support']),
+        features: [],
       }),
     );
   });
 
-  it('populates existing fields in edit mode and calls onUpdate on submit', () => {
+  it('populates existing fields in edit mode, disables plan code, monthly price, and old price, and calls onUpdate on submit', () => {
     const handleUpdate = jest.fn();
     render(
       <PlanFormModal
@@ -99,6 +104,18 @@ describe('PlanFormModal', () => {
 
     expect(screen.getByRole('heading', { name: /edit plan: starter/i })).toBeInTheDocument();
 
+    const codeInput = screen.getByLabelText(/plan code/i);
+    const monthlyPriceInput = screen.getByLabelText(/monthly price/i);
+    const oldPriceInput = screen.getByLabelText(/old price/i);
+    const yearlyPriceInput = screen.queryByLabelText(/yearly price/i);
+
+    expect(codeInput).toBeDisabled();
+    expect(monthlyPriceInput).toBeDisabled();
+    expect(oldPriceInput).toBeDisabled();
+    expect(yearlyPriceInput).not.toBeInTheDocument();
+
+    expect(screen.queryByText(/Plan Features & Benefits/i)).not.toBeInTheDocument();
+
     const nameInput = screen.getByLabelText(/display name/i);
     fireEvent.change(nameInput, { target: { value: 'Starter Plus' } });
 
@@ -110,6 +127,7 @@ describe('PlanFormModal', () => {
       expect.objectContaining({
         code: 'starter',
         name: 'Starter Plus',
+        features: ['1 workspace for 7 days', '2 survey regenerations'],
       }),
     );
   });
