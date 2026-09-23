@@ -85,9 +85,9 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
           }
           popoverProps={{
             shadow: 'md',
-            withinPortal:
-              process.env.NODE_ENV === 'test' ? false : (popoverProps?.withinPortal ?? true),
+            withinPortal: popoverProps?.withinPortal ?? false,
             zIndex: 9999,
+            transitionProps: { duration: 150, ...popoverProps?.transitionProps },
             ...popoverProps,
           }}
           {...props}

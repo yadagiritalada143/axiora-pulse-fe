@@ -1,5 +1,19 @@
 import { formatDistanceToNow, format, isValid, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+
+dayjs.extend(customParseFormat);
+
+const DATE_FORMATS = [
+  'YYYY-MM-DD',
+  'DD/MM/YYYY',
+  'DD-MM-YYYY',
+  'YYYY/MM/DD',
+  'MM/DD/YYYY',
+  'DD MMM YYYY',
+  'YYYY-MM-DDTHH:mm:ss.SSSZ',
+  'YYYY-MM-DDTHH:mm:ssZ',
+];
 
 export function toDate(input?: string | number | Date | null): Date | null {
   if (!input) return null;
@@ -9,9 +23,15 @@ export function toDate(input?: string | number | Date | null): Date | null {
     return Number.isNaN(d.getTime()) ? null : d;
   }
   if (typeof input === 'string') {
-    const parsedIso = parseISO(input);
+    const trimmed = input.trim();
+    if (!trimmed) return null;
+    const parsedIso = parseISO(trimmed);
     if (isValid(parsedIso)) return parsedIso;
-    const d = dayjs(input);
+    for (const fmt of DATE_FORMATS) {
+      const parsed = dayjs(trimmed, fmt, true);
+      if (parsed.isValid()) return parsed.toDate();
+    }
+    const d = dayjs(trimmed);
     return d.isValid() ? d.toDate() : null;
   }
   return null;

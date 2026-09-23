@@ -11,6 +11,7 @@ import {
   openDateRangeModal,
   parseDate,
 } from '@components/ui/calendar';
+import { DatePicker } from '@components/ui/date-picker';
 
 describe('Calendar component utilities', () => {
   it('parses dates correctly with parseDate', () => {
@@ -218,5 +219,35 @@ describe('openCalendarModal & openDateRangeModal helpers', () => {
         onSelect: handleSelect,
       });
     }).not.toThrow();
+  });
+});
+
+describe('DatePicker from date-picker.tsx', () => {
+  it('selects a date when clicked', async () => {
+    const handleChange = jest.fn();
+    render(
+      <DatePicker
+        placeholder="DD/MM/YYYY"
+        value={null}
+        onChange={handleChange}
+        popoverProps={{ transitionProps: { duration: 0 } }}
+      />,
+    );
+
+    const trigger = screen.getByRole('button', { name: /DD\/MM\/YYYY/i });
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    fireEvent.click(trigger);
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+
+    const bodyDayButtons = await screen.findAllByRole('button', { name: /15/i });
+    expect(bodyDayButtons.length).toBeGreaterThan(0);
+
+    const targetButton = bodyDayButtons[0];
+    if (targetButton) {
+      fireEvent.click(targetButton);
+    }
+    expect(handleChange).toHaveBeenCalled();
   });
 });

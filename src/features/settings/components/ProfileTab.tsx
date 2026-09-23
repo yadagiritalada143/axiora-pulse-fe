@@ -22,6 +22,7 @@ import {
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { formatDate } from '@/utils/date';
 import { AvatarPreviewDialog } from '@components/common/AvatarPreviewDialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@components/ui/avatar';
 import { Badge } from '@components/ui/badge';
@@ -119,7 +120,7 @@ export function ProfileTab() {
   const mobileNumber =
     userDetails?.mobile_number ?? user?.mobile_number ?? user?.mobileNumber ?? 'N/A';
   const rawDob = userDetails?.date_of_birth ?? user?.date_of_birth ?? user?.dateOfBirth;
-  const dateOfBirth = rawDob ? format(new Date(rawDob), 'dd/MM/yyyy') : 'N/A';
+  const dateOfBirth = rawDob ? formatDate(rawDob, 'dd/MM/yyyy') || 'N/A' : 'N/A';
   const gender = userDetails?.gender ?? user?.gender ?? 'N/A';
   const rawStatus =
     userDetails?.profile_status ?? user?.profile_status ?? user?.profileStatus ?? 'Active';
@@ -395,7 +396,18 @@ export function ProfileTab() {
           </div>
         </div>
 
-        <div className="border-border/70 bg-card/60 flex items-center gap-3.5 rounded-xl border-0 border-b p-4 transition-colors hover:border-amber-500/40">
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setIsEditOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setIsEditOpen(true);
+            }
+          }}
+          className="border-border/70 bg-card/60 flex cursor-pointer items-center gap-3.5 rounded-xl border-0 border-b p-4 transition-colors hover:border-amber-500/40"
+        >
           <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 dark:text-amber-400">
             <Calendar className="size-4.5" />
           </div>

@@ -407,8 +407,7 @@ export const CalendarPicker = React.forwardRef<HTMLButtonElement, CalendarPicker
           maxDate={parseDate(maxDate) || undefined}
           popoverProps={{
             shadow: 'md',
-            withinPortal:
-              process.env.NODE_ENV === 'test' ? false : (props.popoverProps?.withinPortal ?? true),
+            withinPortal: props.popoverProps?.withinPortal ?? false,
             zIndex: 9999,
             ...props.popoverProps,
           }}

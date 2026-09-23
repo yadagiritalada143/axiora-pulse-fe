@@ -106,7 +106,7 @@ export function EditProfileDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-90vh] border-border/80 min-h-[560px] overflow-y-auto rounded-2xl p-6 shadow-2xl sm:max-w-xl sm:p-7">
+      <DialogContent className="border-border/80 max-h-[90vh] min-h-[560px] overflow-y-auto rounded-2xl p-6 shadow-2xl sm:max-w-xl sm:p-7">
         <DialogHeader>
           <div className="flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-xl bg-orange-500/10 text-[#FF4500]">
@@ -232,6 +232,7 @@ export function EditProfileDialog({
                     valueFormat="DD/MM/YYYY"
                     placeholder="DD/MM/YYYY"
                     clearable
+                    popoverProps={{ withinPortal: false }}
                   />
                 )}
               />
